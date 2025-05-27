@@ -1,91 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Havenova-X</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: #0b0c10;
-            color: #c5c6c7;
-        }
-        header {
-            background: #1f2833;
-            padding: 20px;
-            text-align: center;
-        }
-        header img {
-            width: 150px;
-        }
-        h1 {
-            color: #66fcf1;
-        }
-        section {
-            padding: 30px;
-            max-width: 1000px;
-            margin: auto;
-        }
-        a {
-            color: #45a29e;
-            text-decoration: none;
-        }
-        .contact, .social {
-            margin-top: 40px;
-            font-size: 0.95em;
-        }
-        .footer {
-            background: #1f2833;
-            text-align: center;
-            padding: 10px;
-            font-size: 0.8em;
-            color: #66fcf1;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Havenova-X is a global tech community fighting scams, empowering creators, and unlocking digital power.">
+  <meta property="og:title" content="Havenova-X - Powered by Dechris" />
+  <meta property="og:description" content="Join Havenova-X: Anti-scam tech hub with tools, updates & community." />
+  <meta property="og:image" content="logo.png" />
+  <title>Havenova-X</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    <header>
-        <img src="logo.png" alt="Havenova-X Logo">
-        <h1>Welcome to Havenova-X</h1>
-        <p>Powered by Dechris™</p>
-    </header>
-    <section>
-        <h2>About Havenova-X</h2>
-        <p>
-            Founded by <strong>Nwankwoifedi Christian Chidera</strong> (born 12 April 2004), Havenova-X began in 2022 under the name “Dechris Empire.”
-            It later evolved into Havenova-X to reflect a broader mission.
-        </p>
-        <p>
-            <strong>What We Do:</strong><br>
-            Step into a world where technology reigns supreme. Havenova-X isn't just a tech channel – it's a community, a classroom, and a battleground against scammers.
-            We fight digital fraud, share fresh tech updates, and empower creators with graphic design tutorials.
-            From modded apps to vital tech tips, we help you unlock the best of the tech world.
-        </p>
-        <p>
-            Join us now and experience the power of smart technology in your pocket!
-        </p>
-        <div class="contact">
-            <h3>Contact Us</h3>
-            <p>Email (Community): <a href="mailto:havanova.x@gmail.com">havanova.x@gmail.com</a></p>
-            <p>Email (Founder): <a href="mailto:christianstephen06@gmail.com">christianstephen06@gmail.com</a></p>
-        </div>
-        <div class="social">
-            <h3>Join the Community</h3>
-            <ul>
-                <li><a href="https://whatsapp.com/channel/0029VaA38Iu0LKZJLBpcBE3i" target="_blank">WhatsApp Channel</a></li>
-                <li><a href="https://chat.whatsapp.com/HfxPevEAdab5UMGhUNFW1S" target="_blank">WhatsApp Group</a></li>
-                <li><a href="https://t.me/+bdnGS5w9jT8yYjJk" target="_blank">Telegram</a></li>
-            </ul>
-            <h3>Follow the Founder</h3>
-            <ul>
-                <li>TikTok: <a href="https://www.tiktok.com/@dechris_designz" target="_blank">@dechris_designz</a></li>
-                <li>Facebook Page: <a href="https://facebook.com/dechrisdesignz" target="_blank">Dechris Designz</a></li>
-            </ul>
-        </div>
+  <header>
+    <img src="logo.png" alt="Havenova-X Logo" class="logo" />
+    <button id="darkModeToggle">Dark Mode</button>
+  </header>
+  <main>
+    <section class="intro">
+      <h1>Welcome to Havenova-X</h1>
+      <p>
+        Step into a world where technology reigns supreme. Havenova-X isn't just a tech hub – it's a community,
+        a classroom, and a battleground against scammers.
+      </p>
     </section>
-    <div class="footer">
-        &copy; 2025 Havenova-X. All rights reserved.
-    </div>
+
+    <section class="features">
+      <h2>What We Do</h2>
+      <ul>
+        <li>Fight digital fraud and scams</li>
+        <li>Share the latest tech updates</li>
+        <li>Empower creatives with graphic design tutorials</li>
+        <li>Deliver modded apps and smart tools</li>
+      </ul>
+    </section>
+
+    <section class="contact">
+      <h2>Contact Us</h2>
+      <form action="https://formspree.io/f/mzbnozgr" method="POST">
+        <input type="text" name="name" placeholder="Your Name" required />
+        <input type="email" name="email" placeholder="Your Email" required />
+        <textarea name="message" placeholder="Your Message" required></textarea>
+        <button type="submit">Send Message</button>
+      </form>
+    </section>
+
+    <section class="about">
+      <h2>About the Founder</h2>
+      <p>Nwankwoifedi Christian Chidera, born 12 April 2004, is the founder of Havenova-X (formerly Dechris Empire). He started the vision in 2022 to create a safer, smarter tech space.</p>
+      <p>Email: <a href="mailto:christianstephen06@gmail.com">christianstephen06@gmail.com</a></p>
+      <p>Community Email: <a href="mailto:havanova.x@gmail.com">havanova.x@gmail.com</a></p>
+      <div class="socials">
+        <a href="https://t.me/+bdnGS5w9jT8yYjJk"><i class="fab fa-telegram"></i></a>
+        <a href="https://whatsapp.com/channel/0029VaA38Iu0LKZJLBpcBE3i"><i class="fab fa-whatsapp"></i></a>
+        <a href="https://chat.whatsapp.com/HfxPevEAdab5UMGhUNFW1S"><i class="fas fa-users"></i></a>
+        <a href="https://tiktok.com/@dechris_designz"><i class="fab fa-tiktok"></i></a>
+        <a href="https://facebook.com/DechrisDesignz"><i class="fab fa-facebook"></i></a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Powered by Dechris™</p>
+    <p>&copy; 2025 Havenova-X. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const toggle = document.getElementById('darkModeToggle');
+    toggle.onclick = () => {
+      document.body.classList.toggle('dark');
+    };
+  </script>
 </body>
-</html>
+        </html>
+    
