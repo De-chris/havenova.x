@@ -21,7 +21,9 @@
       background: linear-gradient(to bottom right, #0d1117, #1a1f2c);
       color: #eee;
     }
-    header, footer {
+
+    /* Header stays fixed */
+    header {
       background: rgba(255, 255, 255, 0.95);
       display: flex;
       align-items: center;
@@ -33,9 +35,22 @@
       top: 0;
       z-index: 100;
     }
-    .dark header, .dark footer {
+    .dark header {
       background: rgba(20, 20, 20, 0.9);
     }
+
+    /* Footer is normal block */
+    footer {
+      background: rgba(255, 255, 255, 0.95);
+      flex-direction: column;
+      text-align: center;
+      padding: 20px 10px;
+      margin-top: 40px;
+    }
+    .dark footer {
+      background: rgba(20, 20, 20, 0.9);
+    }
+
     .logo {
       height: 50px;
       cursor: pointer;
@@ -44,22 +59,27 @@
     .logo.expand {
       height: 65px;
     }
+
     main {
       padding: 120px 20px 40px;
       max-width: 850px;
       margin: auto;
     }
+
     section {
       margin-bottom: 60px;
     }
+
     h1, h2 {
       text-align: center;
       margin-bottom: 10px;
     }
+
     p {
       font-size: 15px;
       line-height: 1.6;
     }
+
     .btn, button {
       display: inline-block;
       padding: 8px 16px;
@@ -72,16 +92,19 @@
       font-weight: 500;
       box-shadow: 0 0 8px #0ff;
       cursor: pointer;
-      margin: 5px 0;
+      margin: 5px 5px 10px 0;
     }
+
     .dark .btn, .dark button {
       background: #111;
       color: #0ff;
       box-shadow: 0 0 8px #0ff;
     }
+
     .btn:hover, button:hover {
       transform: scale(1.05);
     }
+
     .apps-list article {
       border: 1px solid #ddd;
       background: rgba(255,255,255,0.7);
@@ -89,15 +112,10 @@
       border-radius: 10px;
       margin-bottom: 30px;
     }
+
     .dark .apps-list article {
       background: rgba(40,40,40,0.5);
       border-color: #333;
-    }
-    footer {
-      flex-direction: column;
-      text-align: center;
-      padding: 20px 10px;
-      margin-top: 40px;
     }
   </style>
 </head>
@@ -116,8 +134,8 @@
     <section class="apps-list">
       <article class="app">
         <h2>DuxeLab</h2>
-        <p>Duxelab is an assistant app for both designers and anyone in need of a size converter for converting feet, inch, pixels and more..., it also comes with a built in AI search view where you search for anything (Graphic Design related), this feature is meant for graphic designers in particular, but to get the full features of the AI search kiny download Dechris AI, you can also adjust the AI Search behavior, and the best part is the built in community chat for designers and other users, just a huge community for all DuxeLab users and it also have an image downloader (beta) feature where you can download images as well, you can suggest more features and we will implement them.Thanks for all your support..</p>
-        <a href="https://duxelab.en.uptodown.com/android" class="btn">Download ChrisChat</a>
+        <p>DuxeLab is an assistant app for designers and creators. It offers size conversion tools (feet, inch, px), a built-in AI search for design questions, an image downloader (beta), and a group chat feature for the design community.</p>
+        <a href="https://duxelab.en.uptodown.com/android" class="btn">Download DuxeLab</a>
       </article>
 
       <article class="app">
@@ -135,7 +153,7 @@
 
       <article class="app">
         <h2>Age Calculator</h2>
-        <p>Calculate your age with ease with our smart and clean app interface, know your age and your next birthday at the same time without stress.</p>
+        <p>Calculate your age with ease using our smart and clean interface. Know your age and next birthday at a glance.</p>
         <a href="https://www.mediafire.com/file/g60iobdh4n6rm5u/Age_Calculator_1.0.apk/file" class="btn">Download Age Calculator</a>
       </article>
     </section>
@@ -166,4 +184,4 @@
     });
   </script>
 </body>
-  </html>
+          </html>
