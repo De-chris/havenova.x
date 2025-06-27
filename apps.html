@@ -1,70 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Our Apps - Havenova-X</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-</head>
-<body>
-  <header>
-    <img src="logo.png" alt="Havenova-X Logo" class="logo" />
-    <button id="darkModeToggle">Dark Mode</button>
-  </header>
-
-  <main>
-    <section class="intro">
-      <h1>Explore Our Apps</h1>
-      <p>Discover useful apps developed by Havenova-X to empower and protect users across the digital world.</p>
-    </section>
-
-    <section class="apps-list">
-      <article class="app">
-        <h2>ChrisChat</h2>
-        <p>A lightweight chat app that allows encrypted messaging and real-time (NOT ACTIVE CURRENTLY).</p>
-        <a href="https://example.com/chrischat.apk" class="btn">Download ChrisChat</a>
-      </article>
-
-      <article class="app">
-        <h2>ChrisFlix</h2>
-        <p>A movie and streaming hub that offers fast access to trending content (STILL ON PRODUCTION).</p>
-        <a href="https://example.com/chrisflix.apk" class="btn">Download ChrisFlix</a>
-      </article>
-
-      <article class="app">
-        <h2>Dechris AI</h2>
-        <p>An AI-powered assistant app with voice, text, and smart tool features.</p>
-        <a href="https://dechris-ai.en.uptodown.com/android" class="btn">Download Dechris AI</a>
-      </article>
-
-      <article class="app">
-        <h2>Age Calculator</h2>
-        <p>Calculate your age with ease with our smart and clean app interface, know your age and your next birthday at the same time without stress.</p>
-        <a href="https://www.mediafire.com/file/g60iobdh4n6rm5u/Age_Calculator_1.0.apk/file" class="btn">Download Dechris AI</a>
-      </article>
-      
-      <!-- Add more apps here -->
-      <!-- Example:
-      <article class="app">
-        <h2>App Name</h2>
-        <p>Short description of the app.</p>
-        <a href="APP_LINK_HERE" class="btn">Download</a>
-      </article>
-      -->
-    </section>
-  </main>
-
-  <footer>
-    <p>Powered by Dechris™</p>
-    <p>&copy; 2025 Havenova-X. All rights reserved.</p>
-  </footer>
-
-  <script>
-    const toggle = document.getElementById('darkModeToggle');
-    toggle.onclick = () => {
-      document.body.classList.toggle('dark');
-    };
-  </script>
-</body>
-</html>
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+  <meta charset="UTF-8" />  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
+  <title>Our Apps - Havenova-X</title>  
+  <link rel="stylesheet" href="style.css" />  
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>  
+</head>  
+<body>  
+  <header>  
+    <a href="index.html"><img src="logo.png" alt="Havenova-X Logo" class="logo" /></a>  
+    <button id="darkModeToggle">Dark Mode</button>  
+  </header>  
+  
+  <main>  
+    <section class="intro">  
+      <h1>Explore Our Apps</h1>  
+      <p>Discover useful apps developed by Havenova-X to empower and protect users across the digital world.</p>  
+    </section>  
+  
+    <section class="apps-list">  
+      <article class="app">  
+        <h2>ChrisChat</h2>  
+        <p>A lightweight chat app that allows encrypted messaging and real-time (NOT ACTIVE CURRENTLY).</p>  
+        <a href="https://example.com/chrischat.apk" class="btn">Download ChrisChat</a>  
+      </article>  
+  
+      <article class="app">  
+        <h2>ChrisFlix</h2>  
+        <p>A movie and streaming hub that offers fast access to trending content (STILL ON PRODUCTION).</p>  
+        <a href="https://example.com/chrisflix.apk" class="btn">Download ChrisFlix</a>  
+      </article>  
+  
+      <article class="app">  
+        <h2>Dechris AI</h2>  
+        <p>An AI-powered assistant app with voice, text, and smart tool features.</p>  
+        <a href="https://dechris-ai.en.uptodown.com/android" class="btn">Download Dechris AI</a>  
+        <a href="privacy-policy.html" class="btn">Privacy Policy</a>  
+      </article>  
+  
+      <article class="app">  
+        <h2>Age Calculator</h2>  
+        <p>Calculate your age with ease with our smart and clean app interface, know your age and your next birthday at the same time without stress.</p>  
+        <a href="https://www.mediafire.com/file/g60iobdh4n6rm5u/Age_Calculator_1.0.apk/file" class="btn">Download Age Calculator</a>  
+      </article>  
+    </section>  
+  </main>  
+  
+  <footer>  
+    <p>Powered by Dechris™</p>  
+    <p>&copy; 2025 Havenova-X. All rights reserved.</p>  
+  </footer>  
+  
+  <script>  
+    const toggle = document.getElementById('darkModeToggle');  
+    toggle.onclick = () => {  
+      document.body.classList.toggle('dark');  
+      toggle.textContent = document.body.classList.contains('dark') ? 'Light Mode' : 'Dark Mode';
+    };  
+  </script>  
+</body>  
+      </html>
