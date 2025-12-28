@@ -3,51 +3,92 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HX Store | Community Assets</title>
+  <title>HX Store | Premium Assets</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Likes & Social UI */
-    .card-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 15px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(0,210,255,0.1);
+    /* Fixed Header - Removed Blue, Matched Body */
+    header {
+      background: rgba(15, 23, 42, 0.95) !important; /* Dark match */
+      border-bottom: 1px solid #334155;
     }
-    .like-btn {
-      background: none;
-      box-shadow: none;
-      color: #ff4757;
-      border: 1px solid #ff4757;
-      padding: 5px 12px;
-      font-size: 12px;
-    }
-    .like-btn:hover { background: rgba(255, 71, 87, 0.1); }
-    .dark .like-btn { color: #ff6b81; border-color: #ff6b81; }
 
-    /* Comment Section Wrapper */
-    .comment-toggle {
-      background: none;
-      border: none;
-      color: var(--primary);
-      font-size: 12px;
+    /* Store Grid */
+    .store-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .template-card {
       cursor: pointer;
-      text-decoration: underline;
-      padding: 0;
+      position: relative;
+      transition: transform 0.3s;
     }
-    .comment-box {
-      display: none;
-      margin-top: 15px;
-      padding: 10px;
-      background: rgba(0,0,0,0.05);
-      border-radius: 8px;
-    }
-    .dark .comment-box { background: rgba(255,255,255,0.05); }
+    .template-card:hover { transform: translateY(-5px); }
 
-    /* Fix for the Modal */
-    .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
+    .template-img-thumb {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    /* Full-Screen Detail Overlay */
+    .detail-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: #0f172a;
+      z-index: 10000;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .detail-content {
+      max-width: 800px;
+      margin: 40px auto;
+      text-align: center;
+    }
+
+    .full-img-container {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      background: #1e293b;
+    }
+
+    .full-img {
+      width: 100%;
+      cursor: zoom-in;
+      transition: transform 0.3s;
+    }
+
+    .full-img:active { transform: scale(2); cursor: zoom-out; }
+
+    .status-pill {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    .pill-free { background: #00d2ff; color: #000; }
+    .pill-paid { background: #ffca28; color: #000; }
+
+    /* Custom Back Button */
+    .back-store {
+      position: absolute;
+      top: 20px; left: 20px;
+      color: white; font-size: 20px; cursor: pointer;
+    }
+
+    .modal { z-index: 11000; }
   </style>
 </head>
 <body class="dark">
@@ -56,9 +97,27 @@
     <div class="modal-content" style="margin: 15% auto; padding: 30px; border-radius: 15px; max-width: 400px; text-align: center; background: #1e293b; color: #eee;">
       <i class="fas fa-shield-alt" style="font-size: 3rem; color: #00d2ff;"></i>
       <h3>Admin Verification</h3>
-      <p>You will be redirected to <b>@dechrisathx</b> on Telegram to complete your purchase safely.</p>
-      <button id="confirmBuy" class="btn" style="width:100%">Continue to Telegram</button>
+      <p>Redirecting to <b>@dechrisathx</b> for secure manual payment and file delivery.</p>
+      <button id="confirmBuy" class="btn" style="width:100%">Proceed to Telegram</button>
       <p onclick="closeModal()" style="margin-top:15px; cursor:pointer; font-size:12px; opacity:0.6;">Cancel</p>
+    </div>
+  </div>
+
+  <div id="detailOverlay" class="detail-overlay">
+    <i class="fas fa-arrow-left back-store" onclick="closeDetail()"></i>
+    <div class="detail-content">
+      <div id="detailStatus" class="status-pill"></div>
+      <h2 id="detailTitle">Template Name</h2>
+      <div class="full-img-container">
+        <img id="detailImg" src="" class="full-img" title="Click to Zoom">
+      </div>
+      <p id="detailDesc" style="margin-bottom: 20px; opacity: 0.9;"></p>
+      <div id="detailActionArea"></div>
+      
+      <div style="margin-top: 40px; border-top: 1px solid #334155; padding-top: 20px;">
+         <h4>Community Discussion</h4>
+         <div id="cusdis_thread"></div>
+      </div>
     </div>
   </div>
 
@@ -67,19 +126,20 @@
     <button onclick="document.body.classList.toggle('dark')"><i class="fas fa-adjust"></i></button>
   </header>
 
-  <main>
+  <main id="mainContent">
     <section style="text-align: center; margin-bottom: 20px;">
-      <h1>Digital Marketplace</h1>
-      <p>Verified codes & premium community assets.</p>
+      <h1>Marketplace</h1>
+      <p>Professional codes & "Godly" tech assets.</p>
     </section>
 
-    <div id="loading"><i class="fas fa-spinner fa-spin"></i> Loading HX Community...</div>
+    <div id="loading"><i class="fas fa-spinner fa-spin"></i> Syncing Database...</div>
     <div id="template-container" class="store-grid"></div>
   </main>
 
   <script>
     const api_url = "https://script.google.com/macros/s/AKfycbzpxWVXd9pUQe5cJCTJyxtNB6TVto1TEDPmwRYq3bo0eKjfKfPWm558HeMh3EaOCMfl/exec";
     let allTemplates = [];
+    let currentRedirectUrl = "";
 
     async function fetchTemplates() {
       try {
@@ -95,86 +155,85 @@
       const container = document.getElementById('template-container');
       container.innerHTML = '';
 
-      items.forEach((item, index) => {
+      items.forEach((item) => {
         const itemID = item.name.replace(/\s+/g, '_').toLowerCase();
         const isFree = item.type.toLowerCase() === 'free';
         
         const card = document.createElement('div');
         card.className = 'card template-card';
+        card.onclick = () => openDetail(item);
+        
         card.innerHTML = `
-          <img src="${item.imageurl || 'logo1.png'}" class="template-img">
-          <span class="badge">${item.category}</span>
-          <h3>${item.name}</h3>
-          <p style="font-size: 0.85rem; flex-grow: 1;">${item.description}</p>
-          <div class="price-tag">${item.price}</div>
+          <img src="${item.imageurl || 'logo1.png'}" class="template-img-thumb">
+          <span class="badge" style="background:${isFree ? '#00d2ff':'#ffca28'}; color:#000">${item.type}</span>
+          <h3 style="font-size: 1.1rem;">${item.name}</h3>
+          <div class="price-tag" style="margin:5px 0;">${item.price}</div>
           
-          <button class="btn" onclick="handleAction('${item.name}', '${item.price}', '${item.type}', '${item.downloadurl}', '${itemID}')">
-            ${isFree ? 'Get Code' : 'Buy via Telegram'}
-          </button>
-
-          <div class="card-actions">
-            <div>
-              <button class="like-btn" id="btn_like_${itemID}" onclick="addLike('${itemID}')">
-                <i class="fas fa-heart"></i> <span id="like_count_${itemID}">0</span>
-              </button>
-              <span style="font-size: 11px; opacity: 0.6; margin-left: 10px;">
-                <i class="fas fa-download"></i> <span id="view_count_${itemID}">0</span>
-              </span>
-            </div>
-            <p class="comment-toggle" onclick="toggleComments('${itemID}')">Comments</p>
-          </div>
-
-          <div id="comment_${itemID}" class="comment-box">
-             <div id="cusdis_thread" 
-                data-host="https://cusdis.com"
-                data-app-id="PASTE_YOUR_CUSDIS_APP_ID_HERE"
-                data-page-id="${itemID}"
-                data-page-url="${window.location.href}"
-                data-page-title="${item.name}">
-             </div>
+          <div class="card-actions" style="margin-top:auto">
+            <span style="font-size: 11px; opacity: 0.6;">
+              <i class="fas fa-heart"></i> <span id="like_${itemID}">0</span>
+              <i class="fas fa-eye" style="margin-left:10px;"></i> <span id="view_${itemID}">0</span>
+            </span>
+            <span style="font-size:11px; color:#00d2ff">View Details</span>
           </div>
         `;
         container.appendChild(card);
         syncStats(itemID);
       });
-      // Initialize Cusdis SDK
-      const script = document.createElement('script');
-      script.src = "https://cusdis.com/js/cusdis.es.js";
-      script.async = true;
-      script.defer = true;
-      document.body.appendChild(script);
     }
 
-    // Like & Stats Functionality
-    function syncStats(id) {
-      fetch(`https://api.countapi.xyz/get/hx_likes/${id}`).then(r => r.json()).then(d => document.getElementById(`like_count_${id}`).innerText = d.value || 0);
-      fetch(`https://api.countapi.xyz/get/hx_views/${id}`).then(r => r.json()).then(d => document.getElementById(`view_count_${id}`).innerText = d.value || 0);
+    function openDetail(item) {
+      const itemID = item.name.replace(/\s+/g, '_').toLowerCase();
+      const isFree = item.type.toLowerCase() === 'free';
+      
+      document.getElementById('detailTitle').innerText = item.name;
+      document.getElementById('detailImg').src = item.imageurl || 'logo1.png';
+      document.getElementById('detailDesc').innerText = item.description;
+      
+      const statusPill = document.getElementById('detailStatus');
+      statusPill.innerText = item.type;
+      statusPill.className = `status-pill ${isFree ? 'pill-free' : 'pill-paid'}`;
+
+      const actionArea = document.getElementById('detailActionArea');
+      const msg = `Hello Christian! I want to buy:\nID: HX-${itemID}\nName: ${item.name}\nPrice: ${item.price}`;
+      const tgLink = `https://t.me/dechrisathx?text=${encodeURIComponent(msg)}`;
+
+      actionArea.innerHTML = `
+        <button class="btn" style="width:100%; max-width:400px; font-size:18px;" onclick="handleFinalAction('${item.type}', '${isFree ? item.downloadurl : tgLink}', '${itemID}')">
+          ${isFree ? '<i class="fas fa-download"></i> Download Free' : '<i class="fab fa-telegram"></i> Purchase for ' + item.price}
+        </button>
+      `;
+
+      document.getElementById('detailOverlay').style.display = 'block';
+      document.body.style.overflow = 'hidden'; // Stop background scroll
+      
+      // Update View count on open
+      fetch(`https://api.countapi.xyz/hit/hx_views/${itemID}`);
     }
 
-    function addLike(id) {
-      fetch(`https://api.countapi.xyz/hit/hx_likes/${id}`)
-        .then(r => r.json())
-        .then(d => {
-          document.getElementById(`like_count_${id}`).innerText = d.value;
-          document.getElementById(`btn_like_${id}`).style.background = "#ff4757";
-          document.getElementById(`btn_like_${id}`).style.color = "white";
-        });
+    function closeDetail() {
+      document.getElementById('detailOverlay').style.display = 'none';
+      document.body.style.overflow = 'auto';
     }
 
-    function toggleComments(id) {
-      const box = document.getElementById(`comment_${id}`);
-      box.style.display = box.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function handleAction(name, price, type, url, id) {
-      fetch(`https://api.countapi.xyz/hit/hx_views/${id}`);
+    function handleFinalAction(type, url, id) {
       if (type.toLowerCase() === 'free') {
         window.open(url, '_blank');
       } else {
-        const msg = `Hello Christian! I want to buy:\nID: HX-${id}\nItem: ${name}\nPrice: ${price}`;
-        currentRedirectUrl = `https://t.me/dechrisathx?text=${encodeURIComponent(msg)}`;
+        currentRedirectUrl = url;
         document.getElementById('buyModal').style.display = 'block';
       }
+    }
+
+    function syncStats(id) {
+      fetch(`https://api.countapi.xyz/get/hx_likes/${id}`).then(r => r.json()).then(d => {
+        const el = document.getElementById(`like_${id}`);
+        if(el) el.innerText = d.value || 0;
+      });
+      fetch(`https://api.countapi.xyz/get/hx_views/${id}`).then(r => r.json()).then(d => {
+        const el = document.getElementById(`view_${id}`);
+        if(el) el.innerText = d.value || 0;
+      });
     }
 
     function closeModal() { document.getElementById('buyModal').style.display = 'none'; }
@@ -183,4 +242,4 @@
     fetchTemplates();
   </script>
 </body>
-  </html>
+</html>
