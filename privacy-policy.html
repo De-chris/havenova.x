@@ -2,41 +2,106 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Privacy Policy – Dechris AI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy | Havenova-X</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; line-height: 1.6; }
-    h1 { text-align: center; }
+    * { box-sizing: border-box; transition: all 0.3s ease; }
+    body { 
+      font-family: 'Inter', 'Segoe UI', sans-serif; 
+      padding: 40px 20px; 
+      max-width: 800px; 
+      margin: auto; 
+      line-height: 1.7; 
+      background: #f8fafc; 
+      color: #1e293b; 
+    }
+    .dark { background: #0f172a; color: #f1f5f9; }
+    
+    .card {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
+    }
+    .dark .card { background: #1e293b; border-color: #334155; }
+    
+    h1 { color: #00d2ff; text-align: center; margin-bottom: 30px; }
+    h2 { color: #00d2ff; font-size: 1.2rem; margin-top: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+    .dark h2 { border-bottom-color: #334155; }
+    
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 20px;
+      text-decoration: none;
+      color: #00d2ff;
+      font-weight: 600;
+    }
+    footer { text-align: center; margin-top: 40px; opacity: 0.6; font-size: 14px; }
+    
+    #darkModeToggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #00d2ff;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+    }
   </style>
 </head>
-<body>
-  <h1>Privacy Policy for Dechris AI</h1>
-  <p><strong>Effective Date:</strong> June 27, 2025</p>
+<body class="dark">
+  <button id="darkModeToggle"><i class="fas fa-sun"></i></button>
+  
+  <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Home</a>
 
-  <p>Dechris AI is committed to protecting your privacy. This Privacy Policy explains how we handle your data.</p>
+  <div class="card">
+    <h1>Privacy Policy</h1>
+    <p style="text-align: center; opacity: 0.7;"><strong>Effective Date:</strong> June 27, 2025</p>
 
-  <h2>1. Information We Collect</h2>
-  <ul>
-    <li><strong>Personal Data:</strong> We do not collect personal identifiers such as name, email, or contact info.</li>
-    <li><strong>App Data:</strong> The app may save your messages locally for convenience, but they are not transmitted or stored on our servers.</li>
-    <li><strong>Third-party APIs:</strong> We may use AI services (e.g., Together AI) to generate responses. These services handle your input based on their own privacy terms.</li>
-  </ul>
+    <p><strong>Dechris AI</strong> (a product of Havenova-X) is committed to protecting your privacy. This policy explains how we handle your digital data with integrity and transparency.</p>
 
-  <h2>2. How We Use the Information</h2>
-  <p>We only use your inputs to provide chatbot responses. Data remains local unless sent through a third-party AI API.</p>
+    <h2>1. Information We Collect</h2>
+    <ul>
+      <li><strong>Personal Data:</strong> We do not collect personal identifiers such as name, email, or contact info.</li>
+      <li><strong>App Data:</strong> Messages are saved locally on your device for your convenience. They are not stored on our servers.</li>
+      <li><strong>Third-party APIs:</strong> We use AI services (like Together AI). These services process your input based on their own security terms.</li>
+    </ul>
 
-  <h2>3. Security</h2>
-  <p>We do not store your data online. The app uses secure connections to any third-party APIs involved.</p>
+    <h2>2. How We Use Information</h2>
+    <p>Inputs are used strictly to generate chatbot responses. Your data remains on your device unless it is being processed by the AI API for a direct answer.</p>
 
-  <h2>4. Your Rights</h2>
-  <p>You can delete messages from your app anytime. We do not track or identify you personally.</p>
+    <h2>3. Security</h2>
+    <p>We do not store your data online. All connections to third-party AI APIs are encrypted and secure.</p>
 
-  <h2>5. Children's Privacy</h2>
-  <p>Our app is not intended for children under 7 years old.</p>
+    <h2>4. Your Rights</h2>
+    <p>You have full control. You can delete your message history within the app at any time. We do not track or identify individual users.</p>
 
-  <h2>6. Contact</h2>
-  <p>If you have any questions, contact us at: <strong>havenova.x@gmail.com</strong></p>
+    <h2>5. Children's Privacy</h2>
+    <p>Our application is not intended for children under 7 years old.</p>
 
-  <p style="margin-top: 40px;">&copy; 2025 Havenova-X. All rights reserved.</p>
+    <h2>6. Contact Us</h2>
+    <p>For questions regarding this policy, please reach out to: <br>
+    <i class="fas fa-envelope"></i> <strong>havenova.x@gmail.com</strong></p>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Havenova-X. Built with Integrity.</p>
+  </footer>
+
+  <script>
+    const toggle = document.getElementById('darkModeToggle');
+    toggle.onclick = () => {
+      document.body.classList.toggle('dark');
+      const icon = toggle.querySelector('i');
+      icon.classList.toggle('fa-moon');
+      icon.classList.toggle('fa-sun');
+    };
+  </script>
 </body>
-</html>
+  </html>
