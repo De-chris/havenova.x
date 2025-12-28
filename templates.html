@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HX Store | Pro Digital Marketplace</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -20,26 +20,68 @@
   --paid-color:#eab308;
 }
 
+.light{
+  --bg:#f1f5f9;
+  --surface:#ffffff;
+  --card:#ffffff;
+  --border:#cbd5e1;
+  --text:#0f172a;
+  --muted:#64748b;
+  --primary:#0284c7;
+}
+
 *{ box-sizing:border-box; font-family: 'Inter', system-ui, sans-serif; }
 
-body{ 
-  margin:0; background:var(--bg); color:var(--text); 
-  transition: background .3s; padding-bottom: 50px;
-  -webkit-text-size-adjust: none; text-size-adjust: none;
-}
+body{ margin:0; background:var(--bg); color:var(--text); transition: background .3s; padding-bottom: 50px;}
 
 /* ================= HEADER ================= */
 header{
-  background:var(--surface); border-bottom:1px solid var(--border);
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
   display:flex; align-items:center; justify-content:space-between;
   padding:14px 20px; position: sticky; top:0; z-index: 1000;
 }
 .logo{ height:32px; filter: drop-shadow(0 0 5px var(--primary)); }
 
+/* ================= SEARCH & FILTER ================= */
+.controls-wrapper { padding: 20px; max-width: 1400px; margin: auto; }
+.search-bar {
+    position: relative; display: flex; align-items: center;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 15px; padding: 5px 15px; margin-bottom: 15px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+.search-bar input {
+    flex: 1; background: none; border: none; color: var(--text);
+    padding: 10px; outline: none; font-size: 16px;
+}
+.filter-dropdown { position: relative; }
+.filter-trigger {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); padding: 10px 18px; border-radius: 12px;
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+}
+
+.filter-menu {
+    position: absolute; right: 0; top: 50px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 12px; display: none;
+    flex-direction: column; width: 120px; overflow: hidden; z-index: 100;
+}
+.filter-menu button {
+    background: none; border: none; color: var(--text); padding: 10px;
+    text-align: left; cursor: pointer;
+}
+.filter-menu button:hover { background: var(--primary); color: #000; }
+
 /* ================= STORE GRID ================= */
 .store-grid{
-  display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap:20px; padding: 20px; max-width: 1400px; margin: auto;
+  display:grid; 
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap:20px; padding: 0 20px; max-width: 1400px; margin: auto;
+}
+
+@media (min-width: 1200px) {
+  .store-grid { grid-template-columns: repeat(5, 1fr); }
 }
 
 .card{
@@ -48,23 +90,26 @@ header{
   transition: transform 0.3s ease;
 }
 .card:hover{ transform: translateY(-5px); border-color: var(--primary); }
-.card img{ width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:14px; cursor: pointer; background: #000;}
 
-/* 🔧 FIXED: DESCRIPTION BOX WITH PARAGRAPH SUPPORT */
-.card-desc-box {
-    font-size: 11px !important;
-    line-height: 1.4 !important;
-    color: var(--muted) !important;
-    background: rgba(255, 255, 255, 0.03);
-    border-left: 2px solid var(--primary);
-    padding: 8px !important;
-    border-radius: 6px;
-    margin: 8px 0;
-    max-height: 80px; 
-    overflow-y: auto;
-    text-align: left;
-    /* This ensures paragraphs and spaces from Sheet are kept */
-    white-space: pre-wrap; 
+.card img{ width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:14px; background: #000; cursor: pointer;}
+
+.badge-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.type-badge { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: bold; text-transform: uppercase; }
+.type-free { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid #22c55e; }
+.type-paid { background: rgba(234, 179, 8, 0.2); color: #eab308; border: 1px solid #eab308; }
+
+.cat-badge { font-size: 11px; color: var(--muted); }
+
+/* ================= BUTTONS ================= */
+.btn-row { display: flex; gap: 6px; margin-top: auto; padding-top: 12px;}
+.main-btn {
+    flex: 3; background: var(--primary); color: #020617; border: none;
+    padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 13px;
+}
+.icon-btn {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); border-radius: 10px; cursor: pointer; font-size: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
 }
 
 /* ================= OVERLAYS ================= */
@@ -77,62 +122,58 @@ header{
     display: flex; justify-content: space-between; align-items: center;
 }
 .overlay-content { padding: 20px; overflow-y: auto; text-align: center; max-width: 800px; margin: auto; width: 100%;}
-.full-img { width: 100%; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.full-img { width: 100%; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: zoom-in; }
 
-/* VIEWER LINK BOX */
+/* FIX: OVERLAY DESCRIPTION SIZE & ALIGNMENT */
 #ovDesc {
-    font-size: 10px !important;
-    color: var(--primary) !important;
-    background: rgba(56, 189, 248, 0.1);
-    border-radius: 6px; padding: 8px !important;
-    word-break: break-all; margin: 5px auto 10px auto !important; display: block;
+    line-height: 1.4 !important;
+    color: var(--muted) !important;
+    /* 👇 THIS IS THE SIZE SETTING 👇 */
+    font-size: 11px !important; 
+    max-width: 400px !important;
+    margin: 0 auto 20px auto !important; 
+    text-align: center !important;
+    display: block !important;
 }
 
-/* 🔧 VIEWER DESCRIPTION BOX (PARAGRAPH SYNC) */
-#ovPrice {
-    font-size: 11px !important;
-    line-height: 1.5 !important;
-    color: var(--text) !important;
-    background: rgba(255, 255, 255, 0.04);
-    border-left: 3px solid var(--primary);
-    padding: 12px !important;
-    border-radius: 8px;
-    max-height: 150px !important;
-    overflow-y: auto !important;
-    text-align: left !important;
-    margin-bottom: 20px !important;
-    white-space: pre-wrap; /* Keeps paragraphs arranged */
-}
-
-/* UI Elements */
-.badge-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-.type-badge { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: bold; }
-.type-free { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid #22c55e; }
-.type-paid { background: rgba(234, 179, 8, 0.2); color: #eab308; border: 1px solid #eab308; }
-
-.main-btn {
-    background: var(--primary); color: #020617; border: none;
-    padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 13px;
-    width: 100%;
-}
-
+/* Support Form */
 .support-box {
     margin-top: 20px; padding: 15px; background: var(--surface);
     border-radius: 15px; border: 1px solid var(--border); text-align: left;
 }
 .support-box textarea {
     width: 100%; background: var(--bg); border: 1px solid var(--border);
-    color: var(--text); border-radius: 10px; padding: 10px; height: 60px; resize: none; margin-top: 10px; font-size: 11px;
+    color: var(--text); border-radius: 10px; padding: 10px; height: 80px; resize: none; margin-top: 10px;
 }
+
 </style>
 </head>
 
 <body>
 
 <header>
-  <img src="logo1.png" class="logo" alt="HX Store Logo">
-  <div style="font-weight: bold; font-size: 14px; color: var(--primary);">HX STORE</div>
+  <img src="logo1.png" class="logo">
+  <div style="display:flex; gap:10px;">
+      <button onclick="toggleTheme()" class="filter-trigger"><i id="tIcon" class="fas fa-moon"></i></button>
+  </div>
 </header>
+
+<div class="controls-wrapper">
+    <div class="search-bar">
+        <i class="fas fa-search" style="color:var(--muted)"></i>
+        <input type="text" id="searchInput" placeholder="Search assets or categories...">
+        <div class="filter-dropdown">
+            <button class="filter-trigger" onclick="toggleFilter()">
+                <span id="filterLabel">Filter</span> <i class="fas fa-filter"></i>
+            </button>
+            <div class="filter-menu" id="filterMenu">
+                <button onclick="applyFilter('all')">All</button>
+                <button onclick="applyFilter('free')">Free</button>
+                <button onclick="applyFilter('paid')">Paid</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <main>
     <div id="loading" style="text-align:center; padding: 50px;"><i class="fas fa-circle-notch fa-spin fa-2x"></i></div>
@@ -141,42 +182,67 @@ header{
 
 <div id="productOverlay" class="overlay">
     <div class="overlay-header">
-        <h3 id="ovTitle" style="margin:0; font-size: 16px;"></h3>
-        <button onclick="closeOverlay()" style="background:none; border:none; color:var(--text); cursor:pointer;"><i class="fas fa-times fa-lg"></i></button>
+        <h3 id="ovTitle" style="margin:0"></h3>
+        <button onclick="closeOverlay()" class="filter-trigger"><i class="fas fa-times"></i></button>
     </div>
     <div class="overlay-content">
-        <img id="ovImg" class="full-img" referrerpolicy="no-referrer" onerror="this.src='logo1.png'">
-        <p id="ovDesc"></p> 
-        <div id="ovPrice"></div> 
-        <button id="ovActionBtn" class="main-btn"></button>
+        <img id="ovImg" class="full-img" onclick="zoomImg()" referrerpolicy="no-referrer">
+        <p id="ovDesc"></p>
+        <div id="ovPrice" style="font-size: 24px; font-weight: bold; margin-bottom: 20px; color:var(--primary);"></div>
+        
+        <button id="ovActionBtn" class="main-btn" style="width: 100%; font-size: 18px; padding: 15px;"></button>
 
         <div class="support-box">
-            <h4 style="margin:0; font-size: 12px;"><i class="fas fa-headset"></i> Support Center</h4>
+            <h4 style="margin:0"><i class="fas fa-headset" style="color:var(--primary)"></i> Support Center</h4>
             <textarea id="supportMsg" placeholder="Describe your issue..."></textarea>
-            <button onclick="sendSupport()" class="main-btn" style="background:#2563eb; color:white; margin-top:10px;">Send Support Ticket</button>
+            <button onclick="sendSupport()" class="main-btn" style="background:#2563eb; color:white; margin-top:10px; width:100%">
+                Send Support Ticket
+            </button>
         </div>
     </div>
+</div>
+
+<div id="zoomView" class="overlay" style="background:rgba(0,0,0,0.9); justify-content:center; align-items:center;" onclick="this.style.display='none'">
+    <img id="zImg" style="max-width:95%; max-height:90%; object-fit:contain;" referrerpolicy="no-referrer">
 </div>
 
 <script>
 const api_url = "https://script.google.com/macros/s/AKfycbzpxWVXd9pUQe5cJCTJyxtNB6TVto1TEDPmwRYq3bo0eKjfKfPWm558HeMh3EaOCMfl/exec";
 const myTG = "dechrisathx";
 let allItems = [];
+let currentItem = null;
 
-window.onload = () => { fetchData(); };
+window.onload = () => {
+    const cached = localStorage.getItem("hx_cache");
+    if(cached){
+        allItems = JSON.parse(cached);
+        render(allItems);
+        document.getElementById("loading").style.display="none";
+    }
+    fetchData();
+};
 
 async function fetchData(){
     try {
         const r = await fetch(api_url);
-        allItems = await r.json();
-        render(allItems);
+        const d = await r.json();
+        allItems = d;
+        localStorage.setItem("hx_cache", JSON.stringify(d));
+        render(d);
         document.getElementById("loading").style.display="none";
-    } catch(e) { console.warn("Load failed."); }
+    } catch(e) { console.warn("Fetch failed, using cache."); }
 }
 
-function cleanURL(url) {
-    // 🔧 FOOL PROOF IMAGE LOGIC: Removes all spaces and hidden characters
-    return url ? url.trim().replace(/\s/g, "") : "logo1.png";
+function getLikes(id) {
+    let likes = JSON.parse(localStorage.getItem('hx_likes') || '{}');
+    return likes[id] || 0; 
+}
+
+function addLike(id) {
+    let likes = JSON.parse(localStorage.getItem('hx_likes') || '{}');
+    likes[id] = (likes[id] || 0) + 1;
+    localStorage.setItem('hx_likes', JSON.stringify(likes));
+    render(allItems); 
 }
 
 function render(data){
@@ -185,48 +251,57 @@ function render(data){
     data.forEach(item => {
         const isFree = item.type.toLowerCase() === "free";
         const id = item.name.replace(/\s+/g,'_').toLowerCase();
-        const imgPath = cleanURL(item.imageurl);
         
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-            <img src="${imgPath}" referrerpolicy="no-referrer" onerror="this.src='logo1.png'" onclick="openProduct('${id}')">
+            <img src="${item.imageurl}" referrerpolicy="no-referrer" onclick="openProduct('${id}')" onerror="this.onerror=null; this.src='logo1.png';">
             <div class="badge-row">
                 <span class="type-badge ${isFree?'type-free':'type-paid'}">${item.type.toUpperCase()}</span>
-                <span class="cat-badge" style="font-size:10px; color:var(--muted)">${item.category}</span>
+                <span class="cat-badge">${item.category}</span>
             </div>
-            <h3 style="margin:8px 0 2px; font-size:14px;">${item.name}</h3>
-            
-            <div class="card-desc-box">
-                ${item.price}
+            <h3 style="margin:8px 0 4px; font-size:16px;">${item.name}</h3>
+            <p style="margin:0; font-size:11px; color:var(--muted);">${item.description.substring(0, 40)}...</p>
+            <div style="font-weight:bold; color:var(--primary); margin: 8px 0;">${item.price}</div>
+            <div class="btn-row">
+                <button class="main-btn" onclick="openProduct('${id}')">View Details</button>
+                <button class="icon-btn" onclick="addLike('${id}')">
+                    <i class="fas fa-heart" style="color:#ff4b2b"></i> <span>${getLikes(id)}</span>
+                </button>
             </div>
-
-            <button class="main-btn" style="padding:8px; font-size:11px;" onclick="openProduct('${id}')">View Details</button>
         `;
         container.appendChild(card);
     });
 }
 
 function openProduct(id){
-    const item = allItems.find(i => i.name.replace(/\s+/g,'_').toLowerCase() === id);
-    if(!item) return;
+    currentItem = allItems.find(i => i.name.replace(/\s+/g,'_').toLowerCase() === id);
+    if(!currentItem) return;
 
-    document.getElementById("productOverlay").style.display = "flex";
-    document.getElementById("ovImg").src = cleanURL(item.imageurl);
-    document.getElementById("ovTitle").innerText = item.name;
-    document.getElementById("ovDesc").innerText = item.description; 
-    document.getElementById("ovPrice").innerText = item.price; 
+    const ov = document.getElementById("productOverlay");
+    ov.style.display = "flex";
+    
+    // IMAGE CLEANING FIX: Refresh SRC and Referrer Policy
+    const ovImg = document.getElementById("ovImg");
+    ovImg.src = currentItem.imageurl;
+    ovImg.setAttribute('referrerpolicy', 'no-referrer');
+    
+    document.getElementById("ovTitle").innerText = currentItem.name;
+    document.getElementById("ovDesc").innerText = currentItem.description;
+    document.getElementById("ovPrice").innerText = currentItem.price;
 
-    const btn = document.getElementById("ovActionBtn");
-    if(item.type.toLowerCase() === "free"){
-        btn.innerHTML = `<i class="fas fa-download"></i> Download`;
-        btn.style.background = "#22c55e";
-        btn.onclick = () => window.open(item.downloadurl.trim().replace(/\s/g, ""), "_blank");
+    const actionBtn = document.getElementById("ovActionBtn");
+    const isFree = currentItem.type.toLowerCase() === "free";
+
+    if(isFree){
+        actionBtn.innerHTML = `<i class="fas fa-download"></i> Download Asset`;
+        actionBtn.style.background = "#22c55e";
+        actionBtn.onclick = () => window.open(currentItem.downloadurl, "_blank");
     } else {
-        btn.innerHTML = `<i class="fab fa-telegram-plane"></i> Buy Now`;
-        btn.style.background = "#38bdf8";
-        btn.onclick = () => {
-            const msg = `Order: ${item.name}\nPrice: ${item.price}`;
+        actionBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy via Telegram`;
+        actionBtn.style.background = "#38bdf8";
+        actionBtn.onclick = () => {
+            const msg = `Hello Christian! I want to purchase:\nID: HX-${id}\nItem: ${currentItem.name}\nPrice: ${currentItem.price}`;
             window.open(`https://t.me/${myTG}?text=${encodeURIComponent(msg)}`, "_blank");
         };
     }
@@ -234,11 +309,49 @@ function openProduct(id){
 
 function closeOverlay(){ document.getElementById("productOverlay").style.display="none"; }
 
-function sendSupport(){
-    const msg = document.getElementById("supportMsg").value;
-    if(!msg) return alert("Type something!");
-    window.open(`https://t.me/${myTG}?text=${encodeURIComponent("Support: " + msg)}`, "_blank");
+function zoomImg(){
+    const zImg = document.getElementById("zImg");
+    zImg.src = document.getElementById("ovImg").src;
+    zImg.setAttribute('referrerpolicy', 'no-referrer');
+    document.getElementById("zoomView").style.display = "flex";
 }
+
+searchInput.oninput = () => {
+    const q = searchInput.value.toLowerCase();
+    const filtered = allItems.filter(i => 
+        i.name.toLowerCase().includes(q) || 
+        i.description.toLowerCase().includes(q) || 
+        i.category.toLowerCase().includes(q)
+    );
+    render(filtered);
+};
+
+function toggleFilter(){
+    const m = document.getElementById("filterMenu");
+    m.style.display = (m.style.display === "flex") ? "none" : "flex";
+}
+
+function applyFilter(f){
+    toggleFilter();
+    document.getElementById("filterLabel").innerText = (f === 'all') ? 'Filter' : f.charAt(0).toUpperCase() + f.slice(1);
+    const filtered = (f === "all") ? allItems : allItems.filter(i => i.type.toLowerCase() === f);
+    render(filtered);
+}
+
+function sendSupport(){
+    const userMsg = document.getElementById("supportMsg").value;
+    if(!userMsg) return alert("Please type your issue first!");
+    const id = currentItem.name.replace(/\s+/g,'_').toLowerCase();
+    const fullMsg = `[SUPPORT REQUEST]\nAsset: ${currentItem.name} (HX-${id})\n\nUser Issue:\n${userMsg}`;
+    window.open(`https://t.me/${myTG}?text=${encodeURIComponent(fullMsg)}`, "_blank");
+}
+
+function toggleTheme(){
+    const isLight = document.body.classList.toggle("light");
+    document.getElementById("tIcon").className = isLight ? "fas fa-sun" : "fas fa-moon";
+    localStorage.setItem("hx_theme", isLight ? "light" : "dark");
+}
+if(localStorage.getItem("hx_theme") === "light") toggleTheme();
 </script>
 </body>
-</html>
+  </html>
