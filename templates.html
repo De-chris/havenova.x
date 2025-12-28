@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <style>
+/* ================= THEME ================= */
 :root{
   --bg:#0f172a;
   --surface:#020617;
@@ -18,15 +19,29 @@
   --primary:#38bdf8;
 }
 
-*{box-sizing:border-box;font-family:system-ui,-apple-system}
+.light{
+  --bg:#f8fafc;
+  --surface:#ffffff;
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --text:#020617;
+  --muted:#475569;
+  --primary:#0284c7;
+}
+
+*{
+  box-sizing:border-box;
+  font-family:system-ui,-apple-system;
+}
 
 body{
   margin:0;
   background:var(--bg);
   color:var(--text);
+  transition:background .3s,color .3s;
 }
 
-/* HEADER */
+/* ================= HEADER ================= */
 header{
   background:var(--surface);
   border-bottom:1px solid var(--border);
@@ -36,9 +51,55 @@ header{
   padding:14px 20px;
 }
 
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
 .logo{height:36px}
 
-/* MAIN */
+.icon-btn{
+  background:none;
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:8px 12px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+/* ================= CONTROLS ================= */
+.controls{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:20px 0;
+}
+
+.search{
+  flex:1;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px 14px;
+  color:var(--text);
+}
+
+.filter-btn{
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--text);
+  padding:10px 14px;
+  border-radius:12px;
+  cursor:pointer;
+}
+
+.filter-btn.active{
+  background:var(--primary);
+  color:#020617;
+}
+
+/* ================= STORE ================= */
 main{padding:20px}
 
 .store-grid{
@@ -47,52 +108,50 @@ main{padding:20px}
   gap:20px;
 }
 
-/* CARD */
 .card{
   background:var(--card);
   border:1px solid var(--border);
-  border-radius:14px;
+  border-radius:16px;
   padding:14px;
   display:flex;
   flex-direction:column;
+  transition:transform .2s;
 }
+
+.card:hover{transform:translateY(-3px)}
 
 .card img{
   width:100%;
-  border-radius:10px;
   aspect-ratio:16/9;
   object-fit:cover;
+  border-radius:12px;
 }
 
 .badge{
-  align-self:flex-start;
-  background:#020617;
-  border:1px solid var(--border);
+  margin-top:10px;
+  font-size:11px;
   padding:4px 10px;
   border-radius:999px;
-  font-size:11px;
-  margin-top:10px;
+  border:1px solid var(--border);
+  width:max-content;
 }
 
 h3{margin:10px 0 6px}
 p{font-size:13px;color:var(--muted)}
 
-.price{
-  margin:10px 0;
-  font-weight:600;
-}
+.price{margin:10px 0;font-weight:600}
 
 .btn{
   background:var(--primary);
   color:#020617;
   border:none;
-  padding:10px;
-  border-radius:10px;
+  padding:12px;
+  border-radius:12px;
   font-weight:600;
   cursor:pointer;
 }
 
-/* DETAILS SCREEN */
+/* ================= DETAILS ================= */
 #details{
   position:fixed;
   inset:0;
@@ -103,9 +162,10 @@ p{font-size:13px;color:var(--muted)}
 }
 
 .details-header{
-  padding:14px;
   display:flex;
   justify-content:space-between;
+  align-items:center;
+  padding:14px 20px;
   border-bottom:1px solid var(--border);
 }
 
@@ -116,16 +176,16 @@ p{font-size:13px;color:var(--muted)}
 
 .details-body img{
   width:100%;
-  border-radius:14px;
+  border-radius:16px;
   cursor:zoom-in;
 }
 
 .status{
-  margin-top:10px;
-  font-weight:600;
+  margin:10px 0;
+  font-weight:700;
 }
 
-/* FULLSCREEN IMAGE */
+/* ================= FULLSCREEN IMAGE ================= */
 #imageView{
   position:fixed;
   inset:0;
@@ -146,43 +206,59 @@ p{font-size:13px;color:var(--muted)}
 <body>
 
 <header>
-  <img src="logo1.png" class="logo">
+  <div class="header-left">
+    <img src="logo1.png" class="logo">
+  </div>
+
+  <button id="themeToggle" class="icon-btn">
+    <i class="fas fa-moon"></i>
+  </button>
 </header>
 
 <main>
   <h1>Digital Marketplace</h1>
   <p>Verified digital assets and community resources.</p>
 
+  <div class="controls">
+    <input id="search" class="search" placeholder="Search assets...">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="free">Free</button>
+    <button class="filter-btn" data-filter="paid">Paid</button>
+  </div>
+
   <div id="template-container" class="store-grid"></div>
 </main>
 
-<!-- DETAILS SCREEN -->
+<!-- DETAILS -->
 <div id="details">
   <div class="details-header">
     <span id="detailsTitle"></span>
-    <button onclick="closeDetails()" class="btn">Close</button>
+    <button onclick="closeDetails()" class="icon-btn">
+      <i class="fas fa-times"></i>
+    </button>
   </div>
   <div class="details-body">
     <img id="detailsImg" onclick="openImage()">
     <div class="status" id="detailsStatus"></div>
     <p id="detailsDesc"></p>
-    <button class="btn" id="detailsAction"></button>
+    <button id="detailsAction" class="btn"></button>
   </div>
 </div>
 
-<!-- FULLSCREEN IMAGE -->
+<!-- FULL IMAGE -->
 <div id="imageView" onclick="this.style.display='none'">
   <img id="fullImg">
 </div>
 
 <script>
-const api_url="https://script.google.com/macros/s/AKfycbzpxWVXd9pUQe5cJCTJyxtNB6TVto1TEDPmwRYq3bo0eKjfKfPWm558HeMh3EaOCMfl/exec";
-let currentItem=null;
+const api="https://script.google.com/macros/s/AKfycbzpxWVXd9pUQe5cJCTJyxtNB6TVto1TEDPmwRYq3bo0eKjfKfPWm558HeMh3EaOCMfl/exec";
+let items=[],current=null;
 
-fetch(api_url)
-.then(r=>r.json())
-.then(data=>{
+fetch(api).then(r=>r.json()).then(d=>{items=d;render(d);});
+
+function render(data){
   const c=document.getElementById("template-container");
+  c.innerHTML="";
   data.forEach(i=>{
     const id=i.name.replace(/\s+/g,'_').toLowerCase();
     const card=document.createElement("div");
@@ -194,38 +270,65 @@ fetch(api_url)
       <p>${i.description}</p>
       <div class="price">${i.price}</div>
       <button class="btn" onclick='openDetails(${JSON.stringify(i)}, "${id}")'>
-        ${i.type.toLowerCase()=="free"?"Download":"Buy"}
-      </button>
-    `;
+        <i class="fas fa-${i.type=="Free"?"download":"shopping-cart"}"></i>
+        ${i.type=="Free"?"Download":"Buy"}
+      </button>`;
     c.appendChild(card);
   });
-});
+}
 
 function openDetails(item,id){
-  currentItem={item,id};
+  current={item,id};
   details.style.display="flex";
   detailsTitle.textContent=item.name;
   detailsImg.src=item.imageurl;
   detailsDesc.textContent=item.description;
   detailsStatus.textContent=item.type.toUpperCase();
-  detailsAction.textContent=item.type=="Free"?"Download":"Buy via Telegram";
+  detailsAction.innerHTML=item.type=="Free"
+    ?'<i class="fas fa-download"></i> Download'
+    :'<i class="fas fa-shopping-cart"></i> Buy via Telegram';
 
   detailsAction.onclick=()=>{
-    if(item.type=="Free"){
-      window.open(item.downloadurl,"_blank");
-    }else{
+    if(item.type=="Free") window.open(item.downloadurl);
+    else{
       const msg=`Hello, I want to purchase:\nID: HX-${id}\nItem: ${item.name}\nPrice: ${item.price}`;
       window.open(`https://t.me/dechrisathx?text=${encodeURIComponent(msg)}`);
     }
   };
 }
 
-function closeDetails(){details.style.display="none"}
+function closeDetails(){details.style.display="none";}
 function openImage(){
   fullImg.src=detailsImg.src;
   imageView.style.display="flex";
 }
+
+/* SEARCH */
+search.oninput=()=>{
+  const q=search.value.toLowerCase();
+  render(items.filter(i=>i.name.toLowerCase().includes(q)||i.description.toLowerCase().includes(q)));
+};
+
+/* FILTER */
+document.querySelectorAll(".filter-btn").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll(".filter-btn").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    const f=b.dataset.filter;
+    render(f=="all"?items:items.filter(i=>i.type.toLowerCase()==f));
+  };
+});
+
+/* THEME */
+const toggle=document.getElementById("themeToggle");
+function applyTheme(m){
+  document.body.classList.toggle("light",m=="light");
+  toggle.innerHTML=m=="light"?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>';
+  localStorage.setItem("hx_theme",m);
+}
+applyTheme(localStorage.getItem("hx_theme")||"dark");
+toggle.onclick=()=>applyTheme(document.body.classList.contains("light")?"dark":"light");
 </script>
 
 </body>
-  </html>
+      </html>
