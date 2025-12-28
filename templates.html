@@ -223,6 +223,8 @@ async function fetchData(){
     try {
         const r = await fetch(api_url);
         const d = await r.json();
+        // LOG DATA TO CONSOLE FOR DEBUGGING
+        console.log("Sheet Data Received:", d);
         allItems = d;
         localStorage.setItem("hx_cache", JSON.stringify(d));
         render(d);
@@ -246,20 +248,21 @@ function render(data){
     const container = document.getElementById("template-container");
     container.innerHTML = "";
     data.forEach(item => {
-        const isFree = item.type.toLowerCase() === "free";
+        const type = (item.type || "").toLowerCase();
+        const isFree = type === "free";
         const id = item.name.replace(/\s+/g,'_').toLowerCase();
         
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-            <img src="${item.imageurl}" referrerpolicy="no-referrer" onclick="openProduct('${id}')" onerror="this.onerror=null; this.src='logo1.png';">
+            <img src="${item.imageurl || item.imageUrl || item['Image URL']}" referrerpolicy="no-referrer" onclick="openProduct('${id}')" onerror="this.onerror=null; this.src='logo1.png';">
             <div class="badge-row">
-                <span class="type-badge ${isFree?'type-free':'type-paid'}">${item.type.toUpperCase()}</span>
-                <span class="cat-badge">${item.category}</span>
+                <span class="type-badge ${isFree?'type-free':'type-paid'}">${(item.type || "PAID").toUpperCase()}</span>
+                <span class="cat-badge">${item.category || ""}</span>
             </div>
             <h3 style="margin:8px 0 4px; font-size:16px;">${item.name}</h3>
-            <p style="margin:0; font-size:11px; color:var(--muted);">${item.description.substring(0, 40)}...</p>
-            <div style="font-weight:bold; color:var(--primary); margin: 8px 0;">${item.price}</div>
+            <p style="margin:0; font-size:11px; color:var(--muted);">${(item.description || "").substring(0, 40)}...</p>
+            <div style="font-weight:bold; color:var(--primary); margin: 8px 0;">${item.price || "Free"}</div>
             <div class="btn-row">
                 <button class="main-btn" onclick="openProduct('${id}')">View Details</button>
                 <button class="icon-btn" onclick="addLike('${id}')">
@@ -278,25 +281,27 @@ function openProduct(id){
     const ov = document.getElementById("productOverlay");
     ov.style.display = "flex";
     
-    const ovImg = document.getElementById("ovImg");
-    ovImg.src = currentItem.imageurl;
+    // Check multiple possible key names for image and download URL
+    const imgUrl = currentItem.imageurl || currentItem.imageUrl || currentItem['Image URL'];
+    const downloadUrl = currentItem.downloadurl || currentItem.downloadUrl || currentItem['Download URL'];
     
+    document.getElementById("ovImg").src = imgUrl;
     document.getElementById("ovTitle").innerText = currentItem.name;
     document.getElementById("ovDesc").innerText = currentItem.description;
     document.getElementById("ovPrice").innerText = currentItem.price;
 
     const actionBtn = document.getElementById("ovActionBtn");
-    const isFree = currentItem.type.toLowerCase() === "free";
+    const isFree = (currentItem.type || "").toLowerCase() === "free";
 
     if(isFree){
         actionBtn.innerHTML = `<i class="fas fa-download"></i> Download Asset`;
         actionBtn.style.background = "#22c55e";
-        // FIX: Ensure URL exists before trying to open
         actionBtn.onclick = () => {
-            if(currentItem.downloadurl && currentItem.downloadurl !== "") {
-                window.open(currentItem.downloadurl, "_blank");
+            if(downloadUrl && downloadUrl.trim() !== "") {
+                window.open(downloadUrl, "_blank");
             } else {
-                alert("Download link not available for this item.");
+                alert("The download link is missing in the database. Please contact support.");
+                console.error("Missing download link for:", currentItem.name, "Object data:", currentItem);
             }
         };
     } else {
@@ -320,9 +325,9 @@ function zoomImg(){
 document.getElementById("searchInput").oninput = () => {
     const q = document.getElementById("searchInput").value.toLowerCase();
     const filtered = allItems.filter(i => 
-        i.name.toLowerCase().includes(q) || 
-        i.description.toLowerCase().includes(q) || 
-        i.category.toLowerCase().includes(q)
+        (i.name || "").toLowerCase().includes(q) || 
+        (i.description || "").toLowerCase().includes(q) || 
+        (i.category || "").toLowerCase().includes(q)
     );
     render(filtered);
 };
@@ -335,7 +340,7 @@ function toggleFilter(){
 function applyFilter(f){
     toggleFilter();
     document.getElementById("filterLabel").innerText = (f === 'all') ? 'Filter' : f.charAt(0).toUpperCase() + f.slice(1);
-    const filtered = (f === "all") ? allItems : allItems.filter(i => i.type.toLowerCase() === f);
+    const filtered = (f === "all") ? allItems : allItems.filter(i => (i.type || "").toLowerCase() === f);
     render(filtered);
 }
 
@@ -355,4 +360,4 @@ function toggleTheme(){
 if(localStorage.getItem("hx_theme") === "light") toggleTheme();
 </script>
 </body>
-                         </html>
+      </html>
