@@ -3,50 +3,64 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Website Templates | Havenova-X Store</title>
+  <title>HX Store | Community Assets</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  <link rel="stylesheet" href="style.css"> <style>
-    .store-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 25px;
-      margin-top: 30px;
-    }
-    .template-card {
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Likes & Social UI */
+    .card-actions {
       display: flex;
-      flex-direction: column;
-      height: 100%;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(0,210,255,0.1);
     }
-    .template-img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 10px;
-      background: #eee;
-      margin-bottom: 15px;
+    .like-btn {
+      background: none;
+      box-shadow: none;
+      color: #ff4757;
+      border: 1px solid #ff4757;
+      padding: 5px 12px;
+      font-size: 12px;
     }
-    .price-tag {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #00d2ff;
-      margin: 10px 0;
+    .like-btn:hover { background: rgba(255, 71, 87, 0.1); }
+    .dark .like-btn { color: #ff6b81; border-color: #ff6b81; }
+
+    /* Comment Section Wrapper */
+    .comment-toggle {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 12px;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
     }
-    .badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 10px;
-      text-transform: uppercase;
-      background: #e2e8f0;
-      margin-bottom: 10px;
-      width: fit-content;
+    .comment-box {
+      display: none;
+      margin-top: 15px;
+      padding: 10px;
+      background: rgba(0,0,0,0.05);
+      border-radius: 8px;
     }
-    .dark .badge { background: #334155; }
-    
-    #loading { text-align: center; padding: 50px; font-weight: bold; }
+    .dark .comment-box { background: rgba(255,255,255,0.05); }
+
+    /* Fix for the Modal */
+    .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
   </style>
 </head>
 <body class="dark">
+
+  <div id="buyModal" class="modal">
+    <div class="modal-content" style="margin: 15% auto; padding: 30px; border-radius: 15px; max-width: 400px; text-align: center; background: #1e293b; color: #eee;">
+      <i class="fas fa-shield-alt" style="font-size: 3rem; color: #00d2ff;"></i>
+      <h3>Admin Verification</h3>
+      <p>You will be redirected to <b>@dechrisathx</b> on Telegram to complete your purchase safely.</p>
+      <button id="confirmBuy" class="btn" style="width:100%">Continue to Telegram</button>
+      <p onclick="closeModal()" style="margin-top:15px; cursor:pointer; font-size:12px; opacity:0.6;">Cancel</p>
+    </div>
+  </div>
 
   <header>
     <a href="index.html"><img src="logo1.png" alt="HX" class="logo" /></a>
@@ -54,56 +68,117 @@
   </header>
 
   <main>
-    <section style="text-align: center; margin-bottom: 40px;">
-      <h1>Premium Website Templates</h1>
-      <p>High-quality, AI-ready website codes to kickstart your business.</p>
+    <section style="text-align: center; margin-bottom: 20px;">
+      <h1>Digital Marketplace</h1>
+      <p>Verified codes & premium community assets.</p>
     </section>
 
-    <div id="loading"><i class="fas fa-spinner fa-spin"></i> Loading HX Store...</div>
+    <div id="loading"><i class="fas fa-spinner fa-spin"></i> Loading HX Community...</div>
     <div id="template-container" class="store-grid"></div>
   </main>
 
-  <footer>
-    <p>&copy; 2025 Havenova-X Store. Powered by Dechris™</p>
-  </footer>
-
   <script>
-    // YOUR GOOGLE SCRIPT URL
     const api_url = "https://script.google.com/macros/s/AKfycbzpxWVXd9pUQe5cJCTJyxtNB6TVto1TEDPmwRYq3bo0eKjfKfPWm558HeMh3EaOCMfl/exec";
+    let allTemplates = [];
 
     async function fetchTemplates() {
       try {
         const response = await fetch(api_url);
         const data = await response.json();
-        const container = document.getElementById('template-container');
-        const loader = document.getElementById('loading');
-        
-        loader.style.display = 'none';
+        allTemplates = data;
+        renderTemplates(data);
+        document.getElementById('loading').style.display = 'none';
+      } catch (e) { console.error(e); }
+    }
 
-        data.forEach(item => {
-          // Logic for the Buy Button Link
-          const message = `Hello Christian! I want to purchase the ${item.name} template for ${item.price}. Please provide payment details.`;
-          const telegramLink = `https://t.me/dechris_admin?text=${encodeURIComponent(message)}`;
+    function renderTemplates(items) {
+      const container = document.getElementById('template-container');
+      container.innerHTML = '';
+
+      items.forEach((item, index) => {
+        const itemID = item.name.replace(/\s+/g, '_').toLowerCase();
+        const isFree = item.type.toLowerCase() === 'free';
+        
+        const card = document.createElement('div');
+        card.className = 'card template-card';
+        card.innerHTML = `
+          <img src="${item.imageurl || 'logo1.png'}" class="template-img">
+          <span class="badge">${item.category}</span>
+          <h3>${item.name}</h3>
+          <p style="font-size: 0.85rem; flex-grow: 1;">${item.description}</p>
+          <div class="price-tag">${item.price}</div>
           
-          const card = document.createElement('div');
-          card.className = 'card template-card';
-          card.innerHTML = `
-            <img src="${item.imageurl || 'https://via.placeholder.com/300x180'}" class="template-img" alt="Preview">
-            <span class="badge">${item.category}</span>
-            <h3>${item.name}</h3>
-            <p style="font-size: 0.9rem; flex-grow: 1;">${item.description}</p>
-            <div class="price-tag">${item.price}</div>
-            <a href="${item.type.toLowerCase() === 'free' ? item.downloadurl : telegramLink}" target="_blank" class="btn">
-              ${item.type.toLowerCase() === 'free' ? '<i class="fas fa-download"></i> Download Free' : '<i class="fab fa-telegram"></i> Buy Now'}
-            </a>
-          `;
-          container.appendChild(card);
+          <button class="btn" onclick="handleAction('${item.name}', '${item.price}', '${item.type}', '${item.downloadurl}', '${itemID}')">
+            ${isFree ? 'Get Code' : 'Buy via Telegram'}
+          </button>
+
+          <div class="card-actions">
+            <div>
+              <button class="like-btn" id="btn_like_${itemID}" onclick="addLike('${itemID}')">
+                <i class="fas fa-heart"></i> <span id="like_count_${itemID}">0</span>
+              </button>
+              <span style="font-size: 11px; opacity: 0.6; margin-left: 10px;">
+                <i class="fas fa-download"></i> <span id="view_count_${itemID}">0</span>
+              </span>
+            </div>
+            <p class="comment-toggle" onclick="toggleComments('${itemID}')">Comments</p>
+          </div>
+
+          <div id="comment_${itemID}" class="comment-box">
+             <div id="cusdis_thread" 
+                data-host="https://cusdis.com"
+                data-app-id="PASTE_YOUR_CUSDIS_APP_ID_HERE"
+                data-page-id="${itemID}"
+                data-page-url="${window.location.href}"
+                data-page-title="${item.name}">
+             </div>
+          </div>
+        `;
+        container.appendChild(card);
+        syncStats(itemID);
+      });
+      // Initialize Cusdis SDK
+      const script = document.createElement('script');
+      script.src = "https://cusdis.com/js/cusdis.es.js";
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    }
+
+    // Like & Stats Functionality
+    function syncStats(id) {
+      fetch(`https://api.countapi.xyz/get/hx_likes/${id}`).then(r => r.json()).then(d => document.getElementById(`like_count_${id}`).innerText = d.value || 0);
+      fetch(`https://api.countapi.xyz/get/hx_views/${id}`).then(r => r.json()).then(d => document.getElementById(`view_count_${id}`).innerText = d.value || 0);
+    }
+
+    function addLike(id) {
+      fetch(`https://api.countapi.xyz/hit/hx_likes/${id}`)
+        .then(r => r.json())
+        .then(d => {
+          document.getElementById(`like_count_${id}`).innerText = d.value;
+          document.getElementById(`btn_like_${id}`).style.background = "#ff4757";
+          document.getElementById(`btn_like_${id}`).style.color = "white";
         });
-      } catch (error) {
-        document.getElementById('loading').innerHTML = "Error loading store. Please refresh.";
-        console.error("Store Error:", error);
+    }
+
+    function toggleComments(id) {
+      const box = document.getElementById(`comment_${id}`);
+      box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function handleAction(name, price, type, url, id) {
+      fetch(`https://api.countapi.xyz/hit/hx_views/${id}`);
+      if (type.toLowerCase() === 'free') {
+        window.open(url, '_blank');
+      } else {
+        const msg = `Hello Christian! I want to buy:\nID: HX-${id}\nItem: ${name}\nPrice: ${price}`;
+        currentRedirectUrl = `https://t.me/dechrisathx?text=${encodeURIComponent(msg)}`;
+        document.getElementById('buyModal').style.display = 'block';
       }
     }
+
+    function closeModal() { document.getElementById('buyModal').style.display = 'none'; }
+    document.getElementById('confirmBuy').onclick = () => { window.open(currentRedirectUrl, '_blank'); closeModal(); };
 
     fetchTemplates();
   </script>
