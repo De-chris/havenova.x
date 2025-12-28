@@ -121,21 +121,29 @@ header{
     padding: 15px 20px; border-bottom: 1px solid var(--border);
     display: flex; justify-content: space-between; align-items: center;
 }
-.overlay-content { padding: 20px; overflow-y: auto; text-align: center; max-width: 800px; margin: auto; width: 100%;}
+
+/* 🔧 BASE TEXT SIZE FOR OVERLAY (FRIEND'S FIX) */
+.overlay-content { 
+    padding: 20px; 
+    overflow-y: auto; 
+    text-align: center; 
+    max-width: 800px; 
+    margin: auto; 
+    width: 100%;
+    font-size: 14px; 
+}
+
 .full-img { width: 100%; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: zoom-in; }
 
-/* THE CLEAN FIX: FORCING THE DESCRIPTION TO BE SMALL */
-#productOverlay .overlay-content #ovDesc {
-    font-size: 11px !important; 
-    line-height: 1.4 !important;
+/* 🔧 FINAL DESCRIPTION SIZE FIX */
+#ovDesc {
+    line-height: 1.5 !important;
     color: var(--muted) !important;
-    max-width: 450px !important;
-    margin: 10px auto 20px auto !important; 
+    font-size: 12px !important; /* Forces small size */
+    max-width: 500px !important;
+    margin: 0 auto 20px auto !important; 
     text-align: center !important;
     display: block !important;
-    font-weight: normal !important;
-    max-height: 100px;
-    overflow-y: auto;
 }
 
 /* Support Form */
@@ -355,4 +363,4 @@ function toggleTheme(){
 if(localStorage.getItem("hx_theme") === "light") toggleTheme();
 </script>
 </body>
-  </html>
+      </html>                                                                                  
