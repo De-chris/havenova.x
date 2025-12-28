@@ -112,7 +112,7 @@ header{
     display: flex; align-items: center; justify-content: center; gap: 4px;
 }
 
-/* ================= OVERLAYS (FIXED CENTERING & DESC SIZE) ================= */
+/* ================= OVERLAYS ================= */
 .overlay {
     position: fixed; inset: 0; background: var(--bg); z-index: 2000;
     display: none; flex-direction: column;
@@ -121,23 +121,23 @@ header{
     padding: 15px 20px; border-bottom: 1px solid var(--border);
     display: flex; justify-content: space-between; align-items: center;
 }
-.overlay-content { 
-    padding: 20px; overflow-y: auto; text-align: center; 
-    max-width: 600px; margin: auto; width: 100%;
-    display: flex; flex-direction: column; align-items: center;
-}
+.overlay-content { padding: 20px; overflow-y: auto; text-align: center; max-width: 800px; margin: auto; width: 100%;}
 .full-img { width: 100%; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: zoom-in; }
 
-/* Fixed Description Styling */
+/* FIX: OVERLAY DESCRIPTION SIZE & ALIGNMENT */
 #ovDesc {
-    font-size: 14px; line-height: 1.5; color: var(--muted); 
-    max-width: 90%; margin: 0 auto 15px auto; text-align: center;
+    line-height: 1.5;
+    color: var(--muted);
+    font-size: 14px; /* CHANGE THIS SIZE TO INCREASE/DECREASE */
+    max-width: 500px;
+    margin: 0 auto 20px auto; /* Centers the block and adds bottom spacing */
+    text-align: center;
 }
 
 /* Support Form */
 .support-box {
     margin-top: 20px; padding: 15px; background: var(--surface);
-    border-radius: 15px; border: 1px solid var(--border); text-align: left; width: 100%;
+    border-radius: 15px; border: 1px solid var(--border); text-align: left;
 }
 .support-box textarea {
     width: 100%; background: var(--bg); border: 1px solid var(--border);
@@ -186,12 +186,12 @@ header{
     <div class="overlay-content">
         <img id="ovImg" class="full-img" onclick="zoomImg()">
         <p id="ovDesc"></p>
-        <div id="ovPrice" style="font-size: 22px; font-weight: bold; margin-bottom: 15px; color:var(--primary);"></div>
+        <div id="ovPrice" style="font-size: 24px; font-weight: bold; margin-bottom: 20px; color:var(--primary);"></div>
         
-        <button id="ovActionBtn" class="main-btn" style="width: 100%; font-size: 16px; padding: 12px;"></button>
+        <button id="ovActionBtn" class="main-btn" style="width: 100%; font-size: 18px; padding: 15px;"></button>
 
         <div class="support-box">
-            <h4 style="margin:0; text-align: center;"><i class="fas fa-headset" style="color:var(--primary)"></i> Support Center</h4>
+            <h4 style="margin:0"><i class="fas fa-headset" style="color:var(--primary)"></i> Support Center</h4>
             <textarea id="supportMsg" placeholder="Describe your issue..."></textarea>
             <button onclick="sendSupport()" class="main-btn" style="background:#2563eb; color:white; margin-top:10px; width:100%">
                 Send Support Ticket
@@ -260,7 +260,7 @@ function render(data){
                 <span class="cat-badge">${item.category}</span>
             </div>
             <h3 style="margin:8px 0 4px; font-size:16px;">${item.name}</h3>
-            <p style="margin:0; font-size:12px; color:var(--muted);">${item.description.substring(0, 45)}...</p>
+            <p style="margin:0; font-size:11px; color:var(--muted);">${item.description.substring(0, 40)}...</p>
             <div style="font-weight:bold; color:var(--primary); margin: 8px 0;">${item.price}</div>
             <div class="btn-row">
                 <button class="main-btn" onclick="openProduct('${id}')">View Details</button>
@@ -346,4 +346,4 @@ function toggleTheme(){
 if(localStorage.getItem("hx_theme") === "light") toggleTheme();
 </script>
 </body>
-  </html>
+</html>
