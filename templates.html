@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>HX Store | Pro Digital Marketplace</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -32,7 +32,16 @@
 
 *{ box-sizing:border-box; font-family: 'Inter', system-ui, sans-serif; }
 
-body{ margin:0; background:var(--bg); color:var(--text); transition: background .3s; padding-bottom: 50px;}
+body{ 
+  margin:0; 
+  background:var(--bg); 
+  color:var(--text); 
+  transition: background .3s; 
+  padding-bottom: 50px;
+  /* Stops mobile phones from automatically making text bigger */
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
 
 /* ================= HEADER ================= */
 header{
@@ -121,29 +130,20 @@ header{
     padding: 15px 20px; border-bottom: 1px solid var(--border);
     display: flex; justify-content: space-between; align-items: center;
 }
-
-/* 🔧 BASE TEXT SIZE FOR OVERLAY (FRIEND'S FIX) */
-.overlay-content { 
-    padding: 20px; 
-    overflow-y: auto; 
-    text-align: center; 
-    max-width: 800px; 
-    margin: auto; 
-    width: 100%;
-    font-size: 14px; 
-}
-
+.overlay-content { padding: 20px; overflow-y: auto; text-align: center; max-width: 800px; margin: auto; width: 100%;}
 .full-img { width: 100%; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: zoom-in; }
 
-/* 🔧 FINAL DESCRIPTION SIZE FIX */
+/* THE FINAL FIX: FORCE SMALL DESCRIPTION ON ALL SCREENS */
 #ovDesc {
-    line-height: 1.5 !important;
+    font-size: 11px !important; 
+    line-height: 1.4 !important;
     color: var(--muted) !important;
-    font-size: 12px !important; /* Forces small size */
-    max-width: 500px !important;
-    margin: 0 auto 20px auto !important; 
+    max-width: 400px !important;
+    margin: 5px auto 15px auto !important; 
     text-align: center !important;
     display: block !important;
+    /* This stops mobile browsers from enlarging the text */
+    -webkit-text-size-adjust: none !important;
 }
 
 /* Support Form */
@@ -171,7 +171,7 @@ header{
 <div class="controls-wrapper">
     <div class="search-bar">
         <i class="fas fa-search" style="color:var(--muted)"></i>
-        <input type="text" id="searchInput" placeholder="Search assets or categories...">
+        <input type="text" id="searchInput" placeholder="Search assets...">
         <div class="filter-dropdown">
             <button class="filter-trigger" onclick="toggleFilter()">
                 <span id="filterLabel">Filter</span> <i class="fas fa-filter"></i>
@@ -192,15 +192,17 @@ header{
 
 <div id="productOverlay" class="overlay">
     <div class="overlay-header">
-        <h3 id="ovTitle" style="margin:0"></h3>
+        <h3 id="ovTitle" style="margin:0; font-size: 18px;"></h3>
         <button onclick="closeOverlay()" class="filter-trigger"><i class="fas fa-times"></i></button>
     </div>
     <div class="overlay-content">
         <img id="ovImg" class="full-img" onclick="zoomImg()" referrerpolicy="no-referrer">
-        <p id="ovDesc"></p>
-        <div id="ovPrice" style="font-size: 24px; font-weight: bold; margin-bottom: 20px; color:var(--primary);"></div>
         
-        <button id="ovActionBtn" class="main-btn" style="width: 100%; font-size: 18px; padding: 15px;"></button>
+        <p id="ovDesc"></p>
+        
+        <div id="ovPrice" style="font-size: 22px; font-weight: bold; margin-bottom: 20px; color:var(--primary);"></div>
+        
+        <button id="ovActionBtn" class="main-btn" style="width: 100%; font-size: 16px; padding: 15px;"></button>
 
         <div class="support-box">
             <h4 style="margin:0"><i class="fas fa-headset" style="color:var(--primary)"></i> Support Center</h4>
@@ -363,4 +365,4 @@ function toggleTheme(){
 if(localStorage.getItem("hx_theme") === "light") toggleTheme();
 </script>
 </body>
-      </html>                                                                                  
+          </html>
