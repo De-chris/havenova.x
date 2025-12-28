@@ -73,7 +73,7 @@ header{
 }
 .filter-menu button:hover { background: var(--primary); color: #000; }
 
-/* ================= STORE GRID ================= */
+/* ================= STORE GRID (LANDSCAPE/DESKTOP FIX) ================= */
 .store-grid{
   display:grid; 
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -128,9 +128,10 @@ header{
 #ovDesc {
     line-height: 1.5;
     color: var(--muted);
-    font-size: 14px; /* CHANGE THIS SIZE TO INCREASE/DECREASE */
-    max-width: 500px;
-    margin: 0 auto 20px auto; /* Centers the block and adds bottom spacing */
+    /* 👇 CHANGE THE NUMBER BELOW TO ADJUST VIEWER TEXT SIZE 👇 */
+    font-size: 12px; 
+    max-width: 450px;
+    margin: 0 auto 20px auto; 
     text-align: center;
 }
 
@@ -184,7 +185,7 @@ header{
         <button onclick="closeOverlay()" class="filter-trigger"><i class="fas fa-times"></i></button>
     </div>
     <div class="overlay-content">
-        <img id="ovImg" class="full-img" onclick="zoomImg()">
+        <img id="ovImg" class="full-img" onclick="zoomImg()" referrerpolicy="no-referrer">
         <p id="ovDesc"></p>
         <div id="ovPrice" style="font-size: 24px; font-weight: bold; margin-bottom: 20px; color:var(--primary);"></div>
         
@@ -201,7 +202,7 @@ header{
 </div>
 
 <div id="zoomView" class="overlay" style="background:rgba(0,0,0,0.9); justify-content:center; align-items:center;" onclick="this.style.display='none'">
-    <img id="zImg" style="max-width:95%; max-height:90%; object-fit:contain;">
+    <img id="zImg" style="max-width:95%; max-height:90%; object-fit:contain;" referrerpolicy="no-referrer">
 </div>
 
 <script>
@@ -233,12 +234,13 @@ async function fetchData(){
 
 function getLikes(id) {
     let likes = JSON.parse(localStorage.getItem('hx_likes') || '{}');
-    return likes[id] || Math.floor(Math.random() * 20) + 5; 
+    // We display the stored value or 0 if never liked
+    return likes[id] || 0; 
 }
 
 function addLike(id) {
     let likes = JSON.parse(localStorage.getItem('hx_likes') || '{}');
-    likes[id] = (likes[id] || getLikes(id)) + 1;
+    likes[id] = (likes[id] || 0) + 1;
     localStorage.setItem('hx_likes', JSON.stringify(likes));
     render(allItems); 
 }
@@ -249,12 +251,11 @@ function render(data){
     data.forEach(item => {
         const isFree = item.type.toLowerCase() === "free";
         const id = item.name.replace(/\s+/g,'_').toLowerCase();
-        const likeCount = getLikes(id);
         
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-            <img src="${item.imageurl}" onclick="openProduct('${id}')" onerror="this.onerror=null; this.src='logo1.png';">
+            <img src="${item.imageurl}" referrerpolicy="no-referrer" onclick="openProduct('${id}')" onerror="this.onerror=null; this.src='logo1.png';">
             <div class="badge-row">
                 <span class="type-badge ${isFree?'type-free':'type-paid'}">${item.type.toUpperCase()}</span>
                 <span class="cat-badge">${item.category}</span>
@@ -265,7 +266,7 @@ function render(data){
             <div class="btn-row">
                 <button class="main-btn" onclick="openProduct('${id}')">View Details</button>
                 <button class="icon-btn" onclick="addLike('${id}')">
-                    <i class="fas fa-heart" style="color:#ff4b2b"></i> <span>${likeCount}</span>
+                    <i class="fas fa-heart" style="color:#ff4b2b"></i> <span>${getLikes(id)}</span>
                 </button>
             </div>
         `;
@@ -346,4 +347,4 @@ function toggleTheme(){
 if(localStorage.getItem("hx_theme") === "light") toggleTheme();
 </script>
 </body>
-</html>
+  </html>
