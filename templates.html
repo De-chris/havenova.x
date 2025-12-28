@@ -38,7 +38,6 @@ body{
   color:var(--text); 
   transition: background .3s; 
   padding-bottom: 50px;
-  /* Stops mobile phones from automatically making text bigger */
   -webkit-text-size-adjust: none;
   text-size-adjust: none;
 }
@@ -133,18 +132,33 @@ header{
 .overlay-content { padding: 20px; overflow-y: auto; text-align: center; max-width: 800px; margin: auto; width: 100%;}
 .full-img { width: 100%; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: zoom-in; }
 
-/* THE FINAL FIX: FORCE SMALL DESCRIPTION ON ALL SCREENS */
+/* THE TELEGRAM-STYLE SCROLLABLE QUOTE BOX FIX */
 #ovDesc {
     font-size: 11px !important; 
-    line-height: 1.4 !important;
+    line-height: 1.5 !important;
     color: var(--muted) !important;
-    max-width: 400px !important;
-    margin: 5px auto 15px auto !important; 
-    text-align: center !important;
+    
+    /* Box Styling */
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid var(--primary);
+    border-radius: 8px;
+    padding: 12px !important;
+    
+    /* Scroll Logic */
+    max-height: 130px !important; /* Approx 7 lines */
+    overflow-y: auto !important;
+    
+    /* Layout */
+    max-width: 450px !important;
+    margin: 10px auto 20px auto !important; 
+    text-align: left !important; /* Left aligned for easier reading in boxes */
     display: block !important;
-    /* This stops mobile browsers from enlarging the text */
     -webkit-text-size-adjust: none !important;
 }
+
+/* Customize scrollbar inside the description box */
+#ovDesc::-webkit-scrollbar { width: 4px; }
+#ovDesc::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
 /* Support Form */
 .support-box {
@@ -242,7 +256,7 @@ async function fetchData(){
         localStorage.setItem("hx_cache", JSON.stringify(d));
         render(d);
         document.getElementById("loading").style.display="none";
-    } catch(e) { console.warn("Fetch failed, using cache."); }
+    } catch(e) { console.warn("Fetch failed."); }
 }
 
 function getLikes(id) {
@@ -267,7 +281,7 @@ function render(data){
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-            <img src="${item.imageurl}" referrerpolicy="no-referrer" onclick="openProduct('${id}')" onerror="this.onerror=null; this.src='logo1.png';">
+            <img src="${item.imageurl}" referrerpolicy="no-referrer" onclick="openProduct('${id}')">
             <div class="badge-row">
                 <span class="type-badge ${isFree?'type-free':'type-paid'}">${item.type.toUpperCase()}</span>
                 <span class="cat-badge">${item.category}</span>
@@ -293,10 +307,7 @@ function openProduct(id){
     const ov = document.getElementById("productOverlay");
     ov.style.display = "flex";
     
-    const ovImg = document.getElementById("ovImg");
-    ovImg.src = currentItem.imageurl;
-    ovImg.setAttribute('referrerpolicy', 'no-referrer');
-    
+    document.getElementById("ovImg").src = currentItem.imageurl;
     document.getElementById("ovTitle").innerText = currentItem.name;
     document.getElementById("ovDesc").innerText = currentItem.description;
     document.getElementById("ovPrice").innerText = currentItem.price;
@@ -312,7 +323,7 @@ function openProduct(id){
         actionBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy via Telegram`;
         actionBtn.style.background = "#38bdf8";
         actionBtn.onclick = () => {
-            const msg = `Hello Christian! I want to purchase:\nID: HX-${id}\nItem: ${currentItem.name}\nPrice: ${currentItem.price}`;
+            const msg = `Purchase: HX-${id}\nItem: ${currentItem.name}\nPrice: ${currentItem.price}`;
             window.open(`https://t.me/${myTG}?text=${encodeURIComponent(msg)}`, "_blank");
         };
     }
@@ -321,18 +332,14 @@ function openProduct(id){
 function closeOverlay(){ document.getElementById("productOverlay").style.display="none"; }
 
 function zoomImg(){
-    const zImg = document.getElementById("zImg");
-    zImg.src = document.getElementById("ovImg").src;
-    zImg.setAttribute('referrerpolicy', 'no-referrer');
+    document.getElementById("zImg").src = document.getElementById("ovImg").src;
     document.getElementById("zoomView").style.display = "flex";
 }
 
 searchInput.oninput = () => {
     const q = searchInput.value.toLowerCase();
     const filtered = allItems.filter(i => 
-        i.name.toLowerCase().includes(q) || 
-        i.description.toLowerCase().includes(q) || 
-        i.category.toLowerCase().includes(q)
+        i.name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q)
     );
     render(filtered);
 };
@@ -351,9 +358,9 @@ function applyFilter(f){
 
 function sendSupport(){
     const userMsg = document.getElementById("supportMsg").value;
-    if(!userMsg) return alert("Please type your issue first!");
+    if(!userMsg) return alert("Please type your issue!");
     const id = currentItem.name.replace(/\s+/g,'_').toLowerCase();
-    const fullMsg = `[SUPPORT REQUEST]\nAsset: ${currentItem.name} (HX-${id})\n\nUser Issue:\n${userMsg}`;
+    const fullMsg = `[SUPPORT]\nAsset: ${currentItem.name} (HX-${id})\n\nIssue: ${userMsg}`;
     window.open(`https://t.me/${myTG}?text=${encodeURIComponent(fullMsg)}`, "_blank");
 }
 
@@ -365,4 +372,4 @@ function toggleTheme(){
 if(localStorage.getItem("hx_theme") === "light") toggleTheme();
 </script>
 </body>
-          </html>
+              </html>
