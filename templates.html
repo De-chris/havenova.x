@@ -124,15 +124,18 @@ header{
 .overlay-content { padding: 20px; overflow-y: auto; text-align: center; max-width: 800px; margin: auto; width: 100%;}
 .full-img { width: 100%; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: zoom-in; }
 
-/* FIX APPLIED: REDUCED DESCRIPTION SIZE IN DETAIL VIEW */
-div.overlay-content #ovDesc {
-    font-size: 13px !important; 
-    line-height: 1.6 !important;
+/* THE CLEAN FIX: FORCING THE DESCRIPTION TO BE SMALL */
+#productOverlay .overlay-content #ovDesc {
+    font-size: 11px !important; 
+    line-height: 1.4 !important;
     color: var(--muted) !important;
-    max-width: 500px !important;
-    margin: 0 auto 20px auto !important; 
+    max-width: 450px !important;
+    margin: 10px auto 20px auto !important; 
     text-align: center !important;
     display: block !important;
+    font-weight: normal !important;
+    max-height: 100px;
+    overflow-y: auto;
 }
 
 /* Support Form */
@@ -280,7 +283,6 @@ function openProduct(id){
     const ov = document.getElementById("productOverlay");
     ov.style.display = "flex";
     
-    // IMAGE CLEANING FIX: Refresh SRC and Referrer Policy
     const ovImg = document.getElementById("ovImg");
     ovImg.src = currentItem.imageurl;
     ovImg.setAttribute('referrerpolicy', 'no-referrer');
