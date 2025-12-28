@@ -44,7 +44,7 @@ header{
 .logo{ height:32px; filter: drop-shadow(0 0 5px var(--primary)); }
 
 /* ================= SEARCH & FILTER ================= */
-.controls-wrapper { padding: 20px; max-width: 1200px; margin: auto; }
+.controls-wrapper { padding: 20px; max-width: 1400px; margin: auto; }
 .search-bar {
     position: relative; display: flex; align-items: center;
     background: var(--surface); border: 1px solid var(--border);
@@ -73,37 +73,44 @@ header{
 }
 .filter-menu button:hover { background: var(--primary); color: #000; }
 
-/* ================= STORE GRID ================= */
+/* ================= STORE GRID (FIXED LANDSCAPE/DESKTOP) ================= */
 .store-grid{
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:20px; padding: 0 20px; max-width: 1200px; margin: auto;
+  display:grid; 
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap:20px; padding: 0 20px; max-width: 1400px; margin: auto;
+}
+
+/* 5 Columns on Desktop Landscape */
+@media (min-width: 1200px) {
+  .store-grid { grid-template-columns: repeat(5, 1fr); }
 }
 
 .card{
   background:var(--card); border:1px solid var(--border);
-  border-radius:20px; padding:15px; display:flex; flex-direction:column;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius:20px; padding:12px; display:flex; flex-direction:column;
+  transition: transform 0.3s ease;
 }
-.card:hover{ transform: scale(1.02); border-color: var(--primary); }
+.card:hover{ transform: translateY(-5px); border-color: var(--primary); }
 
-.card img{ width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:14px; background: #000; }
+.card img{ width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:14px; background: #000; cursor: pointer;}
 
-.badge-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
-.type-badge { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: bold; }
+.badge-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.type-badge { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: bold; text-transform: uppercase; }
 .type-free { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid #22c55e; }
 .type-paid { background: rgba(234, 179, 8, 0.2); color: #eab308; border: 1px solid #eab308; }
 
 .cat-badge { font-size: 11px; color: var(--muted); }
 
 /* ================= BUTTONS ================= */
-.btn-row { display: flex; gap: 8px; margin-top: 15px; }
+.btn-row { display: flex; gap: 6px; margin-top: auto; padding-top: 12px;}
 .main-btn {
-    flex: 2; background: var(--primary); color: #000; border: none;
-    padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer;
+    flex: 3; background: var(--primary); color: #020617; border: none;
+    padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 13px;
 }
 .icon-btn {
     flex: 1; background: var(--surface); border: 1px solid var(--border);
-    color: var(--text); border-radius: 12px; cursor: pointer;
+    color: var(--text); border-radius: 10px; cursor: pointer; font-size: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
 }
 
 /* ================= OVERLAYS ================= */
@@ -115,17 +122,17 @@ header{
     padding: 15px 20px; border-bottom: 1px solid var(--border);
     display: flex; justify-content: space-between; align-items: center;
 }
-.overlay-content { padding: 20px; overflow-y: auto; text-align: center; }
-.full-img { width: 100%; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.overlay-content { padding: 20px; overflow-y: auto; text-align: center; max-width: 800px; margin: auto; width: 100%;}
+.full-img { width: 100%; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: zoom-in; }
 
 /* Support Form */
 .support-box {
     margin-top: 20px; padding: 15px; background: var(--surface);
-    border-radius: 15px; border: 1px solid var(--border);
+    border-radius: 15px; border: 1px solid var(--border); text-align: left;
 }
 .support-box textarea {
     width: 100%; background: var(--bg); border: 1px solid var(--border);
-    color: var(--text); border-radius: 10px; padding: 10px; height: 80px; resize: none;
+    color: var(--text); border-radius: 10px; padding: 10px; height: 80px; resize: none; margin-top: 10px;
 }
 
 </style>
@@ -143,7 +150,7 @@ header{
 <div class="controls-wrapper">
     <div class="search-bar">
         <i class="fas fa-search" style="color:var(--muted)"></i>
-        <input type="text" id="searchInput" placeholder="Search apps, css, codes, categories...">
+        <input type="text" id="searchInput" placeholder="Search assets or categories...">
         <div class="filter-dropdown">
             <button class="filter-trigger" onclick="toggleFilter()">
                 <span id="filterLabel">Filter</span> <i class="fas fa-filter"></i>
@@ -169,16 +176,16 @@ header{
     </div>
     <div class="overlay-content">
         <img id="ovImg" class="full-img" onclick="zoomImg()">
-        <p id="ovDesc"></p>
-        <div id="ovPrice" style="font-size: 20px; font-weight: bold; margin-bottom: 20px;"></div>
+        <p id="ovDesc" style="line-height:1.6; color:var(--muted);"></p>
+        <div id="ovPrice" style="font-size: 24px; font-weight: bold; margin-bottom: 20px; color:var(--primary);"></div>
         
-        <button id="ovActionBtn" class="main-btn" style="width: 100%; font-size: 18px;"></button>
+        <button id="ovActionBtn" class="main-btn" style="width: 100%; font-size: 18px; padding: 15px;"></button>
 
         <div class="support-box">
-            <h4 style="margin-top:0"><i class="fas fa-headset"></i> Need Help with this?</h4>
-            <textarea id="supportMsg" placeholder="Describe your issue or question..."></textarea>
+            <h4 style="margin:0"><i class="fas fa-headset" style="color:var(--primary)"></i> Support Center</h4>
+            <textarea id="supportMsg" placeholder="Describe your issue..."></textarea>
             <button onclick="sendSupport()" class="main-btn" style="background:#2563eb; color:white; margin-top:10px; width:100%">
-                Send to Support
+                Send Support Ticket
             </button>
         </div>
     </div>
@@ -194,7 +201,6 @@ const myTG = "dechrisathx";
 let allItems = [];
 let currentItem = null;
 
-// [LOGIC: Local Storage & Fetch]
 window.onload = () => {
     const cached = localStorage.getItem("hx_cache");
     if(cached){
@@ -213,7 +219,19 @@ async function fetchData(){
         localStorage.setItem("hx_cache", JSON.stringify(d));
         render(d);
         document.getElementById("loading").style.display="none";
-    } catch(e) { console.log("Offline mode active"); }
+    } catch(e) { console.warn("Fetch failed, using cache."); }
+}
+
+function getLikes(id) {
+    let likes = JSON.parse(localStorage.getItem('hx_likes') || '{}');
+    return likes[id] || Math.floor(Math.random() * 20) + 5; 
+}
+
+function addLike(id) {
+    let likes = JSON.parse(localStorage.getItem('hx_likes') || '{}');
+    likes[id] = (likes[id] || getLikes(id)) + 1;
+    localStorage.setItem('hx_likes', JSON.stringify(likes));
+    render(allItems); 
 }
 
 function render(data){
@@ -222,21 +240,24 @@ function render(data){
     data.forEach(item => {
         const isFree = item.type.toLowerCase() === "free";
         const id = item.name.replace(/\s+/g,'_').toLowerCase();
+        const likeCount = getLikes(id);
         
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-            <img src="${item.imageurl}" onerror="this.src='logo1.png'">
+            <img src="${item.imageurl}" onclick="openProduct('${id}')" onerror="this.onerror=null; this.src='logo1.png';">
             <div class="badge-row">
                 <span class="type-badge ${isFree?'type-free':'type-paid'}">${item.type.toUpperCase()}</span>
                 <span class="cat-badge">${item.category}</span>
             </div>
-            <h3>${item.name}</h3>
-            <p style="flex-grow:1">${item.description.substring(0, 60)}...</p>
-            <div style="font-weight:bold; color:var(--primary); margin-bottom:10px;">${item.price}</div>
+            <h3 style="margin:8px 0 4px; font-size:16px;">${item.name}</h3>
+            <p style="margin:0; font-size:12px; color:var(--muted);">${item.description.substring(0, 45)}...</p>
+            <div style="font-weight:bold; color:var(--primary); margin: 8px 0;">${item.price}</div>
             <div class="btn-row">
                 <button class="main-btn" onclick="openProduct('${id}')">View Details</button>
-                <button class="icon-btn" onclick="alert('Like added to ${item.name}')"><i class="fas fa-heart"></i></button>
+                <button class="icon-btn" onclick="addLike('${id}')">
+                    <i class="fas fa-heart" style="color:#ff4b2b"></i> <span>${likeCount}</span>
+                </button>
             </div>
         `;
         container.appendChild(card);
@@ -258,7 +279,7 @@ function openProduct(id){
     const isFree = currentItem.type.toLowerCase() === "free";
 
     if(isFree){
-        actionBtn.innerHTML = `<i class="fas fa-download"></i> Download Free`;
+        actionBtn.innerHTML = `<i class="fas fa-download"></i> Download Asset`;
         actionBtn.style.background = "#22c55e";
         actionBtn.onclick = () => window.open(currentItem.downloadurl, "_blank");
     } else {
@@ -278,7 +299,6 @@ function zoomImg(){
     document.getElementById("zoomView").style.display = "flex";
 }
 
-// [LOGIC: Automated Search & Filters]
 searchInput.oninput = () => {
     const q = searchInput.value.toLowerCase();
     const filtered = allItems.filter(i => 
@@ -291,28 +311,24 @@ searchInput.oninput = () => {
 
 function toggleFilter(){
     const m = document.getElementById("filterMenu");
-    m.style.display = m.style.display === "flex" ? "none" : "flex";
+    m.style.display = (m.style.display === "flex") ? "none" : "flex";
 }
 
 function applyFilter(f){
     toggleFilter();
-    document.getElementById("filterLabel").innerText = f.charAt(0).toUpperCase() + f.slice(1);
-    const filtered = f === "all" ? allItems : allItems.filter(i => i.type.toLowerCase() === f);
+    document.getElementById("filterLabel").innerText = (f === 'all') ? 'Filter' : f.charAt(0).toUpperCase() + f.slice(1);
+    const filtered = (f === "all") ? allItems : allItems.filter(i => i.type.toLowerCase() === f);
     render(filtered);
 }
 
-// [LOGIC: Pro Support System]
 function sendSupport(){
     const userMsg = document.getElementById("supportMsg").value;
     if(!userMsg) return alert("Please type your issue first!");
-    
     const id = currentItem.name.replace(/\s+/g,'_').toLowerCase();
     const fullMsg = `[SUPPORT REQUEST]\nAsset: ${currentItem.name} (HX-${id})\n\nUser Issue:\n${userMsg}`;
-    
     window.open(`https://t.me/${myTG}?text=${encodeURIComponent(fullMsg)}`, "_blank");
 }
 
-// [LOGIC: Modern Theme]
 function toggleTheme(){
     const isLight = document.body.classList.toggle("light");
     document.getElementById("tIcon").className = isLight ? "fas fa-sun" : "fas fa-moon";
@@ -321,4 +337,4 @@ function toggleTheme(){
 if(localStorage.getItem("hx_theme") === "light") toggleTheme();
 </script>
 </body>
-  </html>
+</html>
