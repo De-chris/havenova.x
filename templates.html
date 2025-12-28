@@ -20,16 +20,6 @@
   --paid-color:#eab308;
 }
 
-.light{
-  --bg:#f1f5f9;
-  --surface:#ffffff;
-  --card:#ffffff;
-  --border:#cbd5e1;
-  --text:#0f172a;
-  --muted:#64748b;
-  --primary:#0284c7;
-}
-
 *{ box-sizing:border-box; font-family: 'Inter', system-ui, sans-serif; }
 
 body{ 
@@ -58,9 +48,9 @@ header{
   transition: transform 0.3s ease;
 }
 .card:hover{ transform: translateY(-5px); border-color: var(--primary); }
-.card img{ width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:14px; cursor: pointer;}
+.card img{ width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:14px; cursor: pointer; background: #000;}
 
-/* 🔧 NEW: TELEGRAM QUOTE STYLE FOR THE CARD LIST */
+/* 🔧 FIXED: DESCRIPTION BOX WITH PARAGRAPH SUPPORT */
 .card-desc-box {
     font-size: 11px !important;
     line-height: 1.4 !important;
@@ -70,9 +60,11 @@ header{
     padding: 8px !important;
     border-radius: 6px;
     margin: 8px 0;
-    max-height: 60px; /* Small height for list view */
+    max-height: 80px; 
     overflow-y: auto;
     text-align: left;
+    /* This ensures paragraphs and spaces from Sheet are kept */
+    white-space: pre-wrap; 
 }
 
 /* ================= OVERLAYS ================= */
@@ -96,7 +88,7 @@ header{
     word-break: break-all; margin: 5px auto 10px auto !important; display: block;
 }
 
-/* 🔧 VIEWER DESCRIPTION BOX (SYNCED STYLE) */
+/* 🔧 VIEWER DESCRIPTION BOX (PARAGRAPH SYNC) */
 #ovPrice {
     font-size: 11px !important;
     line-height: 1.5 !important;
@@ -105,10 +97,11 @@ header{
     border-left: 3px solid var(--primary);
     padding: 12px !important;
     border-radius: 8px;
-    max-height: 130px !important;
+    max-height: 150px !important;
     overflow-y: auto !important;
     text-align: left !important;
     margin-bottom: 20px !important;
+    white-space: pre-wrap; /* Keeps paragraphs arranged */
 }
 
 /* UI Elements */
@@ -137,7 +130,8 @@ header{
 <body>
 
 <header>
-  <img src="logo1.png" class="logo">
+  <img src="logo1.png" class="logo" alt="HX Store Logo">
+  <div style="font-weight: bold; font-size: 14px; color: var(--primary);">HX STORE</div>
 </header>
 
 <main>
@@ -151,8 +145,10 @@ header{
         <button onclick="closeOverlay()" style="background:none; border:none; color:var(--text); cursor:pointer;"><i class="fas fa-times fa-lg"></i></button>
     </div>
     <div class="overlay-content">
-        <img id="ovImg" class="full-img" referrerpolicy="no-referrer">
-        <p id="ovDesc"></p> <div id="ovPrice"></div> <button id="ovActionBtn" class="main-btn"></button>
+        <img id="ovImg" class="full-img" referrerpolicy="no-referrer" onerror="this.src='logo1.png'">
+        <p id="ovDesc"></p> 
+        <div id="ovPrice"></div> 
+        <button id="ovActionBtn" class="main-btn"></button>
 
         <div class="support-box">
             <h4 style="margin:0; font-size: 12px;"><i class="fas fa-headset"></i> Support Center</h4>
@@ -178,17 +174,23 @@ async function fetchData(){
     } catch(e) { console.warn("Load failed."); }
 }
 
+function cleanURL(url) {
+    // 🔧 FOOL PROOF IMAGE LOGIC: Removes all spaces and hidden characters
+    return url ? url.trim().replace(/\s/g, "") : "logo1.png";
+}
+
 function render(data){
     const container = document.getElementById("template-container");
     container.innerHTML = "";
     data.forEach(item => {
         const isFree = item.type.toLowerCase() === "free";
         const id = item.name.replace(/\s+/g,'_').toLowerCase();
+        const imgPath = cleanURL(item.imageurl);
         
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-            <img src="${item.imageurl}" onclick="openProduct('${id}')">
+            <img src="${imgPath}" referrerpolicy="no-referrer" onerror="this.src='logo1.png'" onclick="openProduct('${id}')">
             <div class="badge-row">
                 <span class="type-badge ${isFree?'type-free':'type-paid'}">${item.type.toUpperCase()}</span>
                 <span class="cat-badge" style="font-size:10px; color:var(--muted)">${item.category}</span>
@@ -210,16 +212,16 @@ function openProduct(id){
     if(!item) return;
 
     document.getElementById("productOverlay").style.display = "flex";
-    document.getElementById("ovImg").src = item.imageurl;
+    document.getElementById("ovImg").src = cleanURL(item.imageurl);
     document.getElementById("ovTitle").innerText = item.name;
-    document.getElementById("ovDesc").innerText = item.description; // Link
-    document.getElementById("ovPrice").innerText = item.price; // Description Text
+    document.getElementById("ovDesc").innerText = item.description; 
+    document.getElementById("ovPrice").innerText = item.price; 
 
     const btn = document.getElementById("ovActionBtn");
     if(item.type.toLowerCase() === "free"){
         btn.innerHTML = `<i class="fas fa-download"></i> Download`;
         btn.style.background = "#22c55e";
-        btn.onclick = () => window.open(item.downloadurl, "_blank");
+        btn.onclick = () => window.open(item.downloadurl.trim().replace(/\s/g, ""), "_blank");
     } else {
         btn.innerHTML = `<i class="fab fa-telegram-plane"></i> Buy Now`;
         btn.style.background = "#38bdf8";
@@ -239,4 +241,4 @@ function sendSupport(){
 }
 </script>
 </body>
-      </html>
+</html>
