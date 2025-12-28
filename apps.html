@@ -3,185 +3,164 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Our Apps - Havenova-X</title>
-  <meta name="description" content="Discover Havenova-X apps to boost your digital experience.">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer" />
+  <title>Our Apps | Havenova-X</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
-    * {
-      box-sizing: border-box;
-      transition: all 0.3s ease;
-    }
+    /* Clean Vibe Styling */
+    * { box-sizing: border-box; transition: all 0.3s ease; }
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom right, #f5f5f5, #e6f0ff);
-      color: #111;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
     }
-    .dark {
-      background: linear-gradient(to bottom right, #0d1117, #1a1f2c);
-      color: #eee;
-    }
+    .dark { background: #0f172a; color: #f1f5f9; }
 
-    /* Header stays fixed */
     header {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 25px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 15px 5%;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
       position: fixed;
       width: 100%;
       top: 0;
-      z-index: 100;
+      z-index: 1000;
     }
-    .dark header {
-      background: rgba(20, 20, 20, 0.9);
-    }
+    .dark header { background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #334155; }
 
-    /* Footer is normal block */
-    footer {
-      background: rgba(255, 255, 255, 0.95);
-      flex-direction: column;
-      text-align: center;
-      padding: 20px 10px;
-      margin-top: 40px;
-    }
-    .dark footer {
-      background: rgba(20, 20, 20, 0.9);
-    }
+    .logo { height: 45px; }
 
-    .logo {
-      height: 50px;
-      cursor: pointer;
-      transition: height 0.3s ease;
-    }
-    .logo.expand {
-      height: 65px;
-    }
+    main { padding: 120px 5% 60px; max-width: 900px; margin: auto; }
 
-    main {
-      padding: 120px 20px 40px;
-      max-width: 850px;
-      margin: auto;
-    }
+    .intro { text-align: center; margin-bottom: 50px; }
+    .intro h1 { font-size: 2.2rem; color: #00d2ff; margin-bottom: 10px; }
 
-    section {
-      margin-bottom: 60px;
+    /* App Cards Grid */
+    .apps-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
     }
-
-    h1, h2 {
-      text-align: center;
-      margin-bottom: 10px;
+    article.app {
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      position: relative;
+      overflow: hidden;
     }
+    .dark article.app { background: #1e293b; border-color: #334155; }
 
-    p {
-      font-size: 15px;
-      line-height: 1.6;
-    }
+    .app h2 { margin-top: 0; display: flex; align-items: center; gap: 10px; color: #00d2ff; }
+    .app p { font-size: 0.95rem; color: #64748b; }
+    .dark .app p { color: #94a3b8; }
 
-    .btn, button {
-      display: inline-block;
-      padding: 8px 16px;
-      background: #0ff;
-      color: #111;
-      border: none;
-      border-radius: 6px;
+    .btn-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+
+    .btn {
+      padding: 10px 20px;
+      background: #00d2ff;
+      color: white;
       text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
       font-size: 14px;
-      font-weight: 500;
-      box-shadow: 0 0 8px #0ff;
-      cursor: pointer;
-      margin: 5px 5px 10px 0;
     }
+    .btn:hover { background: #3a7bd5; transform: translateY(-2px); }
+    
+    .btn-secondary { background: #64748b; }
+    .btn-outline { background: transparent; border: 2px solid #00d2ff; color: #00d2ff; }
 
-    .dark .btn, .dark button {
-      background: #111;
-      color: #0ff;
-      box-shadow: 0 0 8px #0ff;
+    .status-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #f1f5f9;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
     }
+    .dark .status-badge { background: #334155; color: #00d2ff; }
 
-    .btn:hover, button:hover {
-      transform: scale(1.05);
-    }
+    footer { text-align: center; padding: 40px; margin-top: 40px; opacity: 0.7; font-size: 13px; }
 
-    .apps-list article {
-      border: 1px solid #ddd;
-      background: rgba(255,255,255,0.7);
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 30px;
+    #darkModeToggle {
+      background: #f1f5f9; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer;
     }
-
-    .dark .apps-list article {
-      background: rgba(40,40,40,0.5);
-      border-color: #333;
-    }
+    .dark #darkModeToggle { background: #334155; color: white; }
   </style>
 </head>
-<body>
-  <header>
-    <a href="index.html"><img src="logo1.png" alt="Havenova-X Logo" class="logo" id="mainLogo" /></a>
-    <button id="darkModeToggle">Dark Mode</button>
+<body class="dark"> <header>
+    <a href="index.html"><img src="logo1.png" alt="HX" class="logo" /></a>
+    <div style="display: flex; gap: 10px;">
+        <a href="templates.html" class="btn" style="padding: 8px 15px;">Shop Templates</a>
+        <button id="darkModeToggle"><i class="fas fa-sun"></i></button>
+    </div>
   </header>
 
   <main>
     <section class="intro">
-      <h1>Explore Our Apps</h1>
-      <p>Discover useful apps developed by Havenova-X to empower and protect users across the digital world.</p>
+      <h1><i class="fas fa-cubes"></i> Havenova-X Apps</h1>
+      <p>Powerful Android utilities built with passion and purpose.</p>
     </section>
 
     <section class="apps-list">
+      
       <article class="app">
-        <h2>DuxeLab</h2>
-        <p>DuxeLab is an assistant app for designers and creators. It offers size conversion tools (feet, inch, px), a built-in AI search for design questions, an image downloader (beta), and a group chat feature for the design community.</p>
-        <a href="https://duxelab.en.uptodown.com/android" class="btn">Download DuxeLab</a>
+        <h2><i class="fas fa-drafting-compass"></i> DuxeLab</h2>
+        <p>Your ultimate design companion. Convert units (ft, in, px), consult our built-in AI for design tips, and download high-quality assets.</p>
+        <div class="btn-group">
+          <a href="https://duxelab.en.uptodown.com/android" class="btn"><i class="fab fa-android"></i> Download App</a>
+        </div>
       </article>
 
       <article class="app">
-        <h2>ChrisFlix</h2>
-        <p>A movie and streaming hub that offers fast access to trending content (STILL ON PRODUCTION).</p>
-        <a href="https://example.com/chrisflix.apk" class="btn">Download ChrisFlix</a>
+        <span class="status-badge">In Production</span>
+        <h2><i class="fas fa-play-circle"></i> ChrisFlix</h2>
+        <p>A fast, modern streaming hub designed for trending content. Experience smooth entertainment like never before.</p>
+        <div class="btn-group">
+          <a href="#" class="btn btn-secondary" style="cursor: not-allowed;">Coming Soon</a>
+        </div>
       </article>
 
       <article class="app">
-        <h2>Dechris AI</h2>
-        <p>An AI-powered assistant app with voice, text, and smart tool features.</p>
-        <a href="https://dechris-ai.en.uptodown.com/android" class="btn">Download Dechris AI</a>
-        <a href="privacy-policy.html" class="btn">Privacy Policy</a>
+        <h2><i class="fas fa-robot"></i> Dechris AI</h2>
+        <p>A smart AI assistant featuring voice interaction and text generation to boost your productivity.</p>
+        <div class="btn-group">
+          <a href="https://dechris-ai.en.uptodown.com/android" class="btn"><i class="fab fa-android"></i> Download App</a>
+          <a href="privacy-policy.html" class="btn btn-outline">Privacy Policy</a>
+        </div>
       </article>
 
       <article class="app">
-        <h2>Age Calculator</h2>
-        <p>Calculate your age with ease using our smart and clean interface. Know your age and next birthday at a glance.</p>
-        <a href="https://www.mediafire.com/file/g60iobdh4n6rm5u/Age_Calculator_1.0.apk/file" class="btn">Download Age Calculator</a>
+        <h2><i class="fas fa-calculator"></i> Age Calculator</h2>
+        <p>Minimalist and smart. Calculate your exact age, next birthday, and life milestones in seconds.</p>
+        <div class="btn-group">
+          <a href="https://www.mediafire.com/file/g60iobdh4n6rm5u/Age_Calculator_1.0.apk/file" class="btn"><i class="fas fa-download"></i> Get APK</a>
+        </div>
       </article>
+
     </section>
   </main>
 
   <footer>
     <p>Powered by Dechris™</p>
-    <p>&copy; 2025 Havenova-X. All rights reserved.</p>
+    <p>&copy; 2025 Havenova-X. Integrity & Innovation.</p>
   </footer>
 
   <script>
     const toggle = document.getElementById('darkModeToggle');
-    const logo = document.getElementById('mainLogo');
-    let lastScrollY = window.scrollY;
-
     toggle.onclick = () => {
       document.body.classList.toggle('dark');
-      toggle.textContent = document.body.classList.contains('dark') ? 'Light Mode' : 'Dark Mode';
+      const icon = toggle.querySelector('i');
+      icon.classList.toggle('fa-moon');
+      icon.classList.toggle('fa-sun');
     };
-
-    window.addEventListener('scroll', () => {
-      if (window.scrollY < lastScrollY) {
-        logo.classList.add('expand');
-      } else {
-        logo.classList.remove('expand');
-      }
-      lastScrollY = window.scrollY;
-    });
   </script>
 </body>
-          </html>
+  </html>                                                                          
