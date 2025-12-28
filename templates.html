@@ -73,7 +73,7 @@ header{
 }
 .filter-menu button:hover { background: var(--primary); color: #000; }
 
-/* ================= STORE GRID (LANDSCAPE/DESKTOP FIX) ================= */
+/* ================= STORE GRID ================= */
 .store-grid{
   display:grid; 
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -126,13 +126,14 @@ header{
 
 /* FIX: OVERLAY DESCRIPTION SIZE & ALIGNMENT */
 #ovDesc {
-    line-height: 1.5;
-    color: var(--muted);
-    /* 👇 CHANGE THE NUMBER BELOW TO ADJUST VIEWER TEXT SIZE 👇 */
-    font-size: 12px; 
-    max-width: 450px;
-    margin: 0 auto 20px auto; 
-    text-align: center;
+    line-height: 1.4 !important;
+    color: var(--muted) !important;
+    /* 👇 THIS IS THE SIZE SETTING 👇 */
+    font-size: 11px !important; 
+    max-width: 400px !important;
+    margin: 0 auto 20px auto !important; 
+    text-align: center !important;
+    display: block !important;
 }
 
 /* Support Form */
@@ -234,7 +235,6 @@ async function fetchData(){
 
 function getLikes(id) {
     let likes = JSON.parse(localStorage.getItem('hx_likes') || '{}');
-    // We display the stored value or 0 if never liked
     return likes[id] || 0; 
 }
 
@@ -280,8 +280,13 @@ function openProduct(id){
 
     const ov = document.getElementById("productOverlay");
     ov.style.display = "flex";
+    
+    // IMAGE CLEANING FIX: Refresh SRC and Referrer Policy
+    const ovImg = document.getElementById("ovImg");
+    ovImg.src = currentItem.imageurl;
+    ovImg.setAttribute('referrerpolicy', 'no-referrer');
+    
     document.getElementById("ovTitle").innerText = currentItem.name;
-    document.getElementById("ovImg").src = currentItem.imageurl;
     document.getElementById("ovDesc").innerText = currentItem.description;
     document.getElementById("ovPrice").innerText = currentItem.price;
 
@@ -305,7 +310,9 @@ function openProduct(id){
 function closeOverlay(){ document.getElementById("productOverlay").style.display="none"; }
 
 function zoomImg(){
-    document.getElementById("zImg").src = document.getElementById("ovImg").src;
+    const zImg = document.getElementById("zImg");
+    zImg.src = document.getElementById("ovImg").src;
+    zImg.setAttribute('referrerpolicy', 'no-referrer');
     document.getElementById("zoomView").style.display = "flex";
 }
 
