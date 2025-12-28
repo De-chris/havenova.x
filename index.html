@@ -7,16 +7,19 @@
   <title>Havenova-X | Tech Excellence</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
-    /* --- Vibe Coder Pro Styles --- */
+    /* --- Professional HX Global Styles --- */
     * { box-sizing: border-box; transition: all 0.3s ease; }
+    
     body {
       margin: 0;
       font-family: 'Inter', 'Segoe UI', sans-serif;
       background: #fdfdfd;
-      color: #222;
+      color: #1e293b;
       line-height: 1.6;
     }
-    .dark { background: #0f172a; color: #f1f5f9; }
+
+    /* Default Dark Mode Styles */
+    body.dark { background: #0f172a; color: #f1f5f9; }
     
     header {
       background: rgba(255, 255, 255, 0.9);
@@ -31,110 +34,135 @@
       top: 0;
       z-index: 1000;
     }
-    .dark header { background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #1e293b; }
+    
+    body.dark header { 
+      background: rgba(15, 23, 42, 0.9); 
+      border-bottom: 1px solid #1e293b; 
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
 
-    .logo { height: 45px; cursor: pointer; }
+    .logo { height: 45px; cursor: pointer; transition: height 0.3s ease; }
+    .logo.expand { height: 60px; }
     
     main { padding: 140px 5% 60px; max-width: 1000px; margin: auto; }
 
     /* Hero Section */
     .hero { text-align: center; margin-bottom: 80px; }
-    .hero h1 { font-size: 2.5rem; margin-bottom: 10px; background: linear-gradient(90deg, #00d2ff, #3a7bd5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .hero p { font-size: 1.1rem; color: #64748b; max-width: 600px; margin: auto; }
+    .hero h1 { 
+      font-size: 2.8rem; 
+      margin-bottom: 15px; 
+      background: linear-gradient(90deg, #00d2ff, #3a7bd5); 
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent; 
+      font-weight: 800;
+    }
+    .hero p { font-size: 1.15rem; color: #64748b; max-width: 650px; margin: auto; }
+    body.dark .hero p { color: #94a3b8; }
 
-    /* Service Grid */
+    /* Grid Layout */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 25px;
+      gap: 30px;
       margin-top: 40px;
     }
     .card {
       background: white;
-      padding: 30px;
-      border-radius: 16px;
+      padding: 35px;
+      border-radius: 20px;
       text-align: center;
       border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    .dark .card { background: #1e293b; border-color: #334155; }
-    .card i { font-size: 40px; color: #00d2ff; margin-bottom: 20px; }
-    .card h3 { margin-bottom: 15px; }
+    body.dark .card { background: #1e293b; border-color: #334155; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
     
+    .card i { font-size: 45px; color: #00d2ff; margin-bottom: 25px; }
+    .card h3 { font-size: 1.4rem; margin-bottom: 15px; font-weight: 700; }
+    .card p { font-size: 0.95rem; color: #64748b; flex-grow: 1; margin-bottom: 20px; }
+    body.dark .card p { color: #94a3b8; }
+    
+    /* Buttons */
     .btn {
       display: inline-block;
-      padding: 12px 24px;
+      padding: 12px 28px;
       background: #00d2ff;
       color: white;
-      border-radius: 8px;
+      border-radius: 10px;
       text-decoration: none;
       font-weight: 600;
-      margin-top: 15px;
+      box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
     }
-    .btn:hover { background: #3a7bd5; transform: translateY(-3px); }
-    .btn-outline { background: transparent; border: 2px solid #00d2ff; color: #00d2ff; }
+    .btn:hover { background: #3a7bd5; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0, 210, 255, 0.4); }
+    .btn-outline { background: transparent; border: 2px solid #00d2ff; color: #00d2ff; box-shadow: none; }
 
     /* Socials & Footer */
-    .socials { text-align: center; padding: 40px 0; }
-    .socials a { font-size: 24px; margin: 0 15px; color: inherit; text-decoration: none; opacity: 0.7; }
-    .socials a:hover { opacity: 1; color: #00d2ff; }
+    .socials { text-align: center; padding: 60px 0; }
+    .socials a { font-size: 26px; margin: 0 15px; color: inherit; text-decoration: none; opacity: 0.7; }
+    .socials a:hover { opacity: 1; color: #00d2ff; transform: scale(1.2); }
     
-    footer { text-align: center; padding: 40px; border-top: 1px solid #e2e8f0; font-size: 14px; }
-    .dark footer { border-top-color: #334155; }
+    footer { text-align: center; padding: 50px; border-top: 1px solid #e2e8f0; font-size: 14px; color: #64748b; }
+    body.dark footer { border-top-color: #334155; color: #94a3b8; }
 
     #darkModeToggle {
       background: #f1f5f9;
       border: none;
-      padding: 8px 15px;
-      border-radius: 20px;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
       cursor: pointer;
-      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
     }
-    .dark #darkModeToggle { background: #334155; color: white; }
+    body.dark #darkModeToggle { background: #334155; color: #ffca28; }
   </style>
 </head>
-<body>
+<body class="dark">
 
   <header>
-    <img src="logo1.png" alt="HX" class="logo" />
-    <div style="display: flex; align-items: center; gap: 15px;">
-      <a href="templates.html" style="text-decoration: none; color: inherit; font-size: 14px; font-weight: 600;">Store</a>
-      <button id="darkModeToggle"><i class="fas fa-moon"></i></button>
+    <a href="index.html"><img src="logo1.png" alt="Havenova-X" class="logo" id="mainLogo" /></a>
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <a href="templates.html" style="text-decoration: none; color: inherit; font-size: 14px; font-weight: 700;">STORE</a>
+      <button id="darkModeToggle"><i class="fas fa-sun"></i></button>
     </div>
   </header>
 
   <main>
     <section class="hero">
       <h1>The Havenova-X Ecosystem</h1>
-      <p>By God's grace, we are building the future of digital creation through high-quality templates, tools, and community empowerment.</p>
+      <p>A trusted community-driven hub providing premium digital assets, high-performance tools, and secure tech solutions for modern creators.</p>
     </section>
 
     <div class="grid">
       <div class="card">
-        <i class="fas fa-layer-group"></i>
-        <h3>Website Templates</h3>
-        <p>Premium & Free AI-ready templates to launch your business instantly.</p>
+        <i class="fas fa-code"></i>
+        <h3>Web Store</h3>
+        <p>Access high-quality, pre-built website templates and source codes to launch your digital presence instantly.</p>
         <a href="templates.html" class="btn">Browse Store</a>
       </div>
 
       <div class="card">
-        <i class="fas fa-mobile-alt"></i>
-        <h3>HX Tools & Apps</h3>
-        <p>Explore our library of custom-built Android tools and utility applications.</p>
-        <a href="apps.html" class="btn btn-outline">Explore Apps</a>
+        <i class="fas fa-mobile-screen-button"></i>
+        <h3>Software Tools</h3>
+        <p>Explore our professional suite of utility applications designed for security, productivity, and creative workflows.</p>
+        <a href="apps.html" class="btn btn-outline">View Apps</a>
       </div>
 
       <div class="card">
-        <i class="fas fa-robot"></i>
-        <h3>Dechris AI</h3>
-        <p>Unlock the power of Artificial Intelligence with our web-based AI assistant.</p>
+        <i class="fas fa-brain"></i>
+        <h3>Advanced AI</h3>
+        <p>Leverage the Havenova-X AI assistant for smart text generation, research, and technical problem solving.</p>
         <a href="https://dechris-ai.vercel.app" target="_blank" class="btn btn-outline">Launch AI</a>
       </div>
     </div>
 
-    <section style="margin-top: 80px; text-align: center;">
-      <h2>Fighting Scams with Tech</h2>
-      <p>We are a community-driven hub. We don't just build apps; we educate and protect people from digital fraud while providing clean, godly tech resources.</p>
+    <section style="margin-top: 100px; text-align: center; max-width: 700px; margin-left: auto; margin-right: auto;">
+      <h2 style="font-size: 2rem; margin-bottom: 20px;">Innovation with Integrity</h2>
+      <p>We are a professional tech hub dedicated to empowering users through clean technology. From anti-scam research to custom software development, we provide "Godly" tech resources built on trust and transparency.</p>
     </section>
 
     <section class="socials">
@@ -146,20 +174,50 @@
 
   <footer>
     <p>Powered by Dechris™</p>
-    <p>&copy; 2025 Havenova-X. Integrity & Innovation.</p>
+    <p>&copy; 2025 Havenova-X. All transactions and software are verified for security.</p>
   </footer>
 
   <script>
     const toggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+    const logo = document.getElementById('mainLogo');
+
+    // Theme Logic: Default to Dark, remember user choice
+    const savedMode = localStorage.getItem('hx_theme') || 'dark';
+    body.className = savedMode;
+    updateIcon(savedMode);
+
     toggle.onclick = () => {
-      document.body.classList.toggle('dark');
+      if (body.classList.contains('dark')) {
+        body.classList.replace('dark', 'light');
+        localStorage.setItem('hx_theme', 'light');
+        updateIcon('light');
+      } else {
+        body.classList.replace('light', 'dark');
+        localStorage.setItem('hx_theme', 'dark');
+        updateIcon('dark');
+      }
+    };
+
+    function updateIcon(mode) {
       const icon = toggle.querySelector('i');
-      if(document.body.classList.contains('dark')) {
+      if (mode === 'dark') {
         icon.classList.replace('fa-moon', 'fa-sun');
       } else {
         icon.classList.replace('fa-sun', 'fa-moon');
       }
-    };
+    }
+
+    // Logo expansion on scroll
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', () => {
+      if (window.scrollY < lastScrollY && window.scrollY > 50) {
+        logo.classList.add('expand');
+      } else {
+        logo.classList.remove('expand');
+      }
+      lastScrollY = window.scrollY;
+    });
   </script>
 </body>
-        </html>
+  </html>
