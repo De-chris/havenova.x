@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HX Store | Pro Digital Marketplace</title>
 
-<script data-goatcounter="https://havenova-x.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-<script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <style>
@@ -110,8 +107,6 @@ header{
 
 #ovDesc { line-height: 1.4 !important; color: var(--muted) !important; font-size: 11px !important; max-width: 400px !important; margin: 0 auto 20px auto !important; text-align: center !important; display: block !important; }
 
-#comment-section { margin-top: 30px; padding: 20px; background: var(--surface); border-radius: 15px; border: 1px solid var(--border); text-align: left; }
-
 .support-box { margin-top: 20px; padding: 15px; background: var(--surface); border-radius: 15px; border: 1px solid var(--border); text-align: left; }
 .support-box textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 10px; height: 80px; resize: none; margin-top: 10px; }
 </style>
@@ -160,18 +155,6 @@ header{
         <p id="ovDesc"></p>
         <div id="ovPrice" style="font-size: 24px; font-weight: bold; margin-bottom: 20px; color:var(--primary);"></div>
         <button id="ovActionBtn" class="main-btn" style="width: 100%; font-size: 18px; padding: 15px;"></button>
-        
-        <div id="comment-section">
-            <h4 style="margin:0 0 15px 0"><i class="fas fa-comments" style="color:var(--primary)"></i> Community Discussion</h4>
-            <div id="cusdis_thread" 
-                data-host="https://cusdis.com" 
-                data-app-id="5689eb93-ddea-45e3-83f0-82d9aa172889" 
-                data-page-id="" 
-                data-page-url="" 
-                data-page-title="">
-            </div>
-        </div>
-
         <div class="support-box">
             <h4 style="margin:0"><i class="fas fa-headset" style="color:var(--primary)"></i> Support Center</h4>
             <textarea id="supportMsg" placeholder="Describe your issue..."></textarea>
@@ -191,6 +174,7 @@ let allItems = [];
 let currentItem = null;
 
 window.onload = () => {
+    // Immediate load from cache to prevent infinite loading
     const cached = localStorage.getItem("hx_cache");
     if(cached){
         allItems = JSON.parse(cached);
@@ -202,17 +186,19 @@ window.onload = () => {
 
 async function fetchData(){
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
     try {
         const r = await fetch(api_url, { signal: controller.signal });
         const d = await r.json();
+        console.log("Sheet Data Received:", d);
         allItems = d;
         localStorage.setItem("hx_cache", JSON.stringify(d));
         render(d);
         document.getElementById("loading").style.display="none";
         document.getElementById("sync-status").style.display="none";
     } catch(e) { 
+        console.warn("Background fetch failed or timed out.");
         if (allItems.length > 0) {
             document.getElementById("loading").style.display="none";
             document.getElementById("sync-status").style.display="block";
@@ -224,28 +210,21 @@ async function fetchData(){
     }
 }
 
-// RESTORED: GoatCounter background fetching for likes
-async function updateLikes(id, elId) {
-    try {
-        const r = await fetch(`https://havenova-x.goatcounter.com/counter/${id}.json`);
-        const data = await r.json();
-        const span = document.getElementById(elId);
-        if(span) span.innerText = data.count.replace(/,/g, '') || 0;
-    } catch(e) { console.warn("Likes fetch failed for " + id); }
-}
-
 function refreshData() {
     localStorage.removeItem("hx_cache");
     location.reload();
 }
 
+function getLikes(id) {
+    let likes = JSON.parse(localStorage.getItem('hx_likes') || '{}');
+    return likes[id] || 0; 
+}
+
 function addLike(id) {
-    const span = document.getElementById(`count-${id}`);
-    const img = new Image();
-    img.src = `https://havenova-x.goatcounter.com/count?p=${id}&t=${id}`;
-    let val = parseInt(span.innerText) || 0;
-    span.innerText = val + 1;
-    span.parentElement.style.color = "#ff4b2b";
+    let likes = JSON.parse(localStorage.getItem('hx_likes') || '{}');
+    likes[id] = (likes[id] || 0) + 1;
+    localStorage.setItem('hx_likes', JSON.stringify(likes));
+    render(allItems); 
 }
 
 function render(data){
@@ -255,6 +234,8 @@ function render(data){
         const type = (item.type || "").toLowerCase();
         const isFree = type === "free";
         const id = item.name.replace(/\s+/g,'_').toLowerCase();
+        
+        // RESTORED: Multi-key image logic
         const imgUrl = item.imageurl || item.imageUrl || item['Image URL'] || 'logo1.png';
         
         const card = document.createElement("div");
@@ -271,13 +252,11 @@ function render(data){
             <div class="btn-row">
                 <button class="main-btn" onclick="openProduct('${id}')">View Details</button>
                 <button class="icon-btn" onclick="addLike('${id}')">
-                    <i class="fas fa-heart"></i> <span id="count-${id}">0</span>
+                    <i class="fas fa-heart" style="color:#ff4b2b"></i> <span>${getLikes(id)}</span>
                 </button>
             </div>
         `;
         container.appendChild(card);
-        // Load likes silently in background
-        updateLikes(id, `count-${id}`);
     });
 }
 
@@ -288,6 +267,7 @@ function openProduct(id){
     const ov = document.getElementById("productOverlay");
     ov.style.display = "flex";
     
+    // RESTORED: Multi-key logic for details
     const imgUrl = currentItem.imageurl || currentItem.imageUrl || currentItem['Image URL'];
     const downloadUrl = currentItem.downloadurl || currentItem.downloadUrl || currentItem['Download URL'];
     
@@ -296,15 +276,6 @@ function openProduct(id){
     document.getElementById("ovDesc").innerText = currentItem.description;
     document.getElementById("ovPrice").innerText = currentItem.price;
 
-    // Load Cusdis Comments silently
-    if(window.CUSDIS) {
-        window.CUSDIS.renderTo(document.getElementById('cusdis_thread'), {
-            pageId: id, 
-            pageTitle: currentItem.name, 
-            pageUrl: window.location.href
-        });
-    }
-
     const actionBtn = document.getElementById("ovActionBtn");
     const isFree = (currentItem.type || "").toLowerCase() === "free";
 
@@ -312,8 +283,11 @@ function openProduct(id){
         actionBtn.innerHTML = `<i class="fas fa-download"></i> Download Asset`;
         actionBtn.style.background = "#22c55e";
         actionBtn.onclick = () => {
-            if(downloadUrl) window.open(downloadUrl, "_blank");
-            else alert("Download link missing.");
+            if(downloadUrl && downloadUrl.trim() !== "") {
+                window.open(downloadUrl, "_blank");
+            } else {
+                alert("Download link missing in database.");
+            }
         };
     } else {
         actionBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy via Telegram`;
@@ -366,4 +340,4 @@ function toggleTheme(){
 if(localStorage.getItem("hx_theme") === "light") toggleTheme();
 </script>
 </body>
-        </html>
+  </html>
