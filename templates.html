@@ -5,154 +5,76 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HX Store | Pro Digital Marketplace</title>
 
+<script data-goatcounter="https://havenova-x.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <style>
 :root{
-  --bg:#0f172a;
-  --surface:#020617;
-  --card:#1e293b;
-  --border:#334155;
-  --text:#f8fafc;
-  --muted:#94a3b8;
-  --primary:#38bdf8;
-  --free-color:#22c55e;
-  --paid-color:#eab308;
+  --bg:#0f172a; --surface:#020617; --card:#1e293b; --border:#334155;
+  --text:#f8fafc; --muted:#94a3b8; --primary:#38bdf8;
+  --free-color:#22c55e; --paid-color:#eab308;
 }
-
 .light{
-  --bg:#f1f5f9;
-  --surface:#ffffff;
-  --card:#ffffff;
-  --border:#cbd5e1;
-  --text:#0f172a;
-  --muted:#64748b;
-  --primary:#0284c7;
+  --bg:#f1f5f9; --surface:#ffffff; --card:#ffffff; --border:#cbd5e1;
+  --text:#0f172a; --muted:#64748b; --primary:#0284c7;
 }
 
 *{ box-sizing:border-box; font-family: 'Inter', system-ui, sans-serif; }
+body{ margin:0; background:var(--bg); color:var(--text); transition: background .3s; padding-bottom: 80px;}
 
-body{ margin:0; background:var(--bg); color:var(--text); transition: background .3s; padding-bottom: 50px;}
-
-/* ================= HEADER ================= */
 header{
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
+  background:var(--surface); border-bottom:1px solid var(--border);
   display:flex; align-items:center; justify-content:space-between;
   padding:14px 20px; position: sticky; top:0; z-index: 1000;
 }
 .logo{ height:32px; filter: drop-shadow(0 0 5px var(--primary)); }
 
-/* ================= SEARCH & FILTER ================= */
 .controls-wrapper { padding: 20px; max-width: 1400px; margin: auto; }
 .search-bar {
     position: relative; display: flex; align-items: center;
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 15px; padding: 5px 15px; margin-bottom: 15px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 .search-bar input {
     flex: 1; background: none; border: none; color: var(--text);
     padding: 10px; outline: none; font-size: 16px;
 }
-.filter-dropdown { position: relative; }
-.filter-trigger {
-    background: var(--surface); border: 1px solid var(--border);
-    color: var(--text); padding: 10px 18px; border-radius: 12px;
-    cursor: pointer; display: flex; align-items: center; gap: 8px;
-}
 
-.filter-menu {
-    position: absolute; right: 0; top: 50px; background: var(--surface);
-    border: 1px solid var(--border); border-radius: 12px; display: none;
-    flex-direction: column; width: 120px; overflow: hidden; z-index: 100;
-}
-.filter-menu button {
-    background: none; border: none; color: var(--text); padding: 10px;
-    text-align: left; cursor: pointer;
-}
-.filter-menu button:hover { background: var(--primary); color: #000; }
-
-/* ================= STORE GRID ================= */
 .store-grid{
-  display:grid; 
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap:20px; padding: 0 20px; max-width: 1400px; margin: auto;
 }
-
-@media (min-width: 1200px) {
-  .store-grid { grid-template-columns: repeat(5, 1fr); }
-}
+@media (min-width: 1200px) { .store-grid { grid-template-columns: repeat(5, 1fr); } }
 
 .card{
   background:var(--card); border:1px solid var(--border);
   border-radius:20px; padding:12px; display:flex; flex-direction:column;
-  transition: transform 0.3s ease;
 }
-.card:hover{ transform: translateY(-5px); border-color: var(--primary); }
+.card img{ width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:14px; cursor: pointer;}
 
-.card img{ width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:14px; background: #000; cursor: pointer;}
-
-.badge-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-.type-badge { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: bold; text-transform: uppercase; }
-.type-free { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid #22c55e; }
-.type-paid { background: rgba(234, 179, 8, 0.2); color: #eab308; border: 1px solid #eab308; }
-
-.cat-badge { font-size: 11px; color: var(--muted); }
-
-/* ================= BUTTONS ================= */
 .btn-row { display: flex; gap: 6px; margin-top: auto; padding-top: 12px;}
 .main-btn {
     flex: 3; background: var(--primary); color: #020617; border: none;
-    padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 13px;
+    padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer;
 }
 .icon-btn {
     flex: 1; background: var(--surface); border: 1px solid var(--border);
-    color: var(--text); border-radius: 10px; cursor: pointer; font-size: 12px;
+    color: var(--text); border-radius: 10px; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 4px;
 }
 
-/* ================= OVERLAYS ================= */
-.overlay {
-    position: fixed; inset: 0; background: var(--bg); z-index: 2000;
-    display: none; flex-direction: column;
-}
-.overlay-header {
-    padding: 15px 20px; border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
-}
+.overlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: none; flex-direction: column; }
 .overlay-content { padding: 20px; overflow-y: auto; text-align: center; max-width: 800px; margin: auto; width: 100%;}
-.full-img { width: 100%; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: zoom-in; }
 
-#ovDesc {
-    line-height: 1.4 !important;
-    color: var(--muted) !important;
-    font-size: 11px !important; 
-    max-width: 400px !important;
-    margin: 0 auto 20px auto !important; 
-    text-align: center !important;
-    display: block !important;
+/* Support Floating Action Button */
+.fab-support {
+    position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+    background: var(--primary); color: #000; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1500;
 }
 
-/* Comment Box Styling */
-#comment-section {
-    margin-top: 30px; 
-    padding: 20px; 
-    background: var(--surface); 
-    border-radius: 15px; 
-    border: 1px solid var(--border);
-    text-align: left;
-}
-
-.support-box {
-    margin-top: 20px; padding: 15px; background: var(--surface);
-    border-radius: 15px; border: 1px solid var(--border); text-align: left;
-}
-.support-box textarea {
-    width: 100%; background: var(--bg); border: 1px solid var(--border);
-    color: var(--text); border-radius: 10px; padding: 10px; height: 80px; resize: none; margin-top: 10px;
-}
-
+#comment-section { margin-top: 30px; padding: 20px; background: var(--surface); border-radius: 15px; border: 1px solid var(--border); text-align: left; }
 </style>
 </head>
 
@@ -160,249 +82,154 @@ header{
 
 <header>
   <img src="logo1.png" class="logo">
-  <div style="display:flex; gap:10px;">
-      <button onclick="toggleTheme()" class="filter-trigger"><i id="tIcon" class="fas fa-moon"></i></button>
-  </div>
+  <button onclick="toggleTheme()" style="background:none; border:none; color:var(--text); cursor:pointer;"><i id="tIcon" class="fas fa-moon"></i></button>
 </header>
 
 <div class="controls-wrapper">
     <div class="search-bar">
-        <i class="fas fa-search" style="color:var(--muted)"></i>
-        <input type="text" id="searchInput" placeholder="Search assets or categories...">
-        <div class="filter-dropdown">
-            <button class="filter-trigger" onclick="toggleFilter()">
-                <span id="filterLabel">Filter</span> <i class="fas fa-filter"></i>
-            </button>
-            <div class="filter-menu" id="filterMenu">
-                <button onclick="applyFilter('all')">All</button>
-                <button onclick="applyFilter('free')">Free</button>
-                <button onclick="applyFilter('paid')">Paid</button>
-            </div>
-        </div>
+        <input type="text" id="searchInput" placeholder="Search assets...">
     </div>
 </div>
 
-<main>
+<main id="main-view">
     <div id="loading" style="text-align:center; padding: 50px;"><i class="fas fa-circle-notch fa-spin fa-2x"></i></div>
     <div id="template-container" class="store-grid"></div>
 </main>
 
-<div id="productOverlay" class="overlay">
-    <div class="overlay-header">
-        <h3 id="ovTitle" style="margin:0"></h3>
-        <button onclick="closeOverlay()" class="filter-trigger"><i class="fas fa-times"></i></button>
+<div id="supportOverlay" class="overlay">
+    <div style="padding:15px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+        <h3><i class="fas fa-headset"></i> Support Center</h3>
+        <button onclick="closeSupport()" style="background:none; border:none; color:var(--text); font-size:20px;"><i class="fas fa-times"></i></button>
     </div>
     <div class="overlay-content">
-        <img id="ovImg" class="full-img" onclick="zoomImg()" referrerpolicy="no-referrer">
-        <p id="ovDesc"></p>
-        <div id="ovPrice" style="font-size: 24px; font-weight: bold; margin-bottom: 20px; color:var(--primary);"></div>
-        
-        <button id="ovActionBtn" class="main-btn" style="width: 100%; font-size: 18px; padding: 15px;"></button>
+        <p>Experiencing an issue? Send us a message.</p>
+        <textarea id="supportMsg" style="width:100%; height:150px; background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:15px;" placeholder="Describe your problem..."></textarea>
+        <button class="main-btn" style="width:100%; padding:15px;" onclick="sendSupport()">Send Ticket via Telegram</button>
+    </div>
+</div>
+
+<div id="productOverlay" class="overlay">
+    <div style="padding:15px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+        <h3 id="ovTitle"></h3>
+        <button onclick="closeOverlay()" style="background:none; border:none; color:var(--text); font-size:20px;"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="overlay-content">
+        <img id="ovImg" style="width:100%; border-radius:15px; margin-bottom:20px;">
+        <p id="ovDesc" style="color:var(--muted); font-size:14px;"></p>
+        <div id="ovPrice" style="font-size:24px; font-weight:bold; margin:20px 0; color:var(--primary)"></div>
+        <button id="ovActionBtn" class="main-btn" style="width:100%; padding:15px; font-size:18px;"></button>
 
         <div id="comment-section">
-            <h4 style="margin:0 0 15px 0"><i class="fas fa-comments" style="color:var(--primary)"></i> Community Discussion</h4>
-            <div id="cusdis_thread" 
-                data-host="https://cusdis.com"
-                data-app-id="REPLACE_WITH_YOUR_CUSDIS_APP_ID" 
-                data-page-id="" 
-                data-page-url="" 
-                data-page-title="">
-            </div>
-        </div>
-
-        <div class="support-box">
-            <h4 style="margin:0"><i class="fas fa-headset" style="color:var(--primary)"></i> Support Center</h4>
-            <textarea id="supportMsg" placeholder="Describe your issue..."></textarea>
-            <button onclick="sendSupport()" class="main-btn" style="background:#2563eb; color:white; margin-top:10px; width:100%">
-                Send Support Ticket
-            </button>
+            <h4 style="margin-bottom:10px;"><i class="fas fa-comments"></i> Discussion</h4>
+            <div id="cusdis_thread" data-host="https://cusdis.com" data-app-id="REPLACE_WITH_YOUR_CUSDIS_APP_ID" data-page-id="" data-page-url="" data-page-title=""></div>
         </div>
     </div>
 </div>
 
-<div id="zoomView" class="overlay" style="background:rgba(0,0,0,0.9); justify-content:center; align-items:center;" onclick="this.style.display='none'">
-    <img id="zImg" style="max-width:95%; max-height:90%; object-fit:contain;" referrerpolicy="no-referrer">
-</div>
+<div class="fab-support" onclick="openSupport()"><i class="fas fa-comment-dots"></i></div>
 
 <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
 
 <script>
 const api_url = "https://script.google.com/macros/s/AKfycbzpxWVXd9pUQe5cJCTJyxtNB6TVto1TEDPmwRYq3bo0eKjfKfPWm558HeMh3EaOCMfl/exec";
 const myTG = "dechrisathx";
-const count_namespace = "hx_store_global_sync"; // Unique namespace for your likes
 let allItems = [];
-let currentItem = null;
 
-window.onload = () => {
-    const cached = localStorage.getItem("hx_cache");
-    if(cached){
-        allItems = JSON.parse(cached);
-        render(allItems);
-        document.getElementById("loading").style.display="none";
-    }
-    fetchData();
+// Back Button Handling Logic
+window.onpopstate = function() {
+    closeOverlay();
+    closeSupport();
 };
 
 async function fetchData(){
     try {
         const r = await fetch(api_url);
-        const d = await r.json();
-        console.log("Sheet Data Received:", d);
-        allItems = d;
-        localStorage.setItem("hx_cache", JSON.stringify(d));
-        render(d);
+        allItems = await r.json();
+        render(allItems);
         document.getElementById("loading").style.display="none";
-    } catch(e) { console.warn("Fetch failed, using cache."); }
+    } catch(e) { console.error("Fetch failed"); }
 }
 
-// GLOBAL SYNC: Fetch likes from CountAPI
-async function updateGlobalLikeDisplay(id, elementId) {
+async function getGlobalLikes(id, elId) {
     try {
-        const r = await fetch(`https://api.countapi.xyz/get/${count_namespace}/${id}`);
+        const r = await fetch(`https://havenova-x.goatcounter.com/counter/${id}.json`);
         const data = await r.json();
-        const el = document.getElementById(elementId);
-        if(el) el.innerText = data.value || 0;
-    } catch(e) { 
-        const el = document.getElementById(elementId);
-        if(el) el.innerText = 0;
-    }
+        document.getElementById(elId).innerText = data.count.replace(/,/g, '') || 0;
+    } catch(e) { document.getElementById(elId).innerText = "0"; }
 }
 
-// GLOBAL SYNC: Hit CountAPI to increase like
-async function addLike(id) {
+function addLike(id) {
     const span = document.getElementById(`count-${id}`);
-    try {
-        const r = await fetch(`https://api.countapi.xyz/hit/${count_namespace}/${id}`);
-        const data = await r.json();
-        if(span) span.innerText = data.value;
-        // Visual feedback
-        const btn = span.parentElement;
-        btn.style.color = "#ff4b2b";
-    } catch(e) { console.error("Global sync failed"); }
+    const img = new Image();
+    img.src = `https://havenova-x.goatcounter.com/count?p=${id}&t=${id}`;
+    span.innerText = (parseInt(span.innerText) || 0) + 1;
+    span.parentElement.style.color = "#ff4b2b";
 }
 
 function render(data){
     const container = document.getElementById("template-container");
     container.innerHTML = "";
     data.forEach(item => {
-        const type = (item.type || "").toLowerCase();
-        const isFree = type === "free";
         const id = item.name.replace(/\s+/g,'_').toLowerCase();
-        
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-            <img src="${item.imageurl || item.imageUrl || item['Image URL']}" referrerpolicy="no-referrer" onclick="openProduct('${id}')" onerror="this.onerror=null; this.src='logo1.png';">
-            <div class="badge-row">
-                <span class="type-badge ${isFree?'type-free':'type-paid'}">${(item.type || "PAID").toUpperCase()}</span>
-                <span class="cat-badge">${item.category || ""}</span>
-            </div>
-            <h3 style="margin:8px 0 4px; font-size:16px;">${item.name}</h3>
-            <p style="margin:0; font-size:11px; color:var(--muted);">${(item.description || "").substring(0, 40)}...</p>
-            <div style="font-weight:bold; color:var(--primary); margin: 8px 0;">${item.price || "Free"}</div>
+            <img src="${item.imageurl || item.imageUrl}" onclick="openProduct('${id}')">
+            <h3 style="margin:10px 0 5px; font-size:16px;">${item.name}</h3>
             <div class="btn-row">
                 <button class="main-btn" onclick="openProduct('${id}')">View Details</button>
                 <button class="icon-btn" onclick="addLike('${id}')">
-                    <i class="fas fa-heart"></i> <span id="count-${id}">...</span>
+                    <i class="fas fa-heart"></i> <span id="count-${id}">0</span>
                 </button>
             </div>
         `;
         container.appendChild(card);
-        updateGlobalLikeDisplay(id, `count-${id}`);
+        getGlobalLikes(id, `count-${id}`);
     });
 }
 
 function openProduct(id){
-    currentItem = allItems.find(i => i.name.replace(/\s+/g,'_').toLowerCase() === id);
-    if(!currentItem) return;
+    const item = allItems.find(i => i.name.replace(/\s+/g,'_').toLowerCase() === id);
+    if(!item) return;
+
+    // Push state so back button works correctly
+    history.pushState({view: 'product'}, item.name, "#" + id);
 
     const ov = document.getElementById("productOverlay");
     ov.style.display = "flex";
-    
-    const imgUrl = currentItem.imageurl || currentItem.imageUrl || currentItem['Image URL'];
-    const downloadUrl = currentItem.downloadurl || currentItem.downloadUrl || currentItem['Download URL'];
-    
-    document.getElementById("ovImg").src = imgUrl;
-    document.getElementById("ovTitle").innerText = currentItem.name;
-    document.getElementById("ovDesc").innerText = currentItem.description;
-    document.getElementById("ovPrice").innerText = currentItem.price;
+    document.getElementById("ovTitle").innerText = item.name;
+    document.getElementById("ovImg").src = item.imageurl || item.imageUrl;
+    document.getElementById("ovDesc").innerText = item.description;
+    document.getElementById("ovPrice").innerText = item.price || "Free";
 
-    const actionBtn = document.getElementById("ovActionBtn");
-    const isFree = (currentItem.type || "").toLowerCase() === "free";
+    const btn = document.getElementById("ovActionBtn");
+    btn.innerText = (item.type.toLowerCase() === 'free') ? "Download Asset" : "Buy via Telegram";
+    btn.onclick = () => window.open(item.downloadurl || item.downloadUrl, "_blank");
 
-    if(isFree){
-        actionBtn.innerHTML = `<i class="fas fa-download"></i> Download Asset`;
-        actionBtn.style.background = "#22c55e";
-        actionBtn.onclick = () => {
-            if(downloadUrl && downloadUrl.trim() !== "") {
-                window.open(downloadUrl, "_blank");
-            } else {
-                alert("The download link is missing in the database.");
-            }
-        };
-    } else {
-        actionBtn.innerHTML = `<i class="fas fa-shopping-cart"></i> Buy via Telegram`;
-        actionBtn.style.background = "#38bdf8";
-        actionBtn.onclick = () => {
-            const msg = `Hello Christian! I want to purchase:\nID: HX-${id}\nItem: ${currentItem.name}\nPrice: ${currentItem.price}`;
-            window.open(`https://t.me/${myTG}?text=${encodeURIComponent(msg)}`, "_blank");
-        };
-    }
-
-    // Refresh Comment Widget for this product
     if(window.CUSDIS) {
         window.CUSDIS.renderTo(document.getElementById('cusdis_thread'), {
-            pageId: id,
-            pageTitle: currentItem.name,
-            pageUrl: window.location.href + "#" + id
+            pageId: id, pageTitle: item.name, pageUrl: window.location.href
         });
     }
 }
 
-function closeOverlay(){ document.getElementById("productOverlay").style.display="none"; }
+function closeOverlay(){ document.getElementById("productOverlay").style.display = "none"; }
 
-function zoomImg(){
-    const zImg = document.getElementById("zImg");
-    zImg.src = document.getElementById("ovImg").src;
-    document.getElementById("zoomView").style.display = "flex";
+function openSupport(){
+    history.pushState({view: 'support'}, 'Support', "#support");
+    document.getElementById("supportOverlay").style.display = "flex";
 }
-
-document.getElementById("searchInput").oninput = () => {
-    const q = document.getElementById("searchInput").value.toLowerCase();
-    const filtered = allItems.filter(i => 
-        (i.name || "").toLowerCase().includes(q) || 
-        (i.description || "").toLowerCase().includes(q) || 
-        (i.category || "").toLowerCase().includes(q)
-    );
-    render(filtered);
-};
-
-function toggleFilter(){
-    const m = document.getElementById("filterMenu");
-    m.style.display = (m.style.display === "flex") ? "none" : "flex";
-}
-
-function applyFilter(f){
-    toggleFilter();
-    document.getElementById("filterLabel").innerText = (f === 'all') ? 'Filter' : f.charAt(0).toUpperCase() + f.slice(1);
-    const filtered = (f === "all") ? allItems : allItems.filter(i => (i.type || "").toLowerCase() === f);
-    render(filtered);
-}
+function closeSupport(){ document.getElementById("supportOverlay").style.display = "none"; }
 
 function sendSupport(){
-    const userMsg = document.getElementById("supportMsg").value;
-    if(!userMsg) return alert("Please type your issue first!");
-    const id = currentItem.name.replace(/\s+/g,'_').toLowerCase();
-    const fullMsg = `[SUPPORT REQUEST]\nAsset: ${currentItem.name} (HX-${id})\n\nUser Issue:\n${userMsg}`;
-    window.open(`https://t.me/${myTG}?text=${encodeURIComponent(fullMsg)}`, "_blank");
+    const msg = document.getElementById("supportMsg").value;
+    if(!msg) return alert("Please type your message.");
+    window.open(`https://t.me/${myTG}?text=${encodeURIComponent("[SUPPORT]\n"+msg)}`, "_blank");
 }
 
-function toggleTheme(){
-    const isLight = document.body.classList.toggle("light");
-    document.getElementById("tIcon").className = isLight ? "fas fa-sun" : "fas fa-moon";
-    localStorage.setItem("hx_theme", isLight ? "light" : "dark");
-}
-if(localStorage.getItem("hx_theme") === "light") toggleTheme();
+function toggleTheme(){ document.body.classList.toggle("light"); }
+
+window.onload = fetchData;
 </script>
 </body>
-  </html>
+          </html>
