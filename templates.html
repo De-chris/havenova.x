@@ -13,11 +13,13 @@
   --bg:#0f172a; --surface:#020617; --card:#1e293b; --border:#334155;
   --text:#f8fafc; --muted:#94a3b8; --primary:#38bdf8;
   --free-color:#22c55e; --paid-color:#eab308;
+  --error-bg: #450a0a; --error-text: #fca5a5;
 }
 
 .light{
   --bg:#f1f5f9; --surface:#ffffff; --card:#ffffff; --border:#cbd5e1;
   --text:#0f172a; --muted:#64748b; --primary:#0284c7;
+  --error-bg: #fee2e2; --error-text: #b91c1c;
 }
 
 *{ box-sizing:border-box; font-family: 'Inter', system-ui, sans-serif; }
@@ -29,6 +31,13 @@ header{
   padding:14px 20px; position: sticky; top:0; z-index: 1000;
 }
 .logo{ height:32px; filter: drop-shadow(0 0 5px var(--primary)); }
+
+/* Error/Offline Banner */
+#sync-status {
+    display: none; background: var(--error-bg); color: var(--error-text);
+    text-align: center; padding: 8px; font-size: 11px; font-weight: 500;
+    border-bottom: 1px solid var(--border);
+}
 
 .controls-wrapper { padding: 20px; max-width: 1400px; margin: auto; }
 .search-bar {
@@ -59,13 +68,10 @@ header{
 }
 .filter-menu button:hover { background: var(--primary); color: #000; }
 
-/* 2 columns on mobile, 5 on desktop */
 .store-grid{
-  display:grid; 
-  grid-template-columns: repeat(2, 1fr);
+  display:grid; grid-template-columns: repeat(2, 1fr);
   gap:12px; padding: 0 15px; max-width: 1400px; margin: auto;
 }
-
 @media (min-width: 768px) { .store-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (min-width: 1200px) { .store-grid { grid-template-columns: repeat(5, 1fr); } }
 
@@ -100,13 +106,13 @@ header{
 
 #ovDesc { line-height: 1.4; color: var(--muted); font-size: 11px; max-width: 400px; margin: 0 auto 20px auto; display: block; }
 #comment-section { margin-top: 30px; padding: 20px; background: var(--surface); border-radius: 15px; border: 1px solid var(--border); text-align: left; }
-
 .support-box { margin-top: 20px; padding: 15px; background: var(--surface); border-radius: 15px; border: 1px solid var(--border); text-align: left; }
 .support-box textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 10px; height: 80px; resize: none; margin-top: 10px; }
 </style>
 </head>
 
 <body>
+<div id="sync-status"><i class="fas fa-exclamation-triangle"></i> Unable to sync live data. Showing last known version.</div>
 
 <header>
   <img src="logo1.png" class="logo">
@@ -136,7 +142,7 @@ header{
 <main>
     <div id="loading" style="text-align:center; padding: 50px;">
         <i class="fas fa-circle-notch fa-spin fa-2x"></i>
-        <p id="loadStatus" style="font-size: 12px; margin-top: 10px; color: var(--muted);">Connecting to database...</p>
+        <p id="loadStatus" style="font-size: 12px; margin-top: 10px; color: var(--muted);">Loading Assets...</p>
     </div>
     <div id="template-container" class="store-grid"></div>
 </main>
@@ -185,48 +191,62 @@ let allItems = [];
 window.onpopstate = () => { closeOverlay(); };
 
 window.onload = () => {
+    // 1. Immediate Load from Cache
     const cached = localStorage.getItem("hx_cache");
     if(cached){
         allItems = JSON.parse(cached);
         render(allItems);
         document.getElementById("loading").style.display="none";
     }
+    // 2. Fetch fresh data in background
     fetchData(); 
 };
 
 async function fetchData(){
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
     try {
         const r = await fetch(api_url, { signal: controller.signal });
-        allItems = await r.json();
-        localStorage.setItem("hx_cache", JSON.stringify(allItems));
-        render(allItems);
+        const freshData = await r.json();
+        
+        // Only re-render if data has changed
+        if(JSON.stringify(freshData) !== JSON.stringify(allItems)) {
+            allItems = freshData;
+            localStorage.setItem("hx_cache", JSON.stringify(allItems));
+            render(allItems);
+        }
+        
         document.getElementById("loading").style.display="none";
+        document.getElementById("sync-status").style.display="none";
         clearTimeout(timeoutId);
     } catch(e) { 
-        console.error("Fetch error or timeout");
-        const loader = document.getElementById("loading");
+        console.warn("Background sync failed");
+        // If we have nothing (no cache and fetch failed)
         if (!allItems.length) {
-            loader.innerHTML = `<button onclick="location.reload()" class="main-btn">Connection Slow: Tap to Retry</button>`;
+            document.getElementById("loading").innerHTML = `<button onclick="location.reload()" class="main-btn">Tap to Retry Connection</button>`;
         } else {
-            loader.style.display = "none";
+            // If we have cache, just show the subtle error banner
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("sync-status").style.display = "block";
         }
     }
 }
 
 function refreshData() {
+    document.getElementById("loading").style.display="block";
     localStorage.removeItem("hx_cache");
-    location.reload();
+    fetchData();
 }
 
+// Background like updates
 async function updateLikes(id, elId) {
     try {
         const r = await fetch(`https://havenova-x.goatcounter.com/counter/${id}.json`);
         const data = await r.json();
-        document.getElementById(elId).innerText = data.count.replace(/,/g, '') || 0;
-    } catch(e) { document.getElementById(elId).innerText = "0"; }
+        const span = document.getElementById(elId);
+        if(span) span.innerText = data.count.replace(/,/g, '') || 0;
+    } catch(e) { /* silent fail */ }
 }
 
 function addLike(id) {
@@ -246,7 +266,7 @@ function render(data){
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-            <img src="${item.imageurl || item.imageUrl}" referrerpolicy="no-referrer" onclick="openProduct('${id}')">
+            <img src="${item.imageurl || item.imageUrl}" referrerpolicy="no-referrer" onclick="openProduct('${id}')" loading="lazy">
             <div class="badge-row">
                 <span class="type-badge ${item.type.toLowerCase()==='free'?'type-free':'type-paid'}">${item.type.toUpperCase()}</span>
                 <span class="cat-badge">${item.category || ""}</span>
@@ -283,12 +303,13 @@ function openProduct(id){
     };
     actionBtn.innerText = item.type.toLowerCase() === 'free' ? "Download" : "Buy via Telegram";
 
+    // Comments load independently
     if(window.CUSDIS) {
-        window.CUSDIS.renderTo(document.getElementById('cusdis_thread'), {
-            pageId: id, 
-            pageTitle: item.name, 
-            pageUrl: window.location.href
-        });
+        try {
+            window.CUSDIS.renderTo(document.getElementById('cusdis_thread'), {
+                pageId: id, pageTitle: item.name, pageUrl: window.location.href
+            });
+        } catch(e) { console.warn("Cusdis failed to load"); }
     }
 }
 
