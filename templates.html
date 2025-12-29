@@ -9,41 +9,35 @@
 
 <style>
 :root{
-  --bg:#0f172a;
-  --surface:#020617;
-  --card:#1e293b;
-  --border:#334155;
-  --text:#f8fafc;
-  --muted:#94a3b8;
-  --primary:#38bdf8;
-  --free-color:#22c55e;
-  --paid-color:#eab308;
+  --bg:#0f172a; --surface:#020617; --card:#1e293b; --border:#334155;
+  --text:#f8fafc; --muted:#94a3b8; --primary:#38bdf8;
+  --free-color:#22c55e; --paid-color:#eab308;
+  --error-bg: #450a0a; --error-text: #fca5a5;
 }
 
 .light{
-  --bg:#f1f5f9;
-  --surface:#ffffff;
-  --card:#ffffff;
-  --border:#cbd5e1;
-  --text:#0f172a;
-  --muted:#64748b;
-  --primary:#0284c7;
+  --bg:#f1f5f9; --surface:#ffffff; --card:#ffffff; --border:#cbd5e1;
+  --text:#0f172a; --muted:#64748b; --primary:#0284c7;
+  --error-bg: #fee2e2; --error-text: #b91c1c;
 }
 
 *{ box-sizing:border-box; font-family: 'Inter', system-ui, sans-serif; }
-
 body{ margin:0; background:var(--bg); color:var(--text); transition: background .3s; padding-bottom: 50px;}
 
-/* ================= HEADER ================= */
+/* Header Sync Banner */
+#sync-status {
+    display: none; background: var(--error-bg); color: var(--error-text);
+    text-align: center; padding: 8px; font-size: 11px; font-weight: 500;
+    border-bottom: 1px solid var(--border);
+}
+
 header{
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
+  background:var(--surface); border-bottom:1px solid var(--border);
   display:flex; align-items:center; justify-content:space-between;
   padding:14px 20px; position: sticky; top:0; z-index: 1000;
 }
 .logo{ height:32px; filter: drop-shadow(0 0 5px var(--primary)); }
 
-/* ================= SEARCH & FILTER ================= */
 .controls-wrapper { padding: 20px; max-width: 1400px; margin: auto; }
 .search-bar {
     position: relative; display: flex; align-items: center;
@@ -73,16 +67,13 @@ header{
 }
 .filter-menu button:hover { background: var(--primary); color: #000; }
 
-/* ================= STORE GRID ================= */
 .store-grid{
   display:grid; 
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap:20px; padding: 0 20px; max-width: 1400px; margin: auto;
 }
 
-@media (min-width: 1200px) {
-  .store-grid { grid-template-columns: repeat(5, 1fr); }
-}
+@media (min-width: 1200px) { .store-grid { grid-template-columns: repeat(5, 1fr); } }
 
 .card{
   background:var(--card); border:1px solid var(--border);
@@ -90,17 +81,14 @@ header{
   transition: transform 0.3s ease;
 }
 .card:hover{ transform: translateY(-5px); border-color: var(--primary); }
-
 .card img{ width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:14px; background: #000; cursor: pointer;}
 
 .badge-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
 .type-badge { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: bold; text-transform: uppercase; }
 .type-free { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid #22c55e; }
 .type-paid { background: rgba(234, 179, 8, 0.2); color: #eab308; border: 1px solid #eab308; }
-
 .cat-badge { font-size: 11px; color: var(--muted); }
 
-/* ================= BUTTONS ================= */
 .btn-row { display: flex; gap: 6px; margin-top: auto; padding-top: 12px;}
 .main-btn {
     flex: 3; background: var(--primary); color: #020617; border: none;
@@ -112,45 +100,25 @@ header{
     display: flex; align-items: center; justify-content: center; gap: 4px;
 }
 
-/* ================= OVERLAYS ================= */
-.overlay {
-    position: fixed; inset: 0; background: var(--bg); z-index: 2000;
-    display: none; flex-direction: column;
-}
-.overlay-header {
-    padding: 15px 20px; border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
-}
+.overlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: none; flex-direction: column; }
+.overlay-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 .overlay-content { padding: 20px; overflow-y: auto; text-align: center; max-width: 800px; margin: auto; width: 100%;}
 .full-img { width: 100%; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: zoom-in; }
 
-#ovDesc {
-    line-height: 1.4 !important;
-    color: var(--muted) !important;
-    font-size: 11px !important; 
-    max-width: 400px !important;
-    margin: 0 auto 20px auto !important; 
-    text-align: center !important;
-    display: block !important;
-}
+#ovDesc { line-height: 1.4 !important; color: var(--muted) !important; font-size: 11px !important; max-width: 400px !important; margin: 0 auto 20px auto !important; text-align: center !important; display: block !important; }
 
-.support-box {
-    margin-top: 20px; padding: 15px; background: var(--surface);
-    border-radius: 15px; border: 1px solid var(--border); text-align: left;
-}
-.support-box textarea {
-    width: 100%; background: var(--bg); border: 1px solid var(--border);
-    color: var(--text); border-radius: 10px; padding: 10px; height: 80px; resize: none; margin-top: 10px;
-}
-
+.support-box { margin-top: 20px; padding: 15px; background: var(--surface); border-radius: 15px; border: 1px solid var(--border); text-align: left; }
+.support-box textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 10px; height: 80px; resize: none; margin-top: 10px; }
 </style>
 </head>
 
 <body>
+<div id="sync-status"><i class="fas fa-wifi"></i> Connection slow. Showing last updated version.</div>
 
 <header>
   <img src="logo1.png" class="logo">
   <div style="display:flex; gap:10px;">
+      <button onclick="refreshData()" class="filter-trigger" title="Force Refresh"><i class="fas fa-sync-alt"></i></button>
       <button onclick="toggleTheme()" class="filter-trigger"><i id="tIcon" class="fas fa-moon"></i></button>
   </div>
 </header>
@@ -186,15 +154,11 @@ header{
         <img id="ovImg" class="full-img" onclick="zoomImg()" referrerpolicy="no-referrer">
         <p id="ovDesc"></p>
         <div id="ovPrice" style="font-size: 24px; font-weight: bold; margin-bottom: 20px; color:var(--primary);"></div>
-        
         <button id="ovActionBtn" class="main-btn" style="width: 100%; font-size: 18px; padding: 15px;"></button>
-
         <div class="support-box">
             <h4 style="margin:0"><i class="fas fa-headset" style="color:var(--primary)"></i> Support Center</h4>
             <textarea id="supportMsg" placeholder="Describe your issue..."></textarea>
-            <button onclick="sendSupport()" class="main-btn" style="background:#2563eb; color:white; margin-top:10px; width:100%">
-                Send Support Ticket
-            </button>
+            <button onclick="sendSupport()" class="main-btn" style="background:#2563eb; color:white; margin-top:10px; width:100%">Send Support Ticket</button>
         </div>
     </div>
 </div>
@@ -210,6 +174,7 @@ let allItems = [];
 let currentItem = null;
 
 window.onload = () => {
+    // Immediate load from cache to prevent infinite loading
     const cached = localStorage.getItem("hx_cache");
     if(cached){
         allItems = JSON.parse(cached);
@@ -220,16 +185,34 @@ window.onload = () => {
 };
 
 async function fetchData(){
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
     try {
-        const r = await fetch(api_url);
+        const r = await fetch(api_url, { signal: controller.signal });
         const d = await r.json();
-        // LOG DATA TO CONSOLE FOR DEBUGGING
         console.log("Sheet Data Received:", d);
         allItems = d;
         localStorage.setItem("hx_cache", JSON.stringify(d));
         render(d);
         document.getElementById("loading").style.display="none";
-    } catch(e) { console.warn("Fetch failed, using cache."); }
+        document.getElementById("sync-status").style.display="none";
+    } catch(e) { 
+        console.warn("Background fetch failed or timed out.");
+        if (allItems.length > 0) {
+            document.getElementById("loading").style.display="none";
+            document.getElementById("sync-status").style.display="block";
+        } else {
+            document.getElementById("loading").innerHTML = `<button onclick="location.reload()" class="main-btn">Slow Connection: Tap to Retry</button>`;
+        }
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
+function refreshData() {
+    localStorage.removeItem("hx_cache");
+    location.reload();
 }
 
 function getLikes(id) {
@@ -252,10 +235,13 @@ function render(data){
         const isFree = type === "free";
         const id = item.name.replace(/\s+/g,'_').toLowerCase();
         
+        // RESTORED: Multi-key image logic
+        const imgUrl = item.imageurl || item.imageUrl || item['Image URL'] || 'logo1.png';
+        
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-            <img src="${item.imageurl || item.imageUrl || item['Image URL']}" referrerpolicy="no-referrer" onclick="openProduct('${id}')" onerror="this.onerror=null; this.src='logo1.png';">
+            <img src="${imgUrl}" referrerpolicy="no-referrer" onclick="openProduct('${id}')" onerror="this.onerror=null; this.src='logo1.png';">
             <div class="badge-row">
                 <span class="type-badge ${isFree?'type-free':'type-paid'}">${(item.type || "PAID").toUpperCase()}</span>
                 <span class="cat-badge">${item.category || ""}</span>
@@ -281,7 +267,7 @@ function openProduct(id){
     const ov = document.getElementById("productOverlay");
     ov.style.display = "flex";
     
-    // Check multiple possible key names for image and download URL
+    // RESTORED: Multi-key logic for details
     const imgUrl = currentItem.imageurl || currentItem.imageUrl || currentItem['Image URL'];
     const downloadUrl = currentItem.downloadurl || currentItem.downloadUrl || currentItem['Download URL'];
     
@@ -300,8 +286,7 @@ function openProduct(id){
             if(downloadUrl && downloadUrl.trim() !== "") {
                 window.open(downloadUrl, "_blank");
             } else {
-                alert("The download link is missing in the database. Please contact support.");
-                console.error("Missing download link for:", currentItem.name, "Object data:", currentItem);
+                alert("Download link missing in database.");
             }
         };
     } else {
@@ -315,12 +300,7 @@ function openProduct(id){
 }
 
 function closeOverlay(){ document.getElementById("productOverlay").style.display="none"; }
-
-function zoomImg(){
-    const zImg = document.getElementById("zImg");
-    zImg.src = document.getElementById("ovImg").src;
-    document.getElementById("zoomView").style.display = "flex";
-}
+function zoomImg(){ document.getElementById("zImg").src = document.getElementById("ovImg").src; document.getElementById("zoomView").style.display = "flex"; }
 
 document.getElementById("searchInput").oninput = () => {
     const q = document.getElementById("searchInput").value.toLowerCase();
@@ -360,4 +340,4 @@ function toggleTheme(){
 if(localStorage.getItem("hx_theme") === "light") toggleTheme();
 </script>
 </body>
-</html>
+        </html>
