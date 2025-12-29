@@ -134,6 +134,16 @@ header{
     display: block !important;
 }
 
+/* Comment Box Styling */
+#comment-section {
+    margin-top: 30px; 
+    padding: 20px; 
+    background: var(--surface); 
+    border-radius: 15px; 
+    border: 1px solid var(--border);
+    text-align: left;
+}
+
 .support-box {
     margin-top: 20px; padding: 15px; background: var(--surface);
     border-radius: 15px; border: 1px solid var(--border); text-align: left;
@@ -189,6 +199,17 @@ header{
         
         <button id="ovActionBtn" class="main-btn" style="width: 100%; font-size: 18px; padding: 15px;"></button>
 
+        <div id="comment-section">
+            <h4 style="margin:0 0 15px 0"><i class="fas fa-comments" style="color:var(--primary)"></i> Community Discussion</h4>
+            <div id="cusdis_thread" 
+                data-host="https://cusdis.com"
+                data-app-id="REPLACE_WITH_YOUR_CUSDIS_APP_ID" 
+                data-page-id="" 
+                data-page-url="" 
+                data-page-title="">
+            </div>
+        </div>
+
         <div class="support-box">
             <h4 style="margin:0"><i class="fas fa-headset" style="color:var(--primary)"></i> Support Center</h4>
             <textarea id="supportMsg" placeholder="Describe your issue..."></textarea>
@@ -203,9 +224,12 @@ header{
     <img id="zImg" style="max-width:95%; max-height:90%; object-fit:contain;" referrerpolicy="no-referrer">
 </div>
 
+<script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
+
 <script>
 const api_url = "https://script.google.com/macros/s/AKfycbzpxWVXd9pUQe5cJCTJyxtNB6TVto1TEDPmwRYq3bo0eKjfKfPWm558HeMh3EaOCMfl/exec";
 const myTG = "dechrisathx";
+const count_namespace = "hx_store_global_sync"; // Unique namespace for your likes
 let allItems = [];
 let currentItem = null;
 
@@ -223,7 +247,6 @@ async function fetchData(){
     try {
         const r = await fetch(api_url);
         const d = await r.json();
-        // LOG DATA TO CONSOLE FOR DEBUGGING
         console.log("Sheet Data Received:", d);
         allItems = d;
         localStorage.setItem("hx_cache", JSON.stringify(d));
@@ -232,16 +255,30 @@ async function fetchData(){
     } catch(e) { console.warn("Fetch failed, using cache."); }
 }
 
-function getLikes(id) {
-    let likes = JSON.parse(localStorage.getItem('hx_likes') || '{}');
-    return likes[id] || 0; 
+// GLOBAL SYNC: Fetch likes from CountAPI
+async function updateGlobalLikeDisplay(id, elementId) {
+    try {
+        const r = await fetch(`https://api.countapi.xyz/get/${count_namespace}/${id}`);
+        const data = await r.json();
+        const el = document.getElementById(elementId);
+        if(el) el.innerText = data.value || 0;
+    } catch(e) { 
+        const el = document.getElementById(elementId);
+        if(el) el.innerText = 0;
+    }
 }
 
-function addLike(id) {
-    let likes = JSON.parse(localStorage.getItem('hx_likes') || '{}');
-    likes[id] = (likes[id] || 0) + 1;
-    localStorage.setItem('hx_likes', JSON.stringify(likes));
-    render(allItems); 
+// GLOBAL SYNC: Hit CountAPI to increase like
+async function addLike(id) {
+    const span = document.getElementById(`count-${id}`);
+    try {
+        const r = await fetch(`https://api.countapi.xyz/hit/${count_namespace}/${id}`);
+        const data = await r.json();
+        if(span) span.innerText = data.value;
+        // Visual feedback
+        const btn = span.parentElement;
+        btn.style.color = "#ff4b2b";
+    } catch(e) { console.error("Global sync failed"); }
 }
 
 function render(data){
@@ -266,11 +303,12 @@ function render(data){
             <div class="btn-row">
                 <button class="main-btn" onclick="openProduct('${id}')">View Details</button>
                 <button class="icon-btn" onclick="addLike('${id}')">
-                    <i class="fas fa-heart" style="color:#ff4b2b"></i> <span>${getLikes(id)}</span>
+                    <i class="fas fa-heart"></i> <span id="count-${id}">...</span>
                 </button>
             </div>
         `;
         container.appendChild(card);
+        updateGlobalLikeDisplay(id, `count-${id}`);
     });
 }
 
@@ -281,7 +319,6 @@ function openProduct(id){
     const ov = document.getElementById("productOverlay");
     ov.style.display = "flex";
     
-    // Check multiple possible key names for image and download URL
     const imgUrl = currentItem.imageurl || currentItem.imageUrl || currentItem['Image URL'];
     const downloadUrl = currentItem.downloadurl || currentItem.downloadUrl || currentItem['Download URL'];
     
@@ -300,8 +337,7 @@ function openProduct(id){
             if(downloadUrl && downloadUrl.trim() !== "") {
                 window.open(downloadUrl, "_blank");
             } else {
-                alert("The download link is missing in the database. Please contact support.");
-                console.error("Missing download link for:", currentItem.name, "Object data:", currentItem);
+                alert("The download link is missing in the database.");
             }
         };
     } else {
@@ -311,6 +347,15 @@ function openProduct(id){
             const msg = `Hello Christian! I want to purchase:\nID: HX-${id}\nItem: ${currentItem.name}\nPrice: ${currentItem.price}`;
             window.open(`https://t.me/${myTG}?text=${encodeURIComponent(msg)}`, "_blank");
         };
+    }
+
+    // Refresh Comment Widget for this product
+    if(window.CUSDIS) {
+        window.CUSDIS.renderTo(document.getElementById('cusdis_thread'), {
+            pageId: id,
+            pageTitle: currentItem.name,
+            pageUrl: window.location.href + "#" + id
+        });
     }
 }
 
@@ -360,4 +405,4 @@ function toggleTheme(){
 if(localStorage.getItem("hx_theme") === "light") toggleTheme();
 </script>
 </body>
-      </html>
+  </html>
