@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HX Store | Pro Digital Marketplace</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+:root{
+  --bg:#0f172a; --surface:#020617; --card:#1e293b; --border:#334155;
+  --text:#f8fafc; --muted:#94a3b8; --primary:#38bdf8;
+  --free-color:#22c55e; --paid-color:#eab308;
+  --error-bg: #450a0a; --error-text: #fca5a5;
+  --icon-gradient: linear-gradient(135deg, #1e40af, #3b82f6);
+}
+
+.light{
+  --bg:#f1f5f9; --surface:#ffffff; --card:#ffffff; --border:#cbd5e1;
+  --text:#0f172a; --muted:#64748b; --primary:#0284c7;
+  --error-bg: #fee2e2; --error-text: #b91c1c;
+  --icon-gradient: linear-gradient(135deg, #7dd3fc, #0ea5e9);
+}
+
+*{ box-sizing:border-box; font-family: 'Inter', system-ui, sans-serif; }
+body{ margin:0; background:var(--bg); color:var(--text); transition: background .3s; padding-bottom: 50px;}
+
+#sync-status {
+    display: none; background: var(--error-bg); color: var(--error-text);
+    text-align: center; padding: 8px; font-size: 11px; font-weight: 500;
+    border-bottom: 1px solid var(--border);
+}
+
+header{
+  background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 20px; position: sticky; top:0; z-index: 1000;
+}
+.logo{ height:32px; filter: drop-shadow(0 0 5px var(--primary)); cursor: pointer; }
+
+.filter-trigger, .icon-btn-alt {
+    background: transparent !important; border: none !important;
+    cursor: pointer; padding: 10px; display: flex; align-items: center;
+    justify-content: center; transition: 0.3s;
+}
+
+.filter-trigger i, .icon-btn-alt i {
+    font-size: 20px; background: var(--icon-gradient);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.controls-wrapper { padding: 20px; max-width: 1400px; margin: auto; }
+.search-bar {
+    position: relative; display: flex; align-items: center;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 15px; padding: 5px 15px; margin-bottom: 15px;
+}
+.search-bar input {
+    flex: 1; background: none; border: none; color: var(--text);
+    padding: 10px; outline: none; font-size: 16px;
+}
+
+.store-grid{
+  display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap:20px; padding: 0 20px; max-width: 1400px; margin: auto;
+}
+
+.card{
+  background:var(--card); border:1px solid var(--border);
+  border-radius:20px; padding:12px; display:flex; flex-direction:column;
+  transition: 0.3s; position: relative;
+}
+.card:hover{ transform: translateY(-5px); border-color: var(--primary); }
+.card img{ width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:14px; background: #000; cursor: pointer;}
+
+/* Tiny Action Buttons */
+.card-actions { position: absolute; top: 18px; right: 18px; display: flex; gap: 6px; }
+.tiny-action { 
+    background: rgba(0,0,0,0.5); color: white; border: none; 
+    width: 28px; height: 28px; border-radius: 8px; cursor: pointer; 
+    font-size: 12px; backdrop-filter: blur(4px); transition: 0.2s;
+}
+.tiny-action:hover { background: var(--primary); color: #000; }
+.tiny-report:hover { background: #ff4b2b; color: #fff; }
+
+.badge-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.type-badge { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: bold; text-transform: uppercase; }
+.type-free { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid #22c55e; }
+.type-paid { background: rgba(234, 179, 8, 0.2); color: #eab308; border: 1px solid #eab308; }
+
+.btn-row { display: flex; gap: 6px; margin-top: auto; padding-top: 12px;}
+.main-btn {
+    flex: 3; background: var(--primary); color: #020617; border: none;
+    padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 13px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+
+.icon-btn {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); border-radius: 10px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 12px;
+}
+
+/* Overlays */
+.overlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: none; flex-direction: column; }
+.overlay-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface); }
+.overlay-content { padding: 20px; overflow-y: auto; text-align: center; max-width: 800px; margin: auto; width: 100%;}
+.full-img { width: 100%; border-radius: 20px; margin-bottom: 20px; }
+
+.comment-box { margin-top: 25px; text-align: left; background: var(--surface); padding: 15px; border-radius: 15px; border: 1px solid var(--border); }
+#commentList { max-height: 300px; overflow-y: auto; margin-bottom: 10px; }
+.comment-item { border-bottom: 1px solid var(--border); padding: 8px 0; font-size: 13px; }
+.comment-user { font-weight: bold; color: var(--primary); margin-right: 5px; }
+
+.auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; align-items: center; justify-content: center; }
+.auth-card { background: var(--card); padding: 25px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; }
+.auth-card input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+</style>
+</head>
+
+<body>
+<div id="sync-status"><i class="fas fa-wifi"></i> Syncing with database...</div>
+
+<header>
+  <img src="logo1.png" class="logo" onclick="location.reload()">
+  <div style="display:flex; gap:10px;">
+      <button id="userBtn" onclick="toggleAccount()" class="filter-trigger"><i class="fas fa-user"></i></button>
+      <button onclick="refreshData()" class="filter-trigger"><i class="fas fa-sync-alt"></i></button>
+      <button onclick="toggleTheme()" class="filter-trigger"><i id="tIcon" class="fas fa-moon"></i></button>
+  </div>
+</header>
+
+<div id="authModal" class="auth-overlay">
+    <div class="auth-card" id="loginBox">
+        <h2>Login</h2>
+        <input type="text" id="logUser" placeholder="Username">
+        <input type="password" id="logPass" placeholder="Password">
+        <button onclick="authLogin()" class="main-btn" style="width:100%">Sign In</button>
+        <p style="font-size:12px; margin-top:10px;">No account? <a href="#" onclick="switchAuth(false)" style="color:var(--primary)">Signup</a></p>
+        <button onclick="closeAuth()" class="filter-trigger" style="width:100%"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="auth-card" id="signupBox" style="display:none">
+        <h2>Sign Up</h2>
+        <input type="text" id="regUser" placeholder="Username">
+        <input type="email" id="regEmail" placeholder="Email">
+        <input type="password" id="regPass" placeholder="Password">
+        <button onclick="authSignup()" class="main-btn" style="width:100%; background:var(--free-color)">Create Account</button>
+        <p style="font-size:12px; margin-top:10px;">Have account? <a href="#" onclick="switchAuth(true)" style="color:var(--primary)">Login</a></p>
+        <button onclick="closeAuth()" class="filter-trigger" style="width:100%"><i class="fas fa-times"></i></button>
+    </div>
+</div>
+
+<div class="controls-wrapper">
+    <div class="search-bar">
+        <i class="fas fa-search" style="margin-left:10px; color:var(--muted)"></i>
+        <input type="text" id="searchInput" placeholder="Search templates...">
+    </div>
+</div>
+
+<main>
+    <div id="loading" style="text-align:center; padding: 50px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>
+    <div id="template-container" class="store-grid"></div>
+</main>
+
+<div id="productOverlay" class="overlay">
+    <div class="overlay-header">
+        <h3 id="ovTitle" style="margin:0"></h3>
+        <button onclick="closeOverlay()" class="filter-trigger"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="overlay-content">
+        <img id="ovImg" class="full-img" referrerpolicy="no-referrer">
+        <div id="ovPrice" style="font-size: 22px; font-weight: bold; color:var(--primary); margin-bottom:10px;"></div>
+        <p id="ovDesc" style="font-size:13px; color:var(--muted); margin-bottom:20px;"></p>
+        
+        <div style="display:flex; gap:10px;">
+            <button id="ovActionBtn" class="main-btn" style="padding:15px;"></button>
+            <button class="icon-btn" id="ovLikeBtn" style="flex:0.3;">
+                <i class="fas fa-heart"></i> <span id="ovLikeCnt">0</span>
+            </button>
+        </div>
+
+        <div class="comment-box">
+            <h4><i class="fas fa-comments"></i> Community</h4>
+            <div id="commentList"></div>
+            <div style="display:flex; gap:8px;">
+                <textarea id="commentMsg" style="flex:1; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px; height:45px;" placeholder="Add a comment..."></textarea>
+                <button onclick="postComment()" class="main-btn" style="flex:0.2"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const api_url = "https://script.google.com/macros/s/AKfycbzpxWVXd9pUQe5cJCTJyxtNB6TVto1TEDPmwRYq3bo0eKjfKfPWm558HeMh3EaOCMfl/exec";
+const activity_url = "https://script.google.com/macros/s/AKfycbx7xeCXgINXt0bgVx5TMT-shfI3dKny7H-hn9po7iVD3kOzUsldOVCjFU8hLfGViFFAow/exec";
+const myTG = "dechrisathx";
+
+let allItems = [];
+let currentItem = null;
+let currentUser = localStorage.getItem("hx_user") || null;
+
+// Initialize Swift Loading
+window.onload = () => {
+    updateUserBtn();
+    const cached = localStorage.getItem("hx_cache");
+    if(cached) {
+        allItems = JSON.parse(cached);
+        render(allItems);
+        document.getElementById("loading").style.display = "none";
+        checkUrlParam();
+    }
+    fetchData();
+};
+
+function generateId(name) {
+    return "hx_abc123_" + btoa(name).substring(0, 8).replace(/=/g, "_");
+}
+
+function checkUrlParam() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    if(id) {
+        const item = allItems.find(i => generateId(i.name) === id);
+        if(item) openProduct(generateId(item.name));
+    }
+}
+
+async function fetchData(){
+    try {
+        const r = await fetch(api_url);
+        allItems = await r.json();
+        localStorage.setItem("hx_cache", JSON.stringify(allItems));
+        render(allItems);
+        document.getElementById("loading").style.display="none";
+        document.getElementById("sync-status").style.display="none";
+    } catch(e) { document.getElementById("sync-status").style.display="block"; }
+}
+
+function render(data){
+    const container = document.getElementById("template-container");
+    container.innerHTML = "";
+    data.forEach(item => {
+        const id = generateId(item.name);
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+            <div class="card-actions">
+                <button class="tiny-action" onclick="copyLink('${id}', event)" title="Copy Link"><i class="fas fa-link"></i></button>
+                <button class="tiny-action tiny-report" onclick="reportTemplate('${id}', '${item.name}', event)" title="Report"><i class="fas fa-flag"></i></button>
+            </div>
+            <img src="${item.imageurl || item['Image URL']}" onclick="openProduct('${id}')">
+            <div class="badge-row">
+                <span class="type-badge ${item.type.toLowerCase()==='free'?'type-free':'type-paid'}">${item.type}</span>
+                <span class="cat-badge" style="font-size:11px; color:var(--muted)">${item.category}</span>
+            </div>
+            <h3 style="margin:10px 0 5px; font-size:15px;">${item.name}</h3>
+            <div class="btn-row">
+                <button class="main-btn" onclick="openProduct('${id}')">View Details</button>
+                <button class="icon-btn" onclick="addLike('${id}', '${item.name}', this)">
+                    <i class="fas fa-heart" style="color:#ff4b2b"></i> <span id="cnt-${id}">0</span>
+                </button>
+            </div>`;
+        container.appendChild(card);
+        syncActivity(id);
+    });
+}
+
+async function syncActivity(id) {
+    const r = await fetch(`${activity_url}?action=getActivity&productId=${id}`);
+    const data = await r.json();
+    const span = document.getElementById(`cnt-${id}`);
+    if(span) span.innerText = data.likes;
+    if(currentItem && currentItem.id === id) {
+        document.getElementById("ovLikeCnt").innerText = data.likes;
+        const list = document.getElementById("commentList");
+        list.innerHTML = data.comments.map(c => `<div class="comment-item"><span class="comment-user">${c.user}:</span>${c.text}</div>`).join('');
+    }
+}
+
+function copyLink(id, e) {
+    e.stopPropagation();
+    const link = window.location.origin + window.location.pathname + "?id=" + id;
+    navigator.clipboard.writeText(link).then(() => alert("Private link copied!"));
+}
+
+function reportTemplate(id, name, e) {
+    e.stopPropagation();
+    const link = window.location.origin + window.location.pathname + "?id=" + id;
+    const msg = `Reporting Template: ${name}%0AID: ${id}%0ALink: ${link}`;
+    window.open(`https://t.me/${myTG}?text=${msg}`, "_blank");
+}
+
+async function addLike(id, name) {
+    if(!currentUser) return toggleAccount();
+    await fetch(`${activity_url}?action=addLike`, { method: "POST", body: JSON.stringify({ productId: id, productName: name }) });
+    syncActivity(id);
+}
+
+async function postComment() {
+    if(!currentUser) return toggleAccount();
+    const msg = document.getElementById("commentMsg").value;
+    if(!msg) return;
+    await fetch(`${activity_url}?action=addComment`, { method: "POST", body: JSON.stringify({ productId: currentItem.id, username: currentUser, comment: msg }) });
+    document.getElementById("commentMsg").value = "";
+    syncActivity(currentItem.id);
+}
+
+function openProduct(id){
+    const item = allItems.find(i => generateId(i.name) === id);
+    if(!item) return;
+    currentItem = {...item, id: id};
+    document.getElementById("productOverlay").style.display = "flex";
+    document.getElementById("ovImg").src = item.imageurl || item['Image URL'];
+    document.getElementById("ovTitle").innerText = item.name;
+    document.getElementById("ovDesc").innerText = item.description;
+    document.getElementById("ovPrice").innerText = item.price;
+    
+    const btn = document.getElementById("ovActionBtn");
+    if(item.type.toLowerCase() === "free") {
+        btn.innerHTML = `<i class="fas fa-download"></i> Download Free`;
+        btn.style.background = "var(--free-color)";
+        btn.onclick = () => window.open(item.downloadurl, "_blank");
+    } else {
+        btn.innerHTML = `Buy From Telegram <i class="fas fa-shopping-cart" style="color:black; font-size:14px;"></i>`;
+        btn.style.background = "var(--primary)";
+        btn.onclick = () => window.open(`https://t.me/${myTG}?text=I want to buy: ${item.name}`, "_blank");
+    }
+    syncActivity(id);
+}
+
+function closeOverlay() { 
+    document.getElementById("productOverlay").style.display = "none"; 
+    window.history.replaceState(null, null, window.location.pathname);
+}
+
+function toggleAccount() {
+    if(currentUser) { 
+        if(confirm("Logout?")) { localStorage.removeItem("hx_user"); location.reload(); }
+    } else { document.getElementById("authModal").style.display = "flex"; }
+}
+
+async function authLogin() {
+    const user = document.getElementById("logUser").value;
+    const pass = document.getElementById("logPass").value;
+    const res = await fetch(`${activity_url}?action=login`, { method: "POST", body: JSON.stringify({ username: user, password: pass }) });
+    const text = await res.text();
+    if(text === "Success") { localStorage.setItem("hx_user", user); location.reload(); } else { alert("Login Failed"); }
+}
+
+async function authSignup() {
+    const user = document.getElementById("regUser").value;
+    const email = document.getElementById("regEmail").value;
+    const pass = document.getElementById("regPass").value;
+    await fetch(`${activity_url}?action=signup`, { method: "POST", body: JSON.stringify({ username: user, email: email, password: pass }) });
+    alert("Account Created! Please Login.");
+    switchAuth(true);
+}
+
+function switchAuth(isLogin) {
+    document.getElementById("loginBox").style.display = isLogin ? "block" : "none";
+    document.getElementById("signupBox").style.display = isLogin ? "none" : "block";
+}
+function closeAuth() { document.getElementById("authModal").style.display = "none"; }
+function updateUserBtn() { if(currentUser) document.getElementById("userBtn").innerHTML = `<i class="fas fa-sign-out-alt"></i>`; }
+function toggleTheme() { document.body.classList.toggle("light"); }
+function refreshData() { localStorage.removeItem("hx_cache"); location.reload(); }
+
+document.getElementById("searchInput").oninput = (e) => {
+    const q = e.target.value.toLowerCase();
+    render(allItems.filter(i => i.name.toLowerCase().includes(q)));
+};
+</script>
+</body>
+</html>
