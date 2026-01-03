@@ -2,131 +2,139 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="description" content="Havenova-X: A premium tech community and digital asset marketplace by Dechris.">
   <title>Havenova-X | Tech Excellence</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
-    /* --- Professional HX Global Styles --- */
-    * { box-sizing: border-box; transition: all 0.3s ease; }
+    :root {
+      --bg:#fdfdfd; --surface:#ffffff; --card:#ffffff; --border:#e2e8f0;
+      --text:#1e293b; --muted:#64748b; --primary:#00d2ff; --primary-hover:#3a7bd5;
+    }
+    .dark {
+      --bg:#0f172a; --surface:#0f172a; --card:#1e293b; --border:#334155;
+      --text:#f1f5f9; --muted:#94a3b8;
+    }
+
+    /* SECURITY CSS: Block Selection */
+    * { 
+      box-sizing: border-box; 
+      transition: all 0.3s ease;
+      -webkit-user-select: none; 
+      -moz-user-select: none; 
+      -ms-user-select: none; 
+      user-select: none;
+      -webkit-user-drag: none;
+    }
     
     body {
       margin: 0;
-      font-family: 'Inter', 'Segoe UI', sans-serif;
-      background: #fdfdfd;
-      color: #1e293b;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       line-height: 1.6;
+      overflow-x: hidden;
     }
 
-    /* Default Dark Mode Styles */
-    body.dark { background: #0f172a; color: #f1f5f9; }
-    
     header {
-      background: rgba(255, 255, 255, 0.9);
+      background: var(--surface);
       backdrop-filter: blur(10px);
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 15px 5%;
-      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+      border-bottom: 1px solid var(--border);
       position: fixed;
       width: 100%;
       top: 0;
       z-index: 1000;
     }
+
+    .logo { height: 45px; cursor: pointer; }
     
-    body.dark header { 
-      background: rgba(15, 23, 42, 0.9); 
-      border-bottom: 1px solid #1e293b; 
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    /* CUSTOM LOGO ICON BUTTON */
+    .logo-icon-btn {
+        width: 35px; height: 35px;
+        border-radius: 8px;
+        object-fit: contain;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        padding: 4px;
+        background: var(--card);
     }
 
-    .logo { height: 45px; cursor: pointer; transition: height 0.3s ease; }
-    .logo.expand { height: 60px; }
-    
-    main { padding: 140px 5% 60px; max-width: 1000px; margin: auto; }
+    main { padding: 140px 5% 60px; max-width: 1100px; margin: auto; }
 
-    /* Hero Section */
-    .hero { text-align: center; margin-bottom: 80px; }
+    .hero { text-align: center; margin-bottom: 60px; }
     .hero h1 { 
-      font-size: 2.8rem; 
+      font-size: clamp(2rem, 5vw, 3rem); 
       margin-bottom: 15px; 
       background: linear-gradient(90deg, #00d2ff, #3a7bd5); 
       -webkit-background-clip: text; 
       -webkit-text-fill-color: transparent; 
       font-weight: 800;
     }
-    .hero p { font-size: 1.15rem; color: #64748b; max-width: 650px; margin: auto; }
-    body.dark .hero p { color: #94a3b8; }
+    .hero p { font-size: 1.15rem; color: var(--muted); max-width: 650px; margin: auto; }
 
-    /* Grid Layout */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 25px;
       margin-top: 40px;
     }
     .card {
-      background: white;
-      padding: 35px;
+      background: var(--card);
+      padding: 30px;
       border-radius: 20px;
       text-align: center;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       align-items: center;
+      animation: fadeIn 0.8s ease forwards;
     }
-    body.dark .card { background: #1e293b; border-color: #334155; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
     
-    .card i { font-size: 45px; color: #00d2ff; margin-bottom: 25px; }
-    .card h3 { font-size: 1.4rem; margin-bottom: 15px; font-weight: 700; }
-    .card p { font-size: 0.95rem; color: #64748b; flex-grow: 1; margin-bottom: 20px; }
-    body.dark .card p { color: #94a3b8; }
+    .card i { font-size: 40px; color: var(--primary); margin-bottom: 20px; }
+    .card h3 { font-size: 1.3rem; margin-bottom: 12px; font-weight: 700; }
+    .card p { font-size: 0.95rem; color: var(--muted); flex-grow: 1; margin-bottom: 20px; }
     
-    /* Buttons */
     .btn {
       display: inline-block;
-      padding: 12px 28px;
-      background: #00d2ff;
+      padding: 12px 25px;
+      background: var(--primary);
       color: white;
-      border-radius: 10px;
+      border-radius: 12px;
       text-decoration: none;
       font-weight: 600;
-      box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+      width: 100%;
     }
-    .btn:hover { background: #3a7bd5; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0, 210, 255, 0.4); }
-    .btn-outline { background: transparent; border: 2px solid #00d2ff; color: #00d2ff; box-shadow: none; }
+    .btn:hover { background: var(--primary-hover); transform: translateY(-3px); }
+    .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
 
-    /* Socials & Footer */
-    .socials { text-align: center; padding: 60px 0; }
-    .socials a { font-size: 26px; margin: 0 15px; color: inherit; text-decoration: none; opacity: 0.7; }
-    .socials a:hover { opacity: 1; color: #00d2ff; transform: scale(1.2); }
+    .socials { text-align: center; padding: 40px 0; }
+    .socials a { font-size: 24px; margin: 0 15px; color: var(--text); text-decoration: none; opacity: 0.7; }
+    .socials a:hover { opacity: 1; color: var(--primary); }
     
-    footer { text-align: center; padding: 50px; border-top: 1px solid #e2e8f0; font-size: 14px; color: #64748b; }
-    body.dark footer { border-top-color: #334155; color: #94a3b8; }
+    footer { text-align: center; padding: 50px; border-top: 1px solid var(--border); font-size: 13px; color: var(--muted); }
 
     #darkModeToggle {
-      background: #f1f5f9;
-      border: none;
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      width: 40px; height: 40px;
+      border-radius: 10px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
+      color: var(--text);
     }
-    body.dark #darkModeToggle { background: #334155; color: #ffca28; }
   </style>
 </head>
-<body class="dark">
+<body class="dark" oncontextmenu="return false;">
 
   <header>
-    <a href="index.html"><img src="logo1.png" alt="Havenova-X" class="logo" id="mainLogo" /></a>
-    <div style="display: flex; align-items: center; gap: 20px;">
-      <a href="templates.html" style="text-decoration: none; color: inherit; font-size: 14px; font-weight: 700;">STORE</a>
+    <a href="index.html"><img src="logo1.png" alt="HX" class="logo" /></a>
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <img src="logo1.png" class="logo-icon-btn" onclick="location.href='https://script.google.com/macros/s/AKfycby9eEtH55XibqVgBOPeANg7WKYL61MOQYeBuKJWOD5UTRGn4VeSMcGNeFsUkk3WyfRpeA/exec'" title="Community">
+      <a href="templates.html" style="text-decoration: none; color: var(--text); font-size: 13px; font-weight: 800;">STORE</a>
       <button id="darkModeToggle"><i class="fas fa-sun"></i></button>
     </div>
   </header>
@@ -134,90 +142,80 @@
   <main>
     <section class="hero">
       <h1>The Havenova-X Ecosystem</h1>
-      <p>A trusted community-driven hub providing premium digital assets, high-performance tools, and secure tech solutions for modern creators.</p>
+      <p>The premier hub for high-performance digital assets and secure tech community interactions.</p>
     </section>
 
     <div class="grid">
-      <div class="card">
-        <i class="fas fa-code"></i>
-        <h3>Web Store</h3>
-        <p>Access high-quality, pre-built website templates and source codes to launch your digital presence instantly.</p>
-        <a href="templates.html" class="btn">Browse Store</a>
+      <div class="card" style="border: 2px solid var(--primary);">
+        <i class="fas fa-comments"></i>
+        <h3>HX Community</h3>
+        <p>Join the "X" of tech. Post updates, share prompts, and connect with developers in real-time.</p>
+        <a href="https://script.google.com/macros/s/AKfycby9eEtH55XibqVgBOPeANg7WKYL61MOQYeBuKJWOD5UTRGn4VeSMcGNeFsUkk3WyfRpeA/exec" class="btn">Enter Community</a>
       </div>
 
       <div class="card">
-        <i class="fas fa-mobile-screen-button"></i>
-        <h3>Software Tools</h3>
-        <p>Explore our professional suite of utility applications designed for security, productivity, and creative workflows.</p>
-        <a href="apps.html" class="btn btn-outline">View Apps</a>
+        <i class="fas fa-code"></i>
+        <h3>Web Store</h3>
+        <p>Premium website templates and source codes verified for security and performance.</p>
+        <a href="templates.html" class="btn btn-outline">Browse Store</a>
       </div>
 
       <div class="card">
         <i class="fas fa-brain"></i>
-        <h3>Advanced AI</h3>
-        <p>Leverage the Havenova-X AI assistant for smart text generation, research, and technical problem solving.</p>
+        <h3>HX AI</h3>
+        <p>Smart technical assistant for research, coding solutions, and creative workflows.</p>
         <a href="https://dechris-ai.vercel.app" target="_blank" class="btn btn-outline">Launch AI</a>
       </div>
     </div>
 
-    <section style="margin-top: 100px; text-align: center; max-width: 700px; margin-left: auto; margin-right: auto;">
-      <h2 style="font-size: 2rem; margin-bottom: 20px;">Innovation with Integrity</h2>
-      <p>We are a professional tech hub dedicated to empowering users through clean technology. From anti-scam research to custom software development, we provide "Godly" tech resources built on trust and transparency.</p>
-    </section>
-
     <section class="socials">
       <a href="https://t.me/+bdnGS5w9jT8yYjJk"><i class="fab fa-telegram"></i></a>
       <a href="https://whatsapp.com/channel/0029VaA38Iu0LKZJLBpcBE3i"><i class="fab fa-whatsapp"></i></a>
-      <a href="https://tiktok.com/@dechris_designz"><i class="fab fa-tiktok"></i></a>
     </section>
   </main>
 
   <footer>
     <p>Powered by Dechris™</p>
-    <p>&copy; 2025 Havenova-X. All transactions and software are verified for security.</p>
+    <p>&copy; 2025 Havenova-X. Securely Encrypted Platform.</p>
   </footer>
 
   <script>
+    /** SECURITY LAYER: BLOCK SOURCE VIEWING **/
+    document.onkeydown = function(e) {
+      if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) {
+        return false;
+      }
+    };
+
+    /** DEBUGGER TRAP **/
+    (function() {
+        (function(_0x2) {
+            try { if (typeof _0x2 === 'function') { return _0x2; } else { (function() { return true; }).constructor('debugger').call('action'); } } catch (err) {}
+        })(function() {});
+    })();
+
+    // Theme Logic
     const toggle = document.getElementById('darkModeToggle');
     const body = document.body;
-    const logo = document.getElementById('mainLogo');
 
-    // Theme Logic: Default to Dark, remember user choice
     const savedMode = localStorage.getItem('hx_theme') || 'dark';
     body.className = savedMode;
     updateIcon(savedMode);
 
     toggle.onclick = () => {
-      if (body.classList.contains('dark')) {
-        body.classList.replace('dark', 'light');
-        localStorage.setItem('hx_theme', 'light');
-        updateIcon('light');
-      } else {
-        body.classList.replace('light', 'dark');
-        localStorage.setItem('hx_theme', 'dark');
-        updateIcon('dark');
-      }
+      const isDark = body.classList.contains('dark');
+      body.className = isDark ? 'light' : 'dark';
+      localStorage.setItem('hx_theme', body.className);
+      updateIcon(body.className);
     };
 
     function updateIcon(mode) {
       const icon = toggle.querySelector('i');
-      if (mode === 'dark') {
-        icon.classList.replace('fa-moon', 'fa-sun');
-      } else {
-        icon.classList.replace('fa-sun', 'fa-moon');
-      }
+      icon.className = mode === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
     }
 
-    // Logo expansion on scroll
-    let lastScrollY = window.scrollY;
-    window.addEventListener('scroll', () => {
-      if (window.scrollY < lastScrollY && window.scrollY > 50) {
-        logo.classList.add('expand');
-      } else {
-        logo.classList.remove('expand');
-      }
-      lastScrollY = window.scrollY;
-    });
+    // Anti-Frame Protection
+    if (window.top !== window.self) { window.top.location = window.self.location; }
   </script>
 </body>
-  </html>
+        </html>
