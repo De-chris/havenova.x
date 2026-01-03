@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HX Store | Pro Digital Marketplace</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<style>
+:root{
+  --bg:#0f172a; --surface:#020617; --card:#1e293b; --border:#334155;
+  --text:#f8fafc; --muted:#94a3b8; --primary:#38bdf8;
+  --free-color:#22c55e; --paid-color:#eab308;
+  --error-bg: #450a0a; --error-text: #fca5a5;
+  --icon-gradient: linear-gradient(135deg, #1e40af, #3b82f6);
+}
+
+.light{
+  --bg:#f1f5f9; --surface:#ffffff; --card:#ffffff; --border:#cbd5e1;
+  --text:#0f172a; --muted:#64748b; --primary:#0284c7;
+  --error-bg: #fee2e2; --error-text: #b91c1c;
+  --icon-gradient: linear-gradient(135deg, #7dd3fc, #0ea5e9);
+}
+
+/* SECURITY CSS: Block Selection */
+*{ 
+    box-sizing:border-box; 
+    font-family: 'Inter', system-ui, sans-serif; 
+    -webkit-user-select: none; 
+    -moz-user-select: none; 
+    -ms-user-select: none; 
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+input, textarea { -webkit-user-select: text; user-select: text; }
+
+body{ margin:0; background:var(--bg); color:var(--text); transition: background .3s; padding-bottom: 50px; overflow-x: hidden;}
+
+#sync-status {
+    display: none; background: var(--error-bg); color: var(--error-text);
+    text-align: center; padding: 8px; font-size: 11px; font-weight: 500;
+    border-bottom: 1px solid var(--border);
+}
+
+/* COMMUNITY INVITE BAR */
+.community-bar {
+    background: linear-gradient(90deg, var(--surface), var(--card));
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+.community-bar p { margin: 0; font-size: 12px; color: var(--muted); }
+.community-bar b { color: var(--primary); }
+.btn-join-hx {
+    background: var(--primary);
+    color: var(--surface);
+    border: none;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+header{
+  background:var(--surface); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 20px; position: sticky; top:0; z-index: 1000;
+}
+.logo{ height:32px; filter: drop-shadow(0 0 5px var(--primary)); cursor: pointer; }
+
+.filter-trigger {
+    background: transparent !important; border: none !important; cursor: pointer;
+    padding: 10px; display: flex; align-items: center; justify-content: center; transition: 0.3s;
+}
+
+.filter-trigger i {
+    font-size: 20px; background: var(--icon-gradient);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.controls-wrapper { padding: 20px; max-width: 1400px; margin: auto; }
+.search-bar {
+    position: relative; display: flex; align-items: center;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 15px; padding: 5px 15px; margin-bottom: 15px;
+}
+.search-bar input {
+    flex: 1; background: none; border: none; color: var(--text);
+    padding: 10px; outline: none; font-size: 16px;
+}
+
+.store-grid{
+  display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap:20px; padding: 0 20px; max-width: 1400px; margin: auto;
+}
+
+@media (min-width: 1200px) { .store-grid { grid-template-columns: repeat(5, 1fr); } }
+
+.card{
+  background:var(--card); border:1px solid var(--border);
+  border-radius:20px; padding:12px; display:flex; flex-direction:column;
+  transition: transform 0.3s ease;
+}
+.card:hover{ transform: translateY(-5px); border-color: var(--primary); }
+.card img{ width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:14px; background: #000; cursor: pointer;}
+
+.btn-row { display: flex; gap: 6px; margin-top: auto; padding-top: 12px;}
+.main-btn {
+    flex: 3; background: var(--primary); color: #020617; border: none;
+    padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 13px;
+}
+
+.overlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: none; flex-direction: column; }
+.auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 3000; display: none; align-items: center; justify-content: center; }
+.auth-card { background: var(--card); padding: 25px; border-radius: 20px; width: 90%; max-width: 380px; border: 1px solid var(--border); text-align: center; }
+.auth-card input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+</style>
+</head>
+
+<body oncontextmenu="return false;">
+<div id="sync-status"><i class="fas fa-wifi"></i> Connection slow. Showing last updated version.</div>
+
+<header>
+  <a href="index.html"><img src="logo1.png" class="logo"></a>
+  <div style="display:flex; gap:10px;">
+      <button onclick="goToCommunity()" class="filter-trigger" title="HX Community"><i class="fas fa-users"></i></button>
+      <button id="userBtn" onclick="toggleAccount()" class="filter-trigger"><i class="fas fa-user"></i></button>
+      <button onclick="refreshData()" class="filter-trigger" title="Force Refresh"><i class="fas fa-sync-alt"></i></button>
+      <button onclick="toggleTheme()" class="filter-trigger"><i id="tIcon" class="fas fa-moon"></i></button>
+  </div>
+</header>
+
+<div class="community-bar">
+    <p><i class="fas fa-bullhorn" style="color:var(--primary)"></i> Join the <b>HX Social Community</b>. Use your store account to login!</p>
+    <button class="btn-join-hx" onclick="goToCommunity()">Join Now</button>
+</div>
+
+<div id="authModal" class="auth-overlay">
+    <div class="auth-card" id="loginBox">
+        <h2>Login</h2>
+        <input type="text" id="logUser" placeholder="Username">
+        <input type="password" id="logPass" placeholder="Password">
+        <button id="loginSubmitBtn" onclick="authLogin()" class="main-btn" style="width:100%">Sign In</button>
+        <p style="font-size:12px; margin-top:15px;">No account? <a href="javascript:void(0)" onclick="switchAuth(false)" style="color:var(--primary)">Signup</a></p>
+        <button onclick="closeAuth()" class="filter-trigger" style="width:100%"><i class="fas fa-times-circle"></i></button>
+    </div>
+    <div class="auth-card" id="signupBox" style="display:none">
+        <h2>Sign Up</h2>
+        <input type="text" id="regUser" placeholder="Username">
+        <input type="email" id="regEmail" placeholder="Email">
+        <input type="password" id="regPass" placeholder="Password">
+        <button id="signupSubmitBtn" onclick="authSignup()" class="main-btn" style="width:100%; background:var(--free-color)">Create Account</button>
+        <p style="font-size:12px; margin-top:15px;">Have account? <a href="javascript:void(0)" onclick="switchAuth(true)" style="color:var(--primary)">Login</a></p>
+        <button onclick="closeAuth()" class="filter-trigger" style="width:100%"><i class="fas fa-times-circle"></i></button>
+    </div>
+</div>
+
+<div class="controls-wrapper">
+    <div class="search-bar">
+        <i class="fas fa-search" style="color:var(--muted)"></i>
+        <input type="text" id="searchInput" placeholder="Search assets...">
+    </div>
+</div>
+
+<main>
+    <div id="loading" style="text-align:center; padding: 50px;"><i class="fas fa-circle-notch fa-spin fa-2x"></i></div>
+    <div id="template-container" class="store-grid"></div>
+</main>
+
+<div id="productOverlay" class="overlay">
+    <div class="overlay-header">
+        <div style="display:flex; align-items:center;">
+            <button id="backToList" onclick="location.href='templates.html'" style="display:none; background:var(--card); border:1px solid var(--border); color:var(--text); padding:5px 10px; border-radius:8px; font-size:12px; margin-right:10px; cursor:pointer;">Back to list</button>
+            <h3 id="ovTitle" style="margin:0"></h3>
+        </div>
+        <button onclick="closeOverlay()" class="filter-trigger"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="overlay-content">
+        <img id="ovImg" class="full-img" onclick="zoomImg()" referrerpolicy="no-referrer">
+        <div id="ovPrice" style="font-size: 22px; font-weight: bold; color:var(--primary); margin-bottom:5px;"></div>
+        <p id="ovDesc" style="font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:20px;"></p>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <button id="ovActionBtn" class="main-btn" style="padding:15px;"></button>
+            <button class="icon-btn" id="ovLikeBtn" style="flex:0.3; font-size:16px;">
+                <i class="fas fa-heart"></i> <span id="ovLikeCnt">0</span>
+            </button>
+        </div>
+        <div class="comment-box">
+            <h4 style="margin:0 0 10px; font-size:14px;"><i class="fas fa-comments"></i> Discussions</h4>
+            <div id="commentList"></div>
+            <div class="comment-input-area" style="display:flex; gap:8px; margin-top:10px;">
+                <textarea id="commentMsg" placeholder="Write a comment..." style="flex:1; background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:8px; height:40px; resize:none;"></textarea>
+                <button onclick="postComment()" style="width:50px; background:var(--primary); border:none; border-radius:10px; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/** SECURITY LOCKDOWN **/
+document.onkeydown = function(e) {
+  if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
+};
+(function() { (function(_0x2) { try { if (typeof _0x2 === 'function') { return _0x2; } else { (function() { return true; }).constructor('debugger').call('action'); } } catch (err) {} })(function() {}); })();
+
+const api_url = "https://script.google.com/macros/s/AKfycbzpxWVXd9pUQe5cJCTJyxtNB6TVto1TEDPmwRYq3bo0eKjfKfPWm558HeMh3EaOCMfl/exec";
+const activity_url = "https://script.google.com/macros/s/AKfycbx7xeCXgINXt0bgVx5TMT-shfI3dKny7H-hn9po7iVD3kOzUsldOVCjFU8hLfGViFFAow/exec";
+const community_url = "https://script.google.com/macros/s/AKfycby9eEtH55XibqVgBOPeANg7WKYL61MOQYeBuKJWOD5UTRGn4VeSMcGNeFsUkk3WyfRpeA/exec";
+const myTG = "dechrisathx";
+
+let allItems = [];
+let currentItem = null;
+let currentUser = localStorage.getItem("hx_user") || null;
+
+function goToCommunity() { window.location.href = community_url; }
+
+window.onload = () => {
+    updateUserBtn();
+    const cached = localStorage.getItem("hx_cache");
+    if(cached){ allItems = JSON.parse(cached); render(allItems); document.getElementById("loading").style.display="none"; }
+    fetchData();
+};
+
+async function fetchData(){
+    try {
+        const r = await fetch(api_url);
+        allItems = await r.json();
+        localStorage.setItem("hx_cache", JSON.stringify(allItems));
+        render(allItems);
+        document.getElementById("loading").style.display="none";
+    } catch(e) { document.getElementById("sync-status").style.display="block"; }
+}
+
+function render(data){
+    const container = document.getElementById("template-container");
+    container.innerHTML = "";
+    data.forEach(item => {
+        const id = item.name.replace(/\s+/g,'_').toLowerCase();
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+            <img src="${item.imageurl || item['Image URL']}" onclick="openProduct('${id}')">
+            <h3 style="margin:8px 0 4px; font-size:15px;">${item.name}</h3>
+            <div class="btn-row">
+                <button class="main-btn" onclick="openProduct('${id}')">View</button>
+                <button class="icon-btn" onclick="addLike('${id}', '${item.name}', this)">
+                    <i class="fas fa-heart" style="color:#ff4b2b"></i> <span id="cnt-${id}">0</span>
+                </button>
+            </div>`;
+        container.appendChild(card);
+        syncActivity(id);
+    });
+}
+
+async function syncActivity(id) {
+    const r = await fetch(`${activity_url}?action=getActivity&productId=${id}`);
+    const data = await r.json();
+    const span = document.getElementById(`cnt-${id}`);
+    if(span) span.innerText = data.likes;
+}
+
+async function addLike(id, name, btn) {
+    if(!currentUser) return toggleAccount();
+    await fetch(`${activity_url}?action=addLike`, { method: "POST", body: JSON.stringify({ productId: id, productName: name }) });
+    syncActivity(id);
+}
+
+async function authLogin() {
+    const username = document.getElementById("logUser").value;
+    const password = document.getElementById("logPass").value;
+    const btn = document.getElementById("loginSubmitBtn");
+    if(!username || !password) return;
+    btn.disabled = true; btn.innerText = "Processing...";
+    try {
+        const res = await fetch(`${activity_url}?action=login`, { method: "POST", body: JSON.stringify({ username, password }) });
+        if(await res.text() === "Success") { 
+            currentUser = username; 
+            localStorage.setItem("hx_user", JSON.stringify({username: username, uid: "hx_"+Date.now()})); 
+            updateUserBtn(); 
+            closeAuth(); 
+        }
+    } catch(e) { console.error(e); }
+    btn.disabled = false; btn.innerText = "Sign In";
+}
+
+function toggleAccount() {
+    if(currentUser) { localStorage.removeItem("hx_user"); currentUser = null; updateUserBtn(); } 
+    else { document.getElementById("authModal").style.display = "flex"; }
+}
+function updateUserBtn() {
+    const btn = document.getElementById("userBtn");
+    btn.innerHTML = currentUser ? `<i class="fas fa-sign-out-alt"></i>` : `<i class="fas fa-user"></i>`;
+}
+function toggleTheme(){
+    const isLight = document.body.classList.toggle("light");
+    document.getElementById("tIcon").className = isLight ? "fas fa-sun" : "fas fa-moon";
+    localStorage.setItem("hx_theme", isLight ? "light" : "dark");
+}
+function closeAuth() { document.getElementById("authModal").style.display = "none"; }
+function switchAuth(isLogin) {
+    document.getElementById("loginBox").style.display = isLogin ? "block" : "none";
+    document.getElementById("signupBox").style.display = isLogin ? "none" : "block";
+}
+function openProduct(id){
+    const item = allItems.find(i => i.name.replace(/\s+/g,'_').toLowerCase() === id);
+    if(!item) return;
+    currentItem = {...item, id: id};
+    document.getElementById("productOverlay").style.display = "flex";
+    document.getElementById("ovImg").src = item.imageurl || item['Image URL'];
+    document.getElementById("ovTitle").innerText = item.name;
+    document.getElementById("ovDesc").innerText = item.description;
+    const btn = document.getElementById("ovActionBtn");
+    btn.innerHTML = item.type.toLowerCase() === "free" ? "Download" : "Buy Now";
+    btn.onclick = () => { if(!currentUser) return toggleAccount(); window.open(item.downloadurl || `https://t.me/${myTG}`, "_blank"); };
+}
+function closeOverlay() { document.getElementById("productOverlay").style.display = "none"; }
+</script>
+</body>
+</html>
