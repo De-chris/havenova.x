@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HX Community | Express Yourself</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+:root {
+  --bg:#0f172a; --surface:#020617; --card:#1e293b; --border:#334155;
+  --text:#f8fafc; --muted:#94a3b8; --primary:#38bdf8;
+  --error: #ef4444;
+}
+.light {
+  --bg:#f1f5f9; --surface:#ffffff; --card:#ffffff; --border:#cbd5e1;
+  --text:#0f172a; --muted:#64748b; --primary:#0284c7;
+}
+
+/* SECURITY CSS: Block Text Selection and Dragging */
+* { 
+  box-sizing: border-box; 
+  font-family: 'Inter', sans-serif; 
+  -webkit-user-select: none; 
+  -moz-user-select: none; 
+  -ms-user-select: none; 
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+input, textarea { -webkit-user-select: text; user-select: text; }
+
+body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; transition: 0.3s; overflow-x: hidden;}
+
+/* HEADER */
+header { 
+  background: var(--surface); border-bottom: 1px solid var(--border); 
+  display: flex; align-items: center; justify-content: space-between; 
+  padding: 12px 20px; position: sticky; top: 0; z-index: 1000;
+}
+.logo { height: 30px; cursor: pointer; filter: drop-shadow(0 0 5px var(--primary)); }
+
+/* FEED UI */
+.main-container { max-width: 600px; margin: auto; padding: 15px; }
+.post-box { 
+  background: var(--card); border: 1px solid var(--border); 
+  border-radius: 15px; padding: 15px; margin-bottom: 15px; 
+}
+.post-input { 
+  width: 100%; background: transparent; border: none; color: var(--text); 
+  font-size: 16px; outline: none; resize: none; min-height: 80px;
+}
+.post-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 10px; }
+.char-counter { font-size: 12px; color: var(--muted); }
+.char-limit-hit { color: var(--error) !important; font-weight: bold; }
+
+/* CARDS */
+.hx-card { 
+  background: var(--surface); border: 1px solid var(--border); 
+  border-radius: 15px; padding: 15px; margin-bottom: 12px; animation: fadeIn 0.5s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.hx-header { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.hx-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(45deg, var(--primary), #a855f7); }
+.hx-user { font-weight: bold; font-size: 14px; color: var(--text); }
+.hx-content { font-size: 15px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+
+/* NAV BAR */
+.nav-bar { 
+  position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); 
+  border-top: 1px solid var(--border); display: flex; justify-content: space-around; 
+  padding: 12px 0; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.3);
+}
+.nav-item { color: var(--muted); font-size: 22px; cursor: pointer; transition: 0.3s; position: relative; }
+.nav-item:hover, .nav-item.active { color: var(--primary); }
+
+footer { text-align: center; padding: 20px; font-size: 12px; color: var(--muted); }
+footer a { color: var(--primary); text-decoration: none; margin: 0 10px; font-weight: bold; }
+
+.btn-post { background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+.btn-post:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+</head>
+<body oncontextmenu="return false;"> <header>
+  <img src="https://via.placeholder.com/100x30?text=HX+LOGO" class="logo" onclick="location.href='index.html'">
+  <div onclick="toggleTheme()" style="cursor:pointer"><i class="fas fa-moon" id="tIcon"></i></div>
+</header>
+
+<div class="main-container">
+  <div class="post-box" id="postCreator">
+    <textarea class="post-input" placeholder="What's happening?" id="postText" maxlength="280"></textarea>
+    <div class="post-footer">
+      <div>
+        <i class="fas fa-image" style="color:var(--primary); cursor:pointer"></i>
+      </div>
+      <div style="display:flex; align-items:center; gap:15px">
+        <span class="char-counter" id="counter">280</span>
+        <button onclick="submitPost()" class="btn-post" id="postBtn">Post</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="feed">
+    <div style="text-align:center; padding:50px; color:var(--muted)">
+      <i class="fas fa-spinner fa-spin"></i> Initializing Secure Feed...
+    </div>
+  </div>
+</div>
+
+<div class="nav-bar">
+  <div class="nav-item active" onclick="loadFeed()"><i class="fas fa-house"></i></div>
+  <div class="nav-item" onclick="openScreen('chats')"><i class="fas fa-paper-plane"></i></div>
+  <div class="nav-item" onclick="openScreen('notifications')"><i class="fas fa-bell"></i></div>
+  <div class="nav-item" onclick="openScreen('account')"><i class="fas fa-circle-user"></i></div>
+</div>
+
+<footer>
+  <p>© 2024 HX COMMUNITY</p>
+  <a href="index.html">Home</a> | <a href="templates.html">Store</a>
+</footer>
+
+<script>
+/** * LAYER 1: UI LOCKDOWN
+ * Blocks F12, Ctrl+Shift+I, Ctrl+U, and Right-Click
+ */
+document.onkeydown = function(e) {
+  if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) {
+    return false;
+  }
+};
+
+/** * LAYER 2: DEBUGGER TRAP
+ * Freezes the console if someone tries to inspect
+ */
+(function() {
+    var _0x1 = function() {
+        while (true) {
+            (function(_0x2) {
+                try {
+                    if (typeof _0x2 === 'function') {
+                        return _0x2;
+                    } else {
+                        (function() { return true; }).constructor('debugger').call('action');
+                    }
+                } catch (err) {}
+            })(function() {});
+            debugger;
+        }
+    };
+    // Uncomment the line below to activate active-loop freezing (can be heavy on some mobile browsers)
+    // setInterval(_0x1, 1000);
+})();
+
+const API_URL = "https://script.google.com/macros/s/AKfycby9eEtH55XibqVgBOPeANg7WKYL61MOQYeBuKJWOD5UTRGn4VeSMcGNeFsUkk3WyfRpeA/exec";
+let currentUser = JSON.parse(localStorage.getItem("hx_user"));
+
+const postText = document.getElementById("postText");
+const counter = document.getElementById("counter");
+const postBtn = document.getElementById("postBtn");
+
+postText.addEventListener("input", () => {
+  const remaining = 280 - postText.value.length;
+  counter.innerText = remaining;
+  counter.className = remaining < 20 ? "char-counter char-limit-hit" : "char-counter";
+  postBtn.disabled = postText.value.trim().length === 0;
+});
+
+function sanitize(str) {
+  if(!str) return "";
+  const temp = document.createElement('div');
+  temp.textContent = str;
+  return temp.innerHTML;
+}
+
+async function submitPost() {
+  const rawText = postText.value;
+  if(!currentUser) return alert("Security: Login Required");
+  
+  postBtn.disabled = true;
+  postBtn.innerText = "Encrypting...";
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "post",
+        uid: currentUser.uid,
+        username: currentUser.username,
+        content: rawText
+      })
+    });
+    const res = await response.json();
+    if(res.status === "Success") {
+      postText.value = "";
+      counter.innerText = "280";
+      loadFeed();
+    }
+  } catch(e) {
+    console.log("ERR_CONN");
+  } finally {
+    postBtn.disabled = false;
+    postBtn.innerText = "Post";
+  }
+}
+
+async function loadFeed() {
+  try {
+    const response = await fetch(API_URL + "?action=get_feed");
+    const data = await response.json();
+    const feed = document.getElementById("feed");
+    feed.innerHTML = "";
+    
+    if(!data.data || data.data.length === 0) {
+        feed.innerHTML = "<p style='text-align:center; color:var(--muted)'>Community feed is quiet.</p>";
+        return;
+    }
+
+    data.data.reverse().forEach(post => {
+      feed.innerHTML += `
+        <div class="hx-card">
+          <div class="hx-header">
+            <div class="hx-avatar"></div>
+            <div class="hx-user">@${sanitize(post.author)}</div>
+          </div>
+          <div class="hx-content">${sanitize(post.content)}</div>
+          <div class="post-footer" style="border:none; color:var(--muted); font-size:13px; margin-top:10px">
+             <span><i class="far fa-heart"></i> ${post.likes || 0}</span>
+             <span><i class="far fa-comment"></i> ${post.comments || 0}</span>
+          </div>
+        </div>`;
+    });
+  } catch(e) {
+    document.getElementById("feed").innerHTML = "Secure Feed Offline.";
+  }
+}
+
+function toggleTheme(){
+    const isLight = document.body.classList.toggle("light");
+    document.getElementById("tIcon").className = isLight ? "fas fa-sun" : "fas fa-moon";
+    localStorage.setItem("hx_theme", isLight ? "light" : "dark");
+}
+if(localStorage.getItem("hx_theme") === "light") toggleTheme();
+
+function openScreen(s) { alert("Accessing encrypted " + s + " module..."); }
+
+// Anti-Frame Protection
+if (window.top !== window.self) { window.top.location = window.self.location; }
+
+loadFeed();
+</script>
+</body>
+  </html>
