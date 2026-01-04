@@ -1,269 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>HX Community | Express Yourself</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<style>
-:root {
-  --bg:#0f172a; --surface:#020617; --card:#1e293b; --border:#334155;
-  --text:#f8fafc; --muted:#94a3b8; --primary:#38bdf8;
-  --error: #ef4444; --success: #22c55e;
-}
-.light {
-  --bg:#f1f5f9; --surface:#ffffff; --card:#ffffff; --border:#cbd5e1;
-  --text:#0f172a; --muted:#64748b; --primary:#0284c7;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HX Community | Social Gateway</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        :root {
+            --bg:#0f172a; --surface:#020617; --card:#1e293b; --border:#334155;
+            --text:#f8fafc; --muted:#94a3b8; --primary:#38bdf8;
+        }
+        .light {
+            --bg:#f1f5f9; --surface:#ffffff; --card:#ffffff; --border:#cbd5e1;
+            --text:#0f172a; --muted:#64748b; --primary:#0284c7;
+        }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-user-select: none; user-select: none; }
+        input, textarea { -webkit-user-select: text; user-select: text; }
+        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 70px; transition: 0.3s; overflow-x: hidden; }
+        
+        header { 
+            background: var(--surface); border-bottom: 1px solid var(--border); 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 12px 20px; position: sticky; top: 0; z-index: 1000;
+        }
+        .logo { height: 30px; cursor: pointer; filter: drop-shadow(0 0 5px var(--primary)); }
 
-/* SECURITY CSS: Block Selection */
-* { 
-  box-sizing: border-box; 
-  font-family: 'Inter', system-ui, -apple-system, sans-serif; 
-  -webkit-user-select: none; user-select: none;
-  -webkit-user-drag: none;
-}
+        .main-container { max-width: 600px; margin: auto; padding: 15px; }
+        
+        /* Post Box */
+        .post-box { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 15px; margin-bottom: 20px; }
+        textarea { width: 100%; background: transparent; border: none; color: var(--text); font-size: 16px; outline: none; resize: none; min-height: 80px; }
+        .post-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 5px; }
+        
+        /* Feed Cards */
+        .hx-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; margin-bottom: 15px; }
+        .hx-header { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+        .hx-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; }
+        .hx-user { font-weight: 700; font-size: 15px; }
+        .hx-content { font-size: 15px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+        
+        /* Navigation */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 15px 0; z-index: 1000; }
+        .nav-item { color: var(--muted); font-size: 22px; cursor: pointer; transition: 0.2s; }
+        .nav-item.active { color: var(--primary); }
 
-input, textarea { -webkit-user-select: text; user-select: text; }
+        .btn-post { background: var(--primary); color: #000; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .btn-post:disabled { opacity: 0.5; }
 
-body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; transition: 0.3s; overflow-x: hidden;}
-
-/* HEADER */
-header { 
-  background: var(--surface); border-bottom: 1px solid var(--border); 
-  display: flex; align-items: center; justify-content: space-between; 
-  padding: 12px 20px; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px);
-}
-.logo { height: 32px; cursor: pointer; filter: drop-shadow(0 0 5px var(--primary)); transition: 0.3s; }
-.logo:hover { transform: scale(1.05); }
-
-/* FEED UI */
-.main-container { max-width: 600px; margin: auto; padding: 15px; }
-.post-box { 
-  background: var(--card); border: 1px solid var(--border); 
-  border-radius: 18px; padding: 18px; margin-bottom: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-.post-input { 
-  width: 100%; background: transparent; border: none; color: var(--text); 
-  font-size: 16px; outline: none; resize: none; min-height: 90px;
-}
-.post-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 5px; }
-.char-counter { font-size: 12px; color: var(--muted); }
-.char-limit-hit { color: var(--error) !important; font-weight: bold; }
-
-/* CARDS */
-.hx-card { 
-  background: var(--card); border: 1px solid var(--border); 
-  border-radius: 18px; padding: 18px; margin-bottom: 15px; 
-  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-.hx-header { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
-.hx-avatar { 
-    width: 42px; height: 42px; border-radius: 50%; 
-    background: linear-gradient(135deg, var(--primary), #a855f7);
-    display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;
-}
-.hx-user { font-weight: 700; font-size: 15px; color: var(--text); }
-.hx-content { font-size: 15px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; color: var(--text); }
-
-/* NAV BAR */
-.nav-bar { 
-  position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); 
-  border-top: 1px solid var(--border); display: flex; justify-content: space-around; 
-  padding: 15px 0; z-index: 1000; box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
-}
-.nav-item { color: var(--muted); font-size: 24px; cursor: pointer; transition: 0.2s; }
-.nav-item:hover, .nav-item.active { color: var(--primary); transform: translateY(-2px); }
-
-footer { text-align: center; padding: 30px; font-size: 13px; color: var(--muted); }
-footer a { color: var(--primary); text-decoration: none; font-weight: 600; margin: 0 5px; }
-
-.btn-post { 
-    background: var(--primary); color: #020617; border: none; 
-    padding: 10px 22px; border-radius: 25px; font-weight: 800; 
-    cursor: pointer; transition: 0.3s;
-}
-.btn-post:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-post:hover:not(:disabled) { filter: brightness(1.1); transform: scale(1.05); }
-
-.status-msg { font-size: 14px; text-align: center; margin: 20px; color: var(--muted); }
-</style>
+        .screen { display: none; }
+        .screen.active { display: block; }
+        
+        .dm-msg { padding: 10px; border-radius: 10px; background: var(--surface); margin-bottom: 10px; border: 1px solid var(--border); }
+    </style>
 </head>
-<body oncontextmenu="return false;">
+<body>
 
 <header>
-  <img src="logo1.png" class="logo" onclick="location.href='index.html'" onerror="this.src='https://via.placeholder.com/100x30?text=HX+LOGO'">
-  <div onclick="toggleTheme()" style="cursor:pointer; width:40px; height:40px; display:flex; align-items:center; justify-content:center; background:var(--card); border-radius:12px; border:1px solid var(--border)">
-      <i class="fas fa-moon" id="tIcon"></i>
-  </div>
+    <img src="logo1.png" class="logo" onclick="location.href='index.html'">
+    <div onclick="toggleTheme()" style="cursor:pointer; width:35px; height:35px; display:flex; align-items:center; justify-content:center; background:var(--card); border-radius:10px;">
+        <i class="fas fa-moon" id="tIcon"></i>
+    </div>
 </header>
 
 <div class="main-container">
-  <div class="post-box" id="postCreator">
-    <textarea class="post-input" placeholder="What's on your mind?" id="postText" maxlength="280"></textarea>
-    <div class="post-footer">
-      <div>
-        <i class="fas fa-image" style="color:var(--primary); cursor:pointer; font-size:20px; opacity:0.6" onclick="alert('Media coming soon')"></i>
-      </div>
-      <div style="display:flex; align-items:center; gap:15px">
-        <span class="char-counter" id="counter">280</span>
-        <button onclick="submitPost()" class="btn-post" id="postBtn" disabled>Post</button>
-      </div>
+    <div id="home-screen" class="screen active">
+        <div class="post-box">
+            <textarea id="postText" placeholder="What's on your mind?" maxlength="280"></textarea>
+            <div class="post-footer">
+                <span style="font-size:12px; color:var(--muted)" id="charCount">280</span>
+                <button onclick="submitPost()" class="btn-post" id="postBtn" disabled>Post</button>
+            </div>
+        </div>
+        <div id="feed">
+            <div style="text-align:center; padding:40px; color:var(--muted)">
+                <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+                <p>Syncing Feed...</p>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div id="feed">
-    <div style="text-align:center; padding:50px; color:var(--muted)">
-      <i class="fas fa-circle-notch fa-spin fa-2x"></i>
-      <p style="margin-top:10px; font-size:14px">Syncing with HX Gateway...</p>
+    <div id="dm-screen" class="screen">
+        <h2 style="margin-top:0">Direct Messages</h2>
+        <div class="post-box">
+            <input type="text" id="dmTarget" placeholder="Target Username" style="width:100%; background:none; border:1px solid var(--border); color:white; padding:10px; border-radius:10px; margin-bottom:10px;">
+            <textarea id="dmText" placeholder="Write your message..." style="min-height:50px;"></textarea>
+            <button class="btn-post" style="width:100%" onclick="sendDM()">Send Secure DM</button>
+        </div>
+        <div id="dmList"></div>
     </div>
-  </div>
 </div>
 
 <div class="nav-bar">
-  <div class="nav-item active" onclick="loadFeed()"><i class="fas fa-home"></i></div>
-  <div class="nav-item" onclick="openScreen('chats')"><i class="fas fa-comment-dots"></i></div>
-  <div class="nav-item" onclick="openScreen('notifications')"><i class="fas fa-bell"></i></div>
-  <div class="nav-item" onclick="openScreen('account')"><i class="fas fa-user-circle"></i></div>
+    <div class="nav-item active" id="nav-home" onclick="openScreen('home')"><i class="fas fa-home"></i></div>
+    <div class="nav-item" id="nav-dm" onclick="openScreen('dm')"><i class="fas fa-envelope"></i></div>
+    <div class="nav-item" onclick="location.href='templates.html'"><i class="fas fa-user-circle"></i></div>
 </div>
 
-<footer>
-  <p>© 2024 HX COMMUNITY • SECURITY ENCRYPTED</p>
-  <div><a href="index.html">Home</a> | <a href="templates.html">Store</a></div>
-</footer>
-
 <script>
-/** SECURITY HANDLER **/
-document.onkeydown = function(e) {
-  if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
-};
-
-// Update this to your deployed Script URL
 const API_URL = "https://script.google.com/macros/s/AKfycby9eEtH55XibqVgBOPeANg7WKYL61MOQYeBuKJWOD5UTRGn4VeSMcGNeFsUkk3WyfRpeA/exec";
-let currentUser = JSON.parse(localStorage.getItem("hx_user"));
+let currentUser = localStorage.getItem("hx_user");
 
+// CHARACTER COUNTER
 const postText = document.getElementById("postText");
-const counter = document.getElementById("counter");
 const postBtn = document.getElementById("postBtn");
-
 postText.addEventListener("input", () => {
-  const remaining = 280 - postText.value.length;
-  counter.innerText = remaining;
-  counter.className = remaining < 20 ? "char-counter char-limit-hit" : "char-counter";
-  postBtn.disabled = postText.value.trim().length === 0;
+    document.getElementById("charCount").innerText = 280 - postText.value.length;
+    postBtn.disabled = postText.value.trim().length === 0;
 });
 
-function sanitize(str) {
-  if(!str) return "";
-  const temp = document.createElement('div');
-  temp.textContent = str;
-  return temp.innerHTML;
+// SCREEN TOGGLE
+function openScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(name + '-screen').classList.add('active');
+    document.getElementById('nav-' + name).classList.add('active');
+    if(name === 'home') loadFeed();
+    if(name === 'dm') loadDMs();
 }
 
+// SUBMIT POST
 async function submitPost() {
-  const rawText = postText.value;
-  if(!currentUser) {
-      alert("Please login via the Web Store to join the conversation!");
-      return;
-  }
-  
-  postBtn.disabled = true;
-  postBtn.innerText = "Securing...";
+    if(!currentUser) return alert("Please Login via the Store!");
+    const content = postText.value.trim();
+    postBtn.innerText = "Securing...";
+    postBtn.disabled = true;
 
-  try {
-    // FIX: Using POST with action in the body as per the AppScript logic
-    const response = await fetch(API_URL, {
-      method: "POST",
-      mode: "no-cors", // Required for some AppScript POST configurations
-      body: JSON.stringify({
-        action: "post",
-        uid: currentUser.username, // Using username as UID for simplicity
-        username: currentUser.username,
-        content: rawText
-      })
-    });
-    
-    // Since 'no-cors' doesn't return JSON, we clear UI and reload after 1 sec
-    postText.value = "";
-    counter.innerText = "280";
-    setTimeout(loadFeed, 1200);
-
-  } catch(e) {
-    alert("Encryption Error. Try again.");
-  } finally {
+    try {
+        await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "post", uid: currentUser, content: content })
+        });
+        postText.value = "";
+        loadFeed();
+    } catch(e) { console.error(e); }
     postBtn.innerText = "Post";
-  }
 }
 
+// LOAD FEED
 async function loadFeed() {
-  const feed = document.getElementById("feed");
-  try {
-    // FIX: Added 'redirect' policy to handle Google Apps Script 302s
-    const response = await fetch(API_URL + "?action=get_feed", {
-        redirect: 'follow'
-    });
-    const result = await response.json();
-    
-    if(result.status === "Error") throw new Error(result.data);
-
-    feed.innerHTML = "";
-    const posts = result.data;
-    
-    if(!posts || posts.length === 0) {
-        feed.innerHTML = "<div class='status-msg'>No transmissions yet. Start the conversation!</div>";
-        return;
-    }
-
-    // Reverse to show newest first
-    posts.reverse().forEach(post => {
-      const author = post.author || "HX_User";
-      const initial = author.charAt(0).toUpperCase();
-      
-      feed.innerHTML += `
-        <div class="hx-card">
-          <div class="hx-header">
-            <div class="hx-avatar">${initial}</div>
-            <div class="hx-user">@${sanitize(author)}</div>
-          </div>
-          <div class="hx-content">${sanitize(post.content)}</div>
-          <div class="post-footer" style="border:none; color:var(--muted); font-size:13px; margin-top:10px; gap:20px; justify-content: flex-start">
-             <span><i class="far fa-heart"></i> ${post.likes || 0}</span>
-             <span><i class="far fa-comment"></i> ${post.comments || 0}</span>
-             <span onclick="alert('Post Encrypted: ${post.pid}')"><i class="fas fa-shield-halved"></i> Verified</span>
-          </div>
-        </div>`;
-    });
-  } catch(e) {
-    feed.innerHTML = `<div class='status-msg' style='color:var(--error)'>Gateway Timeout. Refreshing...</div>`;
-    console.error(e);
-    // Auto-retry once
-    setTimeout(loadFeed, 3000);
-  }
+    const feed = document.getElementById("feed");
+    try {
+        const r = await fetch(API_URL + "?action=get_feed");
+        const res = await r.json();
+        if(res.status === "Success") {
+            feed.innerHTML = "";
+            res.data.reverse().forEach(p => {
+                feed.innerHTML += `
+                <div class="hx-card">
+                    <div class="hx-header">
+                        <div class="hx-avatar">${p.author[0].toUpperCase()}</div>
+                        <div class="hx-user">@${p.author}</div>
+                    </div>
+                    <div class="hx-content">${p.content}</div>
+                    <div style="margin-top:15px; color:var(--muted); font-size:13px; display:flex; gap:20px;">
+                        <span onclick="likePost('${p.pid}')"><i class="far fa-heart"></i> ${p.likes || 0}</span>
+                        <span><i class="far fa-comment"></i> 0</span>
+                        <span style="margin-left:auto; opacity:0.5"><i class="fas fa-shield-halved"></i> Verified</span>
+                    </div>
+                </div>`;
+            });
+        }
+    } catch(e) { feed.innerHTML = "<p style='text-align:center'>Gateway connection busy. Retrying...</p>"; }
 }
 
-function toggleTheme(){
+// LIKE POST
+async function likePost(pid) {
+    if(!currentUser) return;
+    await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "like", pid: pid, uid: currentUser })
+    });
+    loadFeed();
+}
+
+// SEND DM
+async function sendDM() {
+    const target = document.getElementById("dmTarget").value.trim();
+    const msg = document.getElementById("dmText").value.trim();
+    if(!target || !msg) return alert("Missing Info");
+    
+    await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "dm", uid: currentUser, target: target, message: msg })
+    });
+    alert("Message Sent & Notified!");
+    document.getElementById("dmText").value = "";
+    loadDMs();
+}
+
+// LOAD DMs
+async function loadDMs() {
+    const list = document.getElementById("dmList");
+    try {
+        const r = await fetch(API_URL + "?action=get_dms&uid=" + currentUser);
+        const res = await r.json();
+        list.innerHTML = res.data.map(m => `
+            <div class="dm-msg">
+                <small style="color:var(--primary)">${m[0] === currentUser ? 'TO: @'+m[1] : 'FROM: @'+m[0]}</small>
+                <div style="margin-top:5px">${m[2]}</div>
+            </div>
+        `).join("");
+    } catch(e) {}
+}
+
+function toggleTheme() {
     const isLight = document.body.classList.toggle("light");
     document.getElementById("tIcon").className = isLight ? "fas fa-sun" : "fas fa-moon";
-    localStorage.setItem("hx_theme", isLight ? "light" : "dark");
 }
 
-// Set theme on load
-if(localStorage.getItem("hx_theme") === "light") {
-    document.body.classList.add("light");
-    document.getElementById("tIcon").className = "fas fa-sun";
-}
-
-function openScreen(s) { alert("The " + s + " module is currently being encrypted for your security."); }
-
-// Anti-Frame Protection
-if (window.top !== window.self) { window.top.location = window.self.location; }
-
-// Initial load
+document.addEventListener('contextmenu', e => e.preventDefault());
 loadFeed();
 </script>
 </body>
-          </html>
+              </html>
