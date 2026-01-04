@@ -9,74 +9,52 @@
         :root {
             --bg:#020617; --surface:#0f172a; --card:rgba(30, 41, 59, 0.7); --border:#334155;
             --text:#f8fafc; --muted:#94a3b8; --primary:#38bdf8; --error:#ef4444; --accent:#818cf8;
+            --header-h: 60px;
         }
         .light {
             --bg:#f8fafc; --surface:#ffffff; --card:rgba(255, 255, 255, 0.8); --border:#cbd5e1;
             --text:#0f172a; --muted:#64748b; --primary:#0284c7;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-user-select: none; user-select: none; }
-        input, textarea { -webkit-user-select: text; user-select: text; border-radius: 12px; }
+        input, textarea { -webkit-user-select: text; user-select: text; border-radius: 12px; outline: none; transition: 0.2s; }
         body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 90px; transition: 0.3s; overflow-x: hidden; }
         
-        /* Futuristic Notifications */
-        #hx-notifier { position: fixed; top: 80px; right: 20px; z-index: 9999; pointer-events: none; max-width: 320px; }
-        .hx-toast { 
-            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px); border-left: 4px solid var(--primary);
-            padding: 16px 24px; border-radius: 16px; margin-bottom: 12px; color: white;
-            box-shadow: 0 12px 32px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 14px;
-            animation: hxSlide 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-        @keyframes hxSlide { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .hx-toast.out { animation: hxOut 0.4s ease forwards; }
-        @keyframes hxOut { to { transform: translateX(120%); opacity: 0; } }
-
+        /* Compact Header */
         header { 
             background: var(--surface); border-bottom: 1px solid var(--border); 
             display: flex; align-items: center; justify-content: space-between; 
-            padding: 14px 20px; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(12px);
+            padding: 0 15px; height: var(--header-h); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(12px);
         }
-        .logo { height: 32px; cursor: pointer; filter: drop-shadow(0 0 10px var(--primary)); }
-        .main-container { max-width: 620px; margin: auto; padding: 15px; }
+        .logo { height: 24px; cursor: pointer; filter: drop-shadow(0 0 8px var(--primary)); }
+        
+        /* UI Components */
+        .btn-process { pointer-events: none; opacity: 0.6; filter: grayscale(1); }
+        .tag-list { display: flex; gap: 8px; overflow-x: auto; padding: 5px 0; margin-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .tag-pill { background: var(--primary); color: #000; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap; cursor: pointer; }
 
-        .screen { display: none; animation: fadeIn 0.4s ease; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Social Cards */
-        .hx-card { 
-            background: var(--card); border: 1px solid var(--border); border-radius: 24px; 
-            padding: 20px; margin-bottom: 20px; backdrop-filter: blur(8px); 
-        }
-        .hx-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
-        .hx-avatar { 
-            width: 48px; height: 48px; border-radius: 16px; background: var(--primary); 
-            display: flex; align-items: center; justify-content: center; color: #000; font-weight: 800; 
-            overflow: hidden; border: 2px solid var(--primary);
-        }
+        .hx-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 15px; margin-bottom: 15px; }
+        .hx-avatar { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 800; border: 2px solid var(--primary); color: #000; overflow: hidden; }
         .hx-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .hx-username { font-weight: 700; font-size: 16px; color: var(--text); }
-        .hx-content { font-size: 16px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 12px; }
-        .hx-media { width: 100%; border-radius: 18px; margin: 12px 0; border: 1px solid var(--border); }
+        
+        .hx-actions { display: flex; gap: 20px; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+        .hx-action { cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 14px; transition: 0.2s; }
+        .hx-action.liked { color: var(--error); }
+        .hx-action.liked i { animation: heartPop 0.3s ease; }
+        @keyframes heartPop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 
-        .hx-actions { display: flex; gap: 30px; color: var(--muted); font-size: 15px; margin-top: 10px; }
-        .hx-action { cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .hx-action.liked i { color: var(--error); }
+        /* Login UI */
+        .auth-field { width: 100%; background: var(--surface); border: 1px solid var(--border); color: white; padding: 12px; margin-bottom: 10px; }
+        .auth-btn { width: 100%; background: var(--primary); border: none; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; color: #000; }
 
-        /* Comments */
-        .comments-area { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 14px; display: none; }
-        .comments-area.visible { display: block; }
-        .comment-pill { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px; margin-bottom: 8px; font-size: 14px; }
-        .comment-user { color: var(--primary); font-weight: bold; margin-right: 5px; }
+        /* Floating Pencil */
+        .fab { position: fixed; bottom: 100px; right: 20px; width: 56px; height: 56px; border-radius: 18px; background: var(--primary); color: #000; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(56, 189, 248, 0.4); z-index: 999; }
+        .fab i.fa-plus { font-size: 12px; position: absolute; bottom: 14px; right: 14px; background: #000; color: var(--primary); border-radius: 50%; padding: 2px; }
 
-        /* Navigation */
-        .fab { position: fixed; bottom: 100px; right: 20px; width: 64px; height: 64px; border-radius: 22px; background: var(--primary); color: #000; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 10px 30px rgba(56, 189, 248, 0.5); cursor: pointer; z-index: 999; }
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 16px 0; z-index: 1000; }
-        .nav-item { color: var(--muted); font-size: 24px; cursor: pointer; }
-        .nav-item.active { color: var(--primary); transform: translateY(-4px); }
-
-        /* Messenger List View */
-        .messenger-item { display: flex; align-items: center; gap: 15px; padding: 15px; border-radius: 20px; background: rgba(255,255,255,0.03); margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-        .messenger-item:hover { background: rgba(56, 189, 248, 0.1); transform: translateX(5px); }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; }
+        .nav-item { color: var(--muted); font-size: 20px; text-align: center; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+        
+        #hx-notifier { position: fixed; top: 70px; right: 15px; z-index: 9999; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -84,160 +62,242 @@
 <div id="hx-notifier"></div>
 
 <header>
-    <img src="logo1.png" class="logo" onclick="openScreen('home')">
-    <div style="display:flex; gap:12px; align-items:center;">
-        <button class="refresh-btn" onclick="loadFeed()" style="background:none; border:1px solid var(--border); color:var(--primary); padding:8px 15px; border-radius:10px; cursor:pointer;">
-            <i class="fas fa-sync-alt"></i> Sync
+    <img src="logo1.png" class="logo" onclick="location.reload()">
+    <div style="display:flex; gap:10px;">
+        <button id="reloadBtn" onclick="location.reload()" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:8px;">
+            <i class="fas fa-redo-alt"></i> Reload
         </button>
-        <div onclick="toggleTheme()" style="cursor:pointer; width:40px; height:40px; display:flex; align-items:center; justify-content:center; background:var(--card); border-radius:12px;">
+        <div onclick="toggleTheme()" style="cursor:pointer; width:36px; height:36px; display:flex; align-items:center; justify-content:center; background:var(--card); border-radius:10px;">
             <i class="fas fa-moon" id="tIcon"></i>
         </div>
     </div>
 </header>
 
-<div class="fab" id="fabPost" onclick="openScreen('compose')"><i class="fas fa-feather-alt"></i></div>
+<div class="fab" onclick="checkAuthGate('compose')">
+    <i class="fas fa-pencil-alt"></i>
+    <i class="fas fa-plus"></i>
+</div>
 
-<div class="main-container">
-    <div id="home-screen" class="screen active"><div id="feed"></div></div>
+<div class="main-container" style="max-width: 600px; margin: auto; padding: 15px;">
+    
+    <div id="search-section" style="margin-bottom: 15px;">
+        <input type="text" id="globalSearch" placeholder="Search HX Network..." oninput="handleSearch(this.value)" style="width:100%; padding:12px; background:var(--card); border:1px solid var(--border); color:white; border-radius:25px;">
+    </div>
+
+    <div id="home-screen" class="screen active">
+        <div id="feed"></div>
+    </div>
+
+    <div id="dm-screen" class="screen">
+        <div id="dm-gate" style="display:none; text-align:center; padding:40px;">
+            <i class="fas fa-lock" style="font-size:40px; color:var(--muted)"></i>
+            <h3>Neural Link Locked</h3>
+            <p>You must be authenticated to access private channels.</p>
+            <button class="auth-btn" onclick="openScreen('profile')">Login to Access</button>
+        </div>
+        <div id="user-list-container">
+            <h3 style="margin-top:0;">Active Nodes</h3>
+            <div id="messenger-list"></div>
+        </div>
+    </div>
 
     <div id="compose-screen" class="screen">
-        <h2>Broadcast Wave</h2>
-        <textarea id="postText" placeholder="Transmit your thoughts..." style="width:100%; min-height:150px; background:var(--card); border:1px solid var(--border); color:white; padding:15px; outline:none;"></textarea>
-        <div style="margin-top:15px; display:flex; justify-content:space-between;">
-            <label for="postImg" style="cursor:pointer; color:var(--primary); background:var(--surface); padding:10px 20px; border-radius:10px; border:1px solid var(--border)">
-                <i class="fas fa-image"></i> Add Media
-            </label>
-            <input type="file" id="postImg" hidden onchange="handleImageFailover(this, 'post')">
-            <button onclick="submitPost()" id="postBtn" style="background:var(--primary); padding:10px 30px; border-radius:10px; border:none; font-weight:bold;">Post</button>
+        <h3>Create Broadcast</h3>
+        <div id="mention-area" class="tag-list" style="display:none;"></div>
+        <textarea id="postText" oninput="checkForMentions(this)" placeholder="Share a wave..." style="width:100%; min-height:150px; background:var(--card); border:1px solid var(--border); color:white; padding:15px;"></textarea>
+        <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+            <label for="postImg" style="cursor:pointer; color:var(--primary); font-size:14px;"><i class="fas fa-image"></i> Add Media</label>
+            <input type="file" id="postImg" hidden onchange="uploadMedia(this)">
+            <button id="broadcastBtn" onclick="submitPost()" class="auth-btn" style="width:auto; padding:10px 25px;">Broadcast</button>
         </div>
         <div id="postPreview"></div>
     </div>
 
-    <div id="dm-screen" class="screen">
-        <h2>Neural Links</h2>
-        <div id="messenger-list"></div>
-    </div>
-
     <div id="profile-screen" class="screen">
-        <div class="profile-header" style="text-align:center; padding:20px;">
-            <div style="position:relative; display:inline-block;">
-                <div class="hx-avatar" id="profPicLarge" style="width:100px; height:100px; font-size:40px;">?</div>
-                <label for="profImgInput" style="position:absolute; bottom:0; right:0; background:var(--surface); width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:1px solid var(--border);">
-                    <i class="fas fa-camera" style="font-size:12px; color:var(--primary)"></i>
-                </label>
-                <input type="file" id="profImgInput" hidden onchange="handleImageFailover(this, 'profile')">
-            </div>
-            <h2 id="profUser">@User</h2>
-            <button onclick="logout()" style="background:var(--error); border:none; color:white; padding:10px 20px; border-radius:10px; margin-top:20px;">Disconnect</button>
+        <div id="auth-ui">
+            <h3 id="authTitle">Network Authentication</h3>
+            <input type="text" id="auth_user" class="auth-field" placeholder="Username">
+            <input type="password" id="auth_pass" class="auth-field" placeholder="Password">
+            <button id="loginBtn" class="auth-btn" onclick="handleAuth('login')">Login to HX</button>
+            <p style="text-align:center; font-size:12px; margin:15px 0;">New to the network?</p>
+            <button id="signupBtn" class="auth-btn" style="background:none; border:1px solid var(--primary); color:var(--primary);" onclick="handleAuth('signup')">Register Node</button>
+        </div>
+        
+        <div id="profile-ui" style="display:none; text-align:center;">
+            <div class="hx-avatar" id="myAvatar" style="width:80px; height:80px; margin:0 auto 15px; font-size:32px;">?</div>
+            <h2 id="myUserDisplay">@User</h2>
+            <p id="myBio" style="color:var(--muted)">Active Community Node</p>
+            <button onclick="logout()" class="auth-btn" style="background:var(--error); color:white; margin-top:20px;">Disconnect Session</button>
         </div>
     </div>
 </div>
 
 <div class="nav-bar">
     <div class="nav-item active" id="nav-home" onclick="openScreen('home')"><i class="fas fa-home"></i></div>
-    <div class="nav-item" id="nav-dm" onclick="openScreen('dm')"><i class="fas fa-comments"></i></div>
+    <div class="nav-item" id="nav-dm" onclick="openScreen('dm')"><i class="fas fa-comment-dots"></i></div>
+    <div class="nav-item" onclick="window.location.href='templates.html'"><i class="fas fa-store"></i></div>
     <div class="nav-item" id="nav-profile" onclick="openScreen('profile')"><i class="fas fa-user-circle"></i></div>
 </div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby9eEtH55XibqVgBOPeANg7WKYL61MOQYeBuKJWOD5UTRGn4VeSMcGNeFsUkk3WyfRpeA/exec";
-
-const IMAGE_APIS = [
-    { url: "https://api.imgbb.com/1/upload?key=363e1d13f890947704153097c5586616", param: "image" },
-    { url: "https://freeimage.host/api/1/upload?key=6d207e02199e34b8a3240ad321568289", param: "source" }
-];
+const AUTH_URL = "https://script.google.com/macros/s/AKfycbx7xeCXgINXt0bgVx5TMT-shfI3dKny7H-hn9po7iVD3kOzUsldOVCjFU8hLfGViFFAow/exec";
 
 let currentUser = localStorage.getItem("hx_user");
+let lastActionTime = 0;
+let cachedUsers = [];
 let postImgUrl = "";
 
-async function handleImageFailover(input, type) {
-    if (!input.files[0]) return;
-    notify("Initiating neural upload...");
-    let uploaded = false;
+// AUTO-REFRESH ON VISIBILITY
+document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) loadFeed();
+});
 
-    for (let api of IMAGE_APIS) {
-        try {
-            let fd = new FormData(); fd.append(api.param, input.files[0]);
-            let res = await fetch(api.url, { method: "POST", body: fd });
-            let data = await res.json();
-            let url = data.data?.url || data.image?.url;
-            if (url) {
-                if (type === 'post') {
-                    postImgUrl = url;
-                    document.getElementById("postPreview").innerHTML = `<img src="${url}" class="hx-media">`;
-                } else {
-                    await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "update_profile_pic", uid: currentUser, pic: url }) });
-                    loadProfile();
-                }
-                notify("Upload Successful");
-                uploaded = true; break;
-            }
-        } catch(e) {}
+// AUTH GATE
+function checkAuthGate(target) {
+    if (!currentUser) {
+        notify("Access Denied: Please Login", "error");
+        openScreen('profile');
+        return;
     }
-    if(!uploaded) notify("Upload nodes failing. Check network.", "error");
+    openScreen(target);
 }
 
-function notify(text, type="primary") {
-    const el = document.createElement("div");
-    el.className = "hx-toast";
-    el.style.borderLeftColor = type === "error" ? "var(--error)" : "var(--primary)";
-    el.innerHTML = `<i class="fas fa-bolt"></i> <span>${text}</span>`;
-    document.getElementById("hx-notifier").appendChild(el);
-    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 500); }, 3000);
+// LOGIN / SIGNUP LOGIC
+async function handleAuth(type) {
+    const user = document.getElementById("auth_user").value.trim();
+    const pass = document.getElementById("auth_pass").value.trim();
+    if (!user || !pass) return notify("Missing credentials", "error");
+
+    const btn = type === 'login' ? document.getElementById("loginBtn") : document.getElementById("signupBtn");
+    const originalText = btn.innerText;
+    btn.innerText = type === 'login' ? "Authenticating..." : "Creating Node...";
+    btn.classList.add("btn-process");
+
+    try {
+        const response = await fetch(`${AUTH_URL}?action=${type}&user=${user}&pass=${pass}`);
+        const result = await response.text();
+
+        if (result.includes("Success")) {
+            localStorage.setItem("hx_user", user);
+            currentUser = user;
+            notify(`Welcome back, @${user}`);
+            location.reload();
+        } else {
+            notify(result, "error");
+        }
+    } catch (e) { notify("Network Error", "error"); }
+    
+    btn.innerText = originalText;
+    btn.classList.remove("btn-process");
 }
 
+// FEED & LIKES
 async function loadFeed() {
-    const feed = document.getElementById("feed");
-    const r = await fetch(API_URL + "?action=get_feed");
-    const res = await r.json();
-    feed.innerHTML = "";
-    res.data.reverse().forEach(p => {
-        const comms = (p.recent_comments || []).map(c => `<div class="comment-pill"><span class="comment-user">@${c.user}</span>${c.text}</div>`).join("");
-        feed.innerHTML += `
-        <div class="hx-card">
-            <div class="hx-header">
-                <div class="hx-avatar">${p.pic ? `<img src="${p.pic}">` : p.author[0].toUpperCase()}</div>
-                <div class="hx-username">@${p.author}</div>
-            </div>
-            <div class="hx-content">${p.content}</div>
-            ${p.media ? `<img src="${p.media}" class="hx-media">` : ''}
-            <div class="hx-actions">
-                <div class="hx-action" onclick="likePost('${p.pid}', this)"><i class="far fa-heart"></i> ${p.likes || 0}</div>
-                <div class="hx-action" onclick="toggleComm('${p.pid}')"><i class="far fa-comment"></i> ${p.comment_count || 0}</div>
-            </div>
-            <div id="area-${p.pid}" class="comments-area">
-                ${comms}
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <input type="text" id="in-${p.pid}" placeholder="Add reply..." style="flex:1; background:var(--surface); border:1px solid var(--border); color:white; padding:8px;">
-                    <button onclick="postComment('${p.pid}')" style="background:var(--primary); border:none; padding:0 15px; border-radius:8px;">Send</button>
+    try {
+        const r = await fetch(API_URL + "?action=get_feed");
+        const res = await r.json();
+        const feed = document.getElementById("feed");
+        feed.innerHTML = res.data.reverse().map(p => {
+            const latestComms = (p.recent_comments || []).slice(0, 3).map(c => `
+                <div style="font-size:12px; margin-top:4px;"><b>@${c.user}</b>: ${c.text}</div>
+            `).join("");
+
+            return `
+            <div class="hx-card">
+                <div class="hx-header" style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                    <div class="hx-avatar">${p.pic ? `<img src="${p.pic}">` : p.author[0].toUpperCase()}</div>
+                    <div class="hx-username">@${p.author}</div>
                 </div>
-            </div>
-        </div>`;
-    });
+                <div class="hx-content">${p.content}</div>
+                ${p.media ? `<img src="${p.media}" class="hx-media" style="width:100%; border-radius:15px; margin:10px 0;">` : ''}
+                <div class="hx-actions">
+                    <div class="hx-action" id="like-${p.pid}" onclick="handleLike('${p.pid}')">
+                        <i class="far fa-heart"></i> <span id="count-${p.pid}">${p.likes || 0}</span>
+                    </div>
+                    <div class="hx-action" onclick="toggleComments('${p.pid}')">
+                        <i class="far fa-comment"></i> ${p.comment_count || 0}
+                    </div>
+                </div>
+                <div id="comm-sec-${p.pid}" style="margin-top:10px; border-top:1px solid var(--border); padding-top:10px;">
+                    ${latestComms}
+                    <div id="full-comms-${p.pid}" style="display:none;"></div>
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <input type="text" id="in-${p.pid}" placeholder="Reply..." style="flex:1; padding:8px; background:var(--bg); border:1px solid var(--border); font-size:12px; color:white;">
+                        <button onclick="postComment('${p.pid}')" style="background:var(--primary); border:none; border-radius:8px; padding:0 12px; font-size:12px;">Send</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join("");
+    } catch(e) {}
 }
 
-async function postComment(pid) {
-    const val = document.getElementById(`in-${pid}`).value;
-    if(!val) return;
-    await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "comment", pid, uid: currentUser, content: val }) });
-    notify("Reply Synced");
-    loadFeed(); // REAL-TIME REFRESH
+// INTERACTIVE LIKE (Instant UI change)
+async function handleLike(pid) {
+    if (!currentUser) return notify("Login to like posts", "error");
+    const el = document.getElementById(`like-${pid}`);
+    const countEl = document.getElementById(`count-${pid}`);
+    
+    // UI Change First
+    el.classList.add("liked");
+    el.querySelector("i").className = "fas fa-heart";
+    countEl.innerText = parseInt(countEl.innerText) + 1;
+
+    try {
+        const res = await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "like", pid, uid: currentUser }) });
+        if (!(await res.json()).status === "Success") throw new Error();
+    } catch (e) {
+        // Revert if error
+        el.classList.remove("liked");
+        el.querySelector("i").className = "far fa-heart";
+        countEl.innerText = parseInt(countEl.innerText) - 1;
+        notify("Update Failed", "error");
+    }
 }
 
-async function submitPost() {
-    const txt = document.getElementById("postText").value;
-    if(!txt && !postImgUrl) return;
-    await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "post", uid: currentUser, content: txt, media: postImgUrl }) });
-    document.getElementById("postText").value = "";
-    document.getElementById("postPreview").innerHTML = "";
-    postImgUrl = "";
-    notify("Broadcast Live");
-    openScreen('home'); // REAL-TIME REFRESH
+// MENTION SYSTEM (@ Feature)
+function checkForMentions(input) {
+    const val = input.value;
+    const lastAt = val.lastIndexOf("@");
+    const area = document.getElementById("mention-area");
+    
+    if (lastAt !== -1 && (lastAt === 0 || val[lastAt - 1] === " ")) {
+        area.style.display = "flex";
+        area.innerHTML = cachedUsers.map(u => `
+            <div class="tag-pill" onclick="insertTag('${u.username}')">@${u.username}</div>
+        `).join("");
+    } else {
+        area.style.display = "none";
+    }
 }
 
-function toggleComm(pid) {
-    const el = document.getElementById(`area-${pid}`);
-    el.style.display = el.style.display === 'block' ? 'none' : 'block';
+function insertTag(user) {
+    const input = document.getElementById("postText");
+    const val = input.value;
+    const lastAt = val.lastIndexOf("@");
+    input.value = val.substring(0, lastAt) + "@" + user + " ";
+    document.getElementById("mention-area").style.display = "none";
+    input.focus();
+}
+
+async function uploadMedia(input) {
+    const btn = document.getElementById("broadcastBtn");
+    btn.classList.add("btn-process");
+    btn.innerText = "Processing Media...";
+    
+    // Using simple ImgBB as primary for speed
+    let fd = new FormData();
+    fd.append("image", input.files[0]);
+    try {
+        const r = await fetch("https://api.imgbb.com/1/upload?key=363e1d13f890947704153097c5586616", { method: "POST", body: fd });
+        const res = await r.json();
+        postImgUrl = res.data.url;
+        document.getElementById("postPreview").innerHTML = `<img src="${postImgUrl}" style="width:60px; height:60px; border-radius:8px;">`;
+        notify("Media Attached");
+    } catch(e) { notify("Upload Error", "error"); }
+    
+    btn.classList.remove("btn-process");
+    btn.innerText = "Broadcast";
 }
 
 function openScreen(name) {
@@ -245,33 +305,58 @@ function openScreen(name) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById(name + '-screen').classList.add('active');
     document.getElementById('nav-' + name)?.classList.add('active');
-    if(name === 'home') loadFeed();
-    if(name === 'dm') loadMessenger();
+
+    if (name === 'profile') {
+        if (currentUser) {
+            document.getElementById("auth-ui").style.display = "none";
+            document.getElementById("profile-ui").style.display = "block";
+            document.getElementById("myUserDisplay").innerText = "@" + currentUser;
+            document.getElementById("myAvatar").innerText = currentUser[0].toUpperCase();
+        }
+    }
+    
+    if (name === 'dm') {
+        if (!currentUser) {
+            document.getElementById("dm-gate").style.display = "block";
+            document.getElementById("user-list-container").style.display = "none";
+        } else {
+            document.getElementById("dm-gate").style.display = "none";
+            document.getElementById("user-list-container").style.display = "block";
+            loadMessenger();
+        }
+    }
 }
 
 async function loadMessenger() {
-    const list = document.getElementById("messenger-list");
     const r = await fetch(API_URL + "?action=get_users");
     const res = await r.json();
-    list.innerHTML = res.data.filter(u => u.username !== currentUser).map(u => `
-        <div class="messenger-item" onclick="alert('DM coming soon')">
+    cachedUsers = res.data;
+    document.getElementById("messenger-list").innerHTML = res.data.map(u => `
+        <div class="hx-card" style="display:flex; align-items:center; gap:10px; padding:10px; margin-bottom:8px;">
             <div class="hx-avatar">${u.pic ? `<img src="${u.pic}">` : u.username[0].toUpperCase()}</div>
-            <div class="hx-username">@${u.username}</div>
+            <div>@${u.username}</div>
+            <button onclick="notify('Initializing Chat...')" style="margin-left:auto; background:var(--primary); border:none; border-radius:8px; padding:5px 10px; font-size:12px;">Link</button>
         </div>
     `).join("");
 }
 
-async function loadProfile() {
-    document.getElementById("profUser").innerText = "@" + currentUser;
-    let r = await fetch(API_URL + "?action=get_user_data&uid=" + currentUser);
-    let res = await r.json();
-    if(res.data.pic) document.getElementById("profPicLarge").innerHTML = `<img src="${res.data.pic}">`;
+function notify(text, type="primary") {
+    const el = document.createElement("div");
+    el.className = "hx-toast";
+    el.style.borderLeftColor = type === "error" ? "var(--error)" : "var(--primary)";
+    el.innerHTML = `<i class="fas fa-bolt"></i><span>${text}</span>`;
+    document.getElementById("hx-notifier").prepend(el);
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 500); }, 3000);
 }
 
-function logout() { localStorage.removeItem("hx_user"); location.reload(); }
 function toggleTheme() { document.body.classList.toggle("light"); }
+function logout() { localStorage.clear(); location.reload(); }
 
-if(!currentUser) { location.href = "templates.html"; } else { loadFeed(); loadProfile(); }
+// Initial App State
+if (currentUser) loadFeed();
+else openScreen('home');
+loadFeed();
+loadMessenger(); // Cache users for tagging
 </script>
 </body>
 </html>
