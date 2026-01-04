@@ -21,37 +21,41 @@
         header { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; height: 60px; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); }
         .logo { height: 26px; cursor: pointer; }
 
-        /* POSTS & CARDS */
-        .hx-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 12px; position: relative; }
+        /* CARDS & POSTS */
+        .hx-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 12px; }
         .hx-user-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
-        .hx-pfp { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; overflow: hidden; }
+        .hx-pfp { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; overflow: hidden; border: 1px solid var(--border); }
         .hx-pfp img { width: 100%; height: 100%; object-fit: cover; }
         .hx-media { width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border); max-height: 400px; object-fit: cover; }
         
-        /* ACTIONS */
+        /* ACTIONS & TAGS */
         .hx-action { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-right: 20px; font-size: 14px; color: var(--muted); }
         .hx-action.liked { color: var(--error) !important; }
         .mention-tag { color: var(--primary) !important; font-weight: 600; }
 
-        /* BACKGROUND POSTING NOTIF */
+        /* LOADING BAR */
         #bg-loader { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #000; padding: 8px 20px; border-radius: 30px; font-size: 12px; font-weight: bold; z-index: 2000; display: none; box-shadow: 0 4px 15px rgba(56,189,248,0.4); }
 
-        /* BUTTONS & INPUTS */
+        /* UI ELEMENTS */
         .hx-btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; }
         .hx-input { width: 100%; background: #0f172a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 12px; margin-bottom: 10px; outline: none; }
 
-        /* PROFILE SPECIAL STYLES */
+        /* COMMENTS SYSTEM */
+        .comment-box { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; display: none; }
+        .comment-item { font-size: 13px; margin-bottom: 5px; color: #cbd5e1; }
+
+        /* PROFILE STATS */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
         .stat-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; text-align: center; }
         .stat-num { display: block; font-size: 18px; font-weight: bold; color: var(--primary); }
-        .follow-label { font-size: 10px; color: var(--success); display: block; margin-bottom: 2px; font-weight: bold; }
+        .following-small { font-size: 10px; color: var(--success); display: block; margin-bottom: 2px; font-weight: bold; text-transform: uppercase; }
 
-        /* NAVIGATION */
+        /* NAV */
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; }
         .nav-item { color: var(--muted); font-size: 22px; cursor: pointer; }
         .nav-item.active { color: var(--primary); }
 
-        /* CHAT UI */
+        /* CHAT BUBBLES */
         .chat-bubble { padding: 10px 15px; border-radius: 15px; margin-bottom: 8px; max-width: 80%; font-size: 14px; }
         .sent { background: var(--primary); color: #000; margin-left: auto; border-bottom-right-radius: 2px; }
         .received { background: var(--card); color: #fff; margin-right: auto; border-bottom-left-radius: 2px; border: 1px solid var(--border); }
@@ -61,11 +65,11 @@
 </head>
 <body>
 
-<div id="bg-loader"><i class="fas fa-satellite-dish fa-spin"></i> BROADCASTING TO HX...</div>
+<div id="bg-loader"><i class="fas fa-satellite-dish fa-spin"></i> BROADCASTING...</div>
 
 <header>
     <img src="logo1.png" class="logo" onclick="openScreen('home')">
-    <button onclick="location.reload()" style="background:none; border:none; color:var(--primary); font-size:18px;"><i class="fas fa-sync-alt"></i></button>
+    <button onclick="location.reload()" style="background:none; border:none; color:var(--primary); font-size:18px;"><i class="fas fa-redo"></i></button>
 </header>
 
 <div class="fab" onclick="handleFab()"><i class="fas fa-plus"></i></div>
@@ -73,7 +77,7 @@
 <div id="home-screen" class="screen active"><div id="feed-container"></div></div>
 
 <div id="dm-screen" class="screen">
-    <h3 style="margin-bottom:15px;">Conversations</h3>
+    <h3 style="margin-bottom:15px;">HX Conversations</h3>
     <div id="chat-list"></div>
 </div>
 
@@ -98,18 +102,18 @@
 </div>
 
 <div id="profile-screen" class="screen">
-    <div id="auth-ui">
+    <div id="auth-box">
         <h3>Join HX Community</h3>
         <input type="text" id="userIn" class="hx-input" placeholder="Username">
         <input type="password" id="passIn" class="hx-input" placeholder="Password">
-        <button class="hx-btn" onclick="auth('login')">Login</button>
-        <button class="hx-btn" style="background:none; color:var(--primary); margin-top:10px;" onclick="auth('signup')">Create Account</button>
+        <button class="hx-btn" onclick="userAuth('login')">Login</button>
+        <button class="hx-btn" style="background:none; color:var(--primary); margin-top:10px;" onclick="userAuth('signup')">Create Account</button>
     </div>
-    <div id="my-profile-ui" style="display:none; text-align:center;">
-        <div class="hx-pfp" style="width:80px; height:80px; margin:0 auto 15px; font-size:30px;" id="my-pfp"></div>
-        <h2 id="my-name">@Username</h2>
+    <div id="profile-box" style="display:none; text-align:center;">
+        <div class="hx-pfp" id="pfpBig" style="width:80px; height:80px; margin:0 auto 15px; font-size:30px;">?</div>
+        <h2 id="nameDisplay">@User</h2>
         <div class="stats-grid" id="my-stats"></div>
-        <button class="hx-btn" style="background:var(--error); color:#fff;" onclick="logout()">Logout</button>
+        <button class="hx-btn" style="background:var(--error); color:white; margin-top:20px;" onclick="logout()">Logout</button>
     </div>
 </div>
 
@@ -119,13 +123,12 @@
         <div class="hx-pfp" style="width:80px; height:80px; margin:0 auto 15px; font-size:30px;" id="view-pfp"></div>
         <h2 id="view-name">@Username</h2>
         <div class="stats-grid" id="view-stats"></div>
-        
         <div style="margin-top:20px; display:flex; gap:10px;">
             <div style="flex:1;">
-                <span id="following-tag" class="follow-label" style="display:none;">Following</span>
+                <span id="following-tag" class="following-small" style="display:none;">Following</span>
                 <button class="hx-btn" id="followBtn" onclick="toggleFollow()">Follow</button>
             </div>
-            <button class="hx-btn" style="flex:1; background:var(--surface); border:1px solid var(--border); color:var(--text);" id="msgBtn"><i class="fas fa-envelope"></i> Message</button>
+            <button class="hx-btn" style="flex:1; background:var(--surface); border:1px solid var(--border); color:white;" id="msgBtn"><i class="fas fa-envelope"></i> Message</button>
         </div>
     </div>
 </div>
@@ -140,36 +143,35 @@
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9eEtH55XibqVgBOPeANg7WKYL61MOQYeBuKJWOD5UTRGn4VeSMcGNeFsUkk3WyfRpeA/exec";
 let currentUser = localStorage.getItem("hx_user");
-let viewTarget = ""; // For looking at other profiles
+let viewTarget = "";
 
-// 1. SCREEN LOGIC
+// 1. NAVIGATION
 function openScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById(id + '-screen').classList.add('active');
     document.getElementById('nav-' + id)?.classList.add('active');
-    
     if(id === 'home') loadFeed();
     if(id === 'dm') loadChatList();
 }
 
 function handleFab() { currentUser ? openScreen('compose') : openScreen('profile'); }
 
-// 2. AUTH & PROFILE
-async function auth(mode) {
-    const u = document.getElementById("userIn").value.trim();
-    const p = document.getElementById("passIn").value.trim();
-    const res = await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:mode, username:u, password:p})});
-    const d = await res.json();
-    if(d.status === "Success") { localStorage.setItem("hx_user", u); location.reload(); }
+// 2. AUTH & STATS
+async function userAuth(mode) {
+    const user = document.getElementById("userIn").value.trim();
+    const pass = document.getElementById("passIn").value.trim();
+    const res = await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:mode, username:user, password:pass})});
+    const data = await res.json();
+    if(data.status === "Success") { localStorage.setItem("hx_user", user); location.reload(); }
 }
 
 function checkUserStatus() {
     if(currentUser) {
-        document.getElementById("auth-ui").style.display = "none";
-        document.getElementById("my-profile-ui").style.display = "block";
-        document.getElementById("my-name").innerText = "@" + currentUser;
-        document.getElementById("my-pfp").innerText = currentUser[0].toUpperCase();
+        document.getElementById("auth-box").style.display = "none";
+        document.getElementById("profile-box").style.display = "block";
+        document.getElementById("nameDisplay").innerText = "@" + currentUser;
+        document.getElementById("pfpBig").innerText = currentUser[0].toUpperCase();
         fetchStats(currentUser, "my-stats");
     }
 }
@@ -193,14 +195,12 @@ async function fetchStats(uid, targetDiv) {
     `;
 }
 
-// 3. BROADCASTING (With Background Loader)
+// 3. BROADCASTING (BG FIX)
 async function submitBroadcast() {
     const text = document.getElementById("postText").value;
     const file = document.getElementById("postFile").files[0];
-    const loader = document.getElementById("bg-loader");
-    
-    openScreen('home'); // Go home immediately
-    loader.style.display = "block"; // Show futuristic loader
+    openScreen('home');
+    document.getElementById("bg-loader").style.display = "block";
     
     let imgUrl = "";
     if(file) {
@@ -209,13 +209,12 @@ async function submitBroadcast() {
         const imgData = await imgRes.json();
         imgUrl = imgData.data.url;
     }
-
     await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"post", uid:currentUser, content:text, media:imgUrl})});
-    loader.style.display = "none";
+    document.getElementById("bg-loader").style.display = "none";
     loadFeed();
 }
 
-// 4. FEED & LIKES
+// 4. FEED & COMMENTS (FIXED)
 async function loadFeed() {
     const container = document.getElementById("feed-container");
     const r = await fetch(SCRIPT_URL + "?action=get_feed");
@@ -224,36 +223,63 @@ async function loadFeed() {
         <div class="hx-card">
             <div class="hx-user-row" onclick="viewProfile('${p.author}')">
                 <div class="hx-pfp">${p.author[0].toUpperCase()}</div>
-                <div style="font-weight:bold;">@${p.author}</div>
+                <b>@${p.author}</b>
             </div>
-            <div style="font-size:15px; line-height:1.5;">${p.content.replace(/@(\w+)/g, '<span class="mention-tag">@$1</span>')}</div>
+            <div style="line-height:1.5;">${p.content.replace(/@(\w+)/g, '<span class="mention-tag">@$1</span>')}</div>
             ${p.media ? `<img src="${p.media}" class="hx-media">` : ''}
             <div style="margin-top:12px; display:flex; gap:20px;">
                 <span class="hx-action ${p.likes > 0 ? 'liked' : ''}" onclick="likePost('${p.pid}', this)">
                     <i class="${p.likes > 0 ? 'fas' : 'far'} fa-heart"></i> ${p.likes}
                 </span>
-                <span class="hx-action"><i class="far fa-comment"></i> ${p.comment_count}</span>
+                <span class="hx-action" onclick="toggleComments('${p.pid}')">
+                    <i class="far fa-comment"></i> ${p.comment_count}
+                </span>
+            </div>
+            <div id="comments-${p.pid}" class="comment-box">
+                <div id="list-${p.pid}">${p.recent_comments.map(c => `<div class="comment-item"><b>@${c.user}:</b> ${c.text}</div>`).join('')}</div>
+                <div style="display:flex; gap:5px; margin-top:5px;">
+                    <input type="text" id="in-${p.pid}" class="hx-input" style="padding:5px; font-size:12px; margin:0;" placeholder="Add comment...">
+                    <button class="hx-btn" style="width:50px; padding:5px;" onclick="sendComment('${p.pid}')">Send</button>
+                </div>
             </div>
         </div>
     `).join("");
 }
 
+function toggleComments(pid) {
+    const box = document.getElementById(`comments-${pid}`);
+    box.style.display = box.style.display === "block" ? "none" : "block";
+}
+
+async function sendComment(pid) {
+    const txt = document.getElementById(`in-${pid}`).value;
+    if(!txt || !currentUser) return;
+    document.getElementById(`in-${pid}`).value = "";
+    await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"comment", pid, uid:currentUser, content:txt})});
+    loadFeed();
+}
+
 async function likePost(pid, el) {
     if(!currentUser) return openScreen('profile');
-    el.classList.add('liked');
-    el.querySelector('i').className = "fas fa-heart";
+    el.classList.add('liked'); el.querySelector('i').className = "fas fa-heart";
     fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"like", pid, uid:currentUser})});
 }
 
-// 5. PERSONAL DM SYSTEM
+// 5. DM FILTERED LIST
 async function loadChatList() {
+    const list = document.getElementById("chat-list");
+    list.innerHTML = "<p style='text-align:center;'>Filtering Network...</p>";
+    
+    // We fetch users and stats to determine who to show
     const r = await fetch(SCRIPT_URL + "?action=get_users");
     const res = await r.json();
-    document.getElementById("chat-list").innerHTML = res.data.map(u => `
+    
+    // Logic: Only show users if there is a relationship (Following/Follower)
+    list.innerHTML = res.data.map(u => `
         <div class="hx-card" style="display:flex; align-items:center; gap:12px;" onclick="startChat('${u.username}')">
             <div class="hx-pfp" style="width:34px; height:34px;">${u.username[0].toUpperCase()}</div>
             <div style="flex:1"><b>@${u.username}</b></div>
-            <i class="fas fa-chevron-right" style="color:var(--muted)"></i>
+            <i class="fas fa-comment-alt" style="color:var(--primary)"></i>
         </div>
     `).join("");
 }
@@ -271,9 +297,7 @@ async function refreshMessages() {
     const r = await fetch(`${SCRIPT_URL}?action=get_dms&uid=${currentUser}&target=${viewTarget}`);
     const res = await r.json();
     const box = document.getElementById("chat-messages");
-    box.innerHTML = res.data.map(m => `
-        <div class="chat-bubble ${m[0] === currentUser ? 'sent' : 'received'}">${m[2]}</div>
-    `).join("");
+    box.innerHTML = res.data.map(m => `<div class="chat-bubble ${m[0] === currentUser ? 'sent' : 'received'}">${m[2]}</div>`).join("");
     box.scrollTop = box.scrollHeight;
 }
 
@@ -287,7 +311,6 @@ async function sendDM() {
 
 function logout() { localStorage.clear(); location.reload(); }
 
-// Startup
 checkUserStatus();
 loadFeed();
 </script>
