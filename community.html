@@ -8,15 +8,15 @@
     <style>
         :root {
             --bg:#0f172a; --surface:#020617; --card:#1e293b; --border:#334155;
-            --text:#f8fafc; --muted:#94a3b8; --primary:#38bdf8;
+            --text:#f8fafc; --muted:#94a3b8; --primary:#38bdf8; --error:#ef4444;
         }
         .light {
             --bg:#f1f5f9; --surface:#ffffff; --card:#ffffff; --border:#cbd5e1;
             --text:#0f172a; --muted:#64748b; --primary:#0284c7;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-user-select: none; user-select: none; }
-        input, textarea { -webkit-user-select: text; user-select: text; }
-        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 70px; transition: 0.3s; overflow-x: hidden; }
+        input, textarea { -webkit-user-select: text; user-select: text; border-radius: 8px; }
+        body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; transition: 0.3s; overflow-x: hidden; }
         
         header { 
             background: var(--surface); border-bottom: 1px solid var(--border); 
@@ -27,189 +27,304 @@
 
         .main-container { max-width: 600px; margin: auto; padding: 15px; }
         
-        /* Post Box */
-        .post-box { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 15px; margin-bottom: 20px; }
-        textarea { width: 100%; background: transparent; border: none; color: var(--text); font-size: 16px; outline: none; resize: none; min-height: 80px; }
-        .post-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 5px; }
-        
-        /* Feed Cards */
+        /* Screens */
+        .screen { display: none; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Post Cards */
         .hx-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; margin-bottom: 15px; }
         .hx-header { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
-        .hx-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; }
+        .hx-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; font-size: 18px; overflow: hidden; }
+        .hx-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .hx-user { font-weight: 700; font-size: 15px; }
         .hx-content { font-size: 15px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
-        
-        /* Navigation */
+        .hx-image { width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border); }
+
+        /* Floating Action Button */
+        .fab { 
+            position: fixed; bottom: 90px; right: 20px; 
+            width: 56px; height: 56px; border-radius: 50%; 
+            background: var(--primary); color: #000; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 24px; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4); 
+            cursor: pointer; z-index: 999;
+        }
+
+        /* Nav Bar */
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 15px 0; z-index: 1000; }
-        .nav-item { color: var(--muted); font-size: 22px; cursor: pointer; transition: 0.2s; }
+        .nav-item { color: var(--muted); font-size: 22px; cursor: pointer; }
         .nav-item.active { color: var(--primary); }
 
-        .btn-post { background: var(--primary); color: #000; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-        .btn-post:disabled { opacity: 0.5; }
-
-        .screen { display: none; }
-        .screen.active { display: block; }
+        /* Profile Styles */
+        .profile-header { text-align: center; padding: 20px; }
+        .profile-pic-container { position: relative; width: 100px; height: 100px; margin: 0 auto 15px; }
+        .profile-avatar-large { width: 100px; height: 100px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 40px; color: #000; font-weight: 800; overflow: hidden; border: 3px solid var(--primary); }
+        .profile-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
         
-        .dm-msg { padding: 10px; border-radius: 10px; background: var(--surface); margin-bottom: 10px; border: 1px solid var(--border); }
+        .upload-btn { position: absolute; bottom: 0; right: 0; background: var(--surface); border: 1px solid var(--border); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--primary); }
+
+        .btn-action { background: var(--primary); color: #000; border: none; padding: 12px 25px; border-radius: 25px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+        .store-btn { display: block; text-align: center; margin-top: 20px; color: var(--muted); text-decoration: none; font-size: 13px; }
+        .like-btn.liked { color: var(--error) !important; }
+        
+        /* Comment Section */
+        .comment-input-group { display: flex; gap: 8px; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px; }
+        .comment-input-group input { flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; font-size: 14px; outline: none; }
+        .comment-input-group button { background: var(--primary); color: #000; border: none; padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <header>
-    <img src="logo1.png" class="logo" onclick="location.href='index.html'">
+    <img src="logo1.png" class="logo" onclick="openScreen('home')">
     <div onclick="toggleTheme()" style="cursor:pointer; width:35px; height:35px; display:flex; align-items:center; justify-content:center; background:var(--card); border-radius:10px;">
         <i class="fas fa-moon" id="tIcon"></i>
     </div>
 </header>
 
+<div class="fab" id="fabPost" onclick="openScreen('compose')"><i class="fas fa-plus"></i></div>
+
 <div class="main-container">
+    
     <div id="home-screen" class="screen active">
-        <div class="post-box">
-            <textarea id="postText" placeholder="What's on your mind?" maxlength="280"></textarea>
-            <div class="post-footer">
-                <span style="font-size:12px; color:var(--muted)" id="charCount">280</span>
-                <button onclick="submitPost()" class="btn-post" id="postBtn" disabled>Post</button>
-            </div>
-        </div>
         <div id="feed">
-            <div style="text-align:center; padding:40px; color:var(--muted)">
+            <div style="text-align:center; padding:50px; color:var(--muted)">
                 <i class="fas fa-circle-notch fa-spin fa-2x"></i>
-                <p>Syncing Feed...</p>
+                <p>Syncing Community...</p>
             </div>
         </div>
     </div>
 
+    <div id="compose-screen" class="screen">
+        <div style="display:flex; justify-content:space-between; align-items:center">
+            <h2>New Post</h2>
+            <i class="fas fa-times" onclick="openScreen('home')" style="font-size:20px; cursor:pointer"></i>
+        </div>
+        <textarea id="postText" style="width:100%; min-height:150px; background:transparent; border:1px solid var(--border); color:white; padding:15px; font-size:16px; outline:none;" placeholder="What's happening?"></textarea>
+        <div style="margin-top:10px;">
+            <label for="postImg" style="cursor:pointer; color:var(--primary); font-size: 14px;"><i class="fas fa-image"></i> Add Image</label>
+            <input type="file" id="postImg" hidden accept="image/*" onchange="handleImage(this, 'post')">
+            <div id="postPreview"></div>
+        </div>
+        <button onclick="submitPost()" class="btn-action" id="postBtn">Post</button>
+    </div>
+
     <div id="dm-screen" class="screen">
-        <h2 style="margin-top:0">Direct Messages</h2>
-        <div class="post-box">
-            <input type="text" id="dmTarget" placeholder="Target Username" style="width:100%; background:none; border:1px solid var(--border); color:white; padding:10px; border-radius:10px; margin-bottom:10px;">
-            <textarea id="dmText" placeholder="Write your message..." style="min-height:50px;"></textarea>
-            <button class="btn-post" style="width:100%" onclick="sendDM()">Send Secure DM</button>
+        <h2>Messages</h2>
+        <div class="hx-card">
+            <input type="text" id="dmTarget" placeholder="Recipient Username" style="width:100%; background:var(--surface); border:1px solid var(--border); color:white; padding:10px; margin-bottom:10px;">
+            <textarea id="dmText" placeholder="Message..." style="width:100%; background:var(--surface); border:1px solid var(--border); color:white; padding:10px; height:60px; outline:none;"></textarea>
+            <button class="btn-action" onclick="sendDM()">Send</button>
         </div>
         <div id="dmList"></div>
     </div>
+
+    <div id="profile-screen" class="screen">
+        <div class="profile-header">
+            <div class="profile-pic-container">
+                <div class="profile-avatar-large" id="profPicLarge">?</div>
+                <label for="profImgInput" class="upload-btn" id="profUploadBtn">
+                    <i class="fas fa-camera"></i>
+                </label>
+                <input type="file" id="profImgInput" hidden accept="image/*" onchange="handleImage(this, 'profile')">
+            </div>
+            <h2 id="profUser">@User</h2>
+            <p id="profStatus" style="color:var(--primary); font-size:14px;"></p>
+        </div>
+        
+        <div class="hx-card">
+            <button class="btn-action" onclick="logout()" style="background:var(--error); color:white">Sign Out</button>
+            <a href="templates.html" class="store-btn">Go to templates.html Store</a>
+        </div>
+    </div>
+
 </div>
 
 <div class="nav-bar">
     <div class="nav-item active" id="nav-home" onclick="openScreen('home')"><i class="fas fa-home"></i></div>
     <div class="nav-item" id="nav-dm" onclick="openScreen('dm')"><i class="fas fa-envelope"></i></div>
-    <div class="nav-item" onclick="location.href='templates.html'"><i class="fas fa-user-circle"></i></div>
+    <div class="nav-item" id="nav-profile" onclick="openScreen('profile')"><i class="fas fa-user"></i></div>
 </div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby9eEtH55XibqVgBOPeANg7WKYL61MOQYeBuKJWOD5UTRGn4VeSMcGNeFsUkk3WyfRpeA/exec";
+const IMGBB_KEY = "363e1d13f890947704153097c5586616";
 let currentUser = localStorage.getItem("hx_user");
+let postImgUrl = "";
 
-// CHARACTER COUNTER
-const postText = document.getElementById("postText");
-const postBtn = document.getElementById("postBtn");
-postText.addEventListener("input", () => {
-    document.getElementById("charCount").innerText = 280 - postText.value.length;
-    postBtn.disabled = postText.value.trim().length === 0;
-});
-
-// SCREEN TOGGLE
 function openScreen(name) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById(name + '-screen').classList.add('active');
-    document.getElementById('nav-' + name).classList.add('active');
+    document.getElementById('nav-' + name)?.classList.add('active');
+    
+    document.getElementById('fabPost').style.display = (name === 'home') ? 'flex' : 'none';
+    
     if(name === 'home') loadFeed();
     if(name === 'dm') loadDMs();
+    if(name === 'profile') loadProfile();
 }
 
-// SUBMIT POST
-async function submitPost() {
-    if(!currentUser) return alert("Please Login via the Store!");
-    const content = postText.value.trim();
-    postBtn.innerText = "Securing...";
-    postBtn.disabled = true;
+async function handleImage(input, type) {
+    if (!input.files || !input.files[0]) return;
+    const btn = (type === 'post') ? document.getElementById("postBtn") : document.getElementById("profUploadBtn");
+    
+    const formData = new FormData();
+    formData.append("image", input.files[0]);
 
     try {
-        await fetch(API_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "post", uid: currentUser, content: content })
-        });
-        postText.value = "";
-        loadFeed();
-    } catch(e) { console.error(e); }
-    postBtn.innerText = "Post";
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
+        const data = await res.json();
+        const url = data.data.url;
+
+        if(type === 'post') {
+            postImgUrl = url;
+            document.getElementById("postPreview").innerHTML = `<img src="${url}" style="width:100%; margin-top:10px; border-radius:10px; border: 1px solid var(--border)">`;
+        } else {
+            // Save Profile Pic to Sheet
+            await fetch(API_URL, { 
+                method: "POST", 
+                body: JSON.stringify({ action: "update_profile_pic", uid: currentUser, pic: url }) 
+            });
+            loadProfile();
+        }
+    } catch(e) { alert("Upload failed. Check connection."); }
 }
 
-// LOAD FEED
 async function loadFeed() {
     const feed = document.getElementById("feed");
     try {
         const r = await fetch(API_URL + "?action=get_feed");
         const res = await r.json();
-        if(res.status === "Success") {
-            feed.innerHTML = "";
-            res.data.reverse().forEach(p => {
-                feed.innerHTML += `
-                <div class="hx-card">
-                    <div class="hx-header">
-                        <div class="hx-avatar">${p.author[0].toUpperCase()}</div>
-                        <div class="hx-user">@${p.author}</div>
-                    </div>
-                    <div class="hx-content">${p.content}</div>
-                    <div style="margin-top:15px; color:var(--muted); font-size:13px; display:flex; gap:20px;">
-                        <span onclick="likePost('${p.pid}')"><i class="far fa-heart"></i> ${p.likes || 0}</span>
-                        <span><i class="far fa-comment"></i> 0</span>
-                        <span style="margin-left:auto; opacity:0.5"><i class="fas fa-shield-halved"></i> Verified</span>
-                    </div>
-                </div>`;
-            });
+        feed.innerHTML = "";
+        res.data.reverse().forEach(p => {
+            feed.innerHTML += `
+            <div class="hx-card">
+                <div class="hx-header">
+                    <div class="hx-avatar">${p.pic ? `<img src="${p.pic}">` : p.author[0].toUpperCase()}</div>
+                    <div class="hx-user">@${p.author}</div>
+                </div>
+                <div class="hx-content">${p.content}</div>
+                ${p.media ? `<img src="${p.media}" class="hx-image">` : ''}
+                <div style="margin-top:15px; display:flex; gap:20px; color:var(--muted); font-size: 14px;">
+                    <span class="like-btn" onclick="likePost('${p.pid}', this)"><i class="fas fa-heart"></i> ${p.likes || 0}</span>
+                    <span onclick="toggleComments('${p.pid}')"><i class="fas fa-comment"></i> ${p.comments || 0}</span>
+                </div>
+                <div id="comm-box-${p.pid}" class="comment-input-group" style="display:none">
+                    <input type="text" id="input-${p.pid}" placeholder="Write a comment...">
+                    <button id="btn-${p.pid}" onclick="postComment('${p.pid}')">Send</button>
+                </div>
+            </div>`;
+        });
+    } catch(e) { feed.innerHTML = "<p style='text-align:center'>Gateway connection busy.</p>"; }
+}
+
+async function loadProfile() {
+    if(!currentUser) return openScreen('home');
+    document.getElementById("profUser").innerText = "@" + currentUser;
+    
+    try {
+        const r = await fetch(API_URL + "?action=get_user_data&uid=" + currentUser);
+        const res = await r.json();
+        const picContainer = document.getElementById("profPicLarge");
+        const statusText = document.getElementById("profStatus");
+
+        if(res.status === "Success" && res.data.pic) {
+            picContainer.innerHTML = `<img src="${res.data.pic}">`;
+            statusText.innerText = "Profile Picture Verified";
+        } else {
+            picContainer.innerHTML = currentUser[0].toUpperCase();
+            statusText.innerText = "Set a Profile Picture";
         }
-    } catch(e) { feed.innerHTML = "<p style='text-align:center'>Gateway connection busy. Retrying...</p>"; }
+    } catch(e) { console.error("Profile Load Error"); }
 }
 
-// LIKE POST
-async function likePost(pid) {
-    if(!currentUser) return;
-    await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "like", pid: pid, uid: currentUser })
+async function submitPost() {
+    const txt = document.getElementById("postText").value.trim();
+    if(!txt && !postImgUrl) return;
+    
+    const btn = document.getElementById("postBtn");
+    btn.disabled = true;
+    btn.innerText = "Encrypting...";
+
+    await fetch(API_URL, { 
+        method: "POST", 
+        body: JSON.stringify({ action: "post", uid: currentUser, content: txt, media: postImgUrl }) 
     });
-    loadFeed();
+    
+    postImgUrl = "";
+    document.getElementById("postText").value = "";
+    document.getElementById("postPreview").innerHTML = "";
+    openScreen('home');
 }
 
-// SEND DM
+async function likePost(pid, el) {
+    if(el.classList.contains('liked')) return;
+    el.classList.add('liked');
+    const heart = el.querySelector('i');
+    heart.style.transform = "scale(1.3)";
+    setTimeout(() => heart.style.transform = "scale(1)", 200);
+
+    fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "like", pid: pid }) });
+}
+
+function toggleComments(pid) {
+    const box = document.getElementById(`comm-box-${pid}`);
+    box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+}
+
+async function postComment(pid) {
+    const input = document.getElementById(`input-${pid}`);
+    const btn = document.getElementById(`btn-${pid}`);
+    if(!input.value.trim()) return;
+
+    input.disabled = true;
+    btn.disabled = true;
+    btn.innerText = "...";
+
+    // Since AppScript 'comment' action is standard:
+    await fetch(API_URL, { 
+        method: "POST", 
+        body: JSON.stringify({ action: "comment", pid: pid, uid: currentUser, content: input.value }) 
+    });
+    
+    input.value = "";
+    input.disabled = false;
+    btn.disabled = false;
+    btn.innerText = "Send";
+    alert("Comment Posted!");
+}
+
 async function sendDM() {
     const target = document.getElementById("dmTarget").value.trim();
     const msg = document.getElementById("dmText").value.trim();
-    if(!target || !msg) return alert("Missing Info");
-    
-    await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "dm", uid: currentUser, target: target, message: msg })
-    });
-    alert("Message Sent & Notified!");
+    if(!target || !msg) return;
+    await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "dm", uid: currentUser, target: target, message: msg }) });
+    alert("DM Sent!");
     document.getElementById("dmText").value = "";
-    loadDMs();
 }
 
-// LOAD DMs
 async function loadDMs() {
     const list = document.getElementById("dmList");
-    try {
-        const r = await fetch(API_URL + "?action=get_dms&uid=" + currentUser);
-        const res = await r.json();
-        list.innerHTML = res.data.map(m => `
-            <div class="dm-msg">
-                <small style="color:var(--primary)">${m[0] === currentUser ? 'TO: @'+m[1] : 'FROM: @'+m[0]}</small>
-                <div style="margin-top:5px">${m[2]}</div>
-            </div>
-        `).join("");
-    } catch(e) {}
+    const r = await fetch(API_URL + "?action=get_dms&uid=" + currentUser);
+    const res = await r.json();
+    list.innerHTML = res.data.map(m => `
+        <div style="background:var(--card); padding:10px; border-radius:10px; margin-bottom:10px; border:1px solid var(--border)">
+            <small style="color:var(--primary)">From: @${m[0]}</small>
+            <div style="margin-top:5px">${m[2]}</div>
+        </div>
+    `).join("");
 }
 
+function logout() { localStorage.removeItem("hx_user"); location.reload(); }
 function toggleTheme() {
     const isLight = document.body.classList.toggle("light");
     document.getElementById("tIcon").className = isLight ? "fas fa-sun" : "fas fa-moon";
 }
 
-document.addEventListener('contextmenu', e => e.preventDefault());
 loadFeed();
 </script>
 </body>
-              </html>
+            </html>
