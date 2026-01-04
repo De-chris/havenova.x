@@ -13,53 +13,58 @@
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text); padding-bottom: 80px; overflow-x: hidden; }
 
-        .screen { display: none !important; padding: 15px; max-width: 600px; margin: 0 auto; min-height: 100vh; animation: screenIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .screen { display: none !important; padding: 15px; max-width: 600px; margin: 0 auto; min-height: 100vh; animation: fadeIn 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
         .screen.active { display: block !important; }
-        @keyframes screenIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         header { background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; height: 60px; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); }
-        .logo { height: 26px; cursor: pointer; transition: 0.3s; }
-        .logo:active { transform: scale(0.9); }
+        .logo { height: 26px; cursor: pointer; transition: transform 0.3s; }
+        .logo:active { transform: scale(0.95); }
 
         .fab { 
             position: fixed; bottom: 90px; right: 20px; width: 55px; height: 55px; 
             border-radius: 18px; background: var(--primary); color: #000; 
             display: flex; align-items: center; justify-content: center; font-size: 22px; 
             box-shadow: 0 4px 15px rgba(56,189,248,0.4); z-index: 900; cursor: pointer; 
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
-        .fab.hidden { transform: scale(0); opacity: 0; pointer-events: none; }
+        .fab.hidden { display: none !important; }
         .fab.dormant { transform: translateX(35px); opacity: 0.6; }
 
-        .hx-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 12px; transition: 0.3s; }
+        .hx-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 12px; transition: transform 0.2s; }
         .hx-user-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
         .hx-pfp { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; overflow: hidden; border: 1px solid var(--border); }
-        .hx-media { width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border); max-height: 400px; object-fit: cover; }
+        .hx-media { width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border); max-height: 400px; object-fit: cover; background: #000; }
         
-        .hx-action { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-right: 20px; font-size: 14px; color: var(--muted); transition: 0.2s; }
-        .hx-action:hover { color: var(--primary); }
-        .hx-action.liked { color: var(--error) !important; animation: heartPop 0.4s ease; }
-        @keyframes heartPop { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        .hx-action { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-right: 20px; font-size: 14px; color: var(--muted); transition: all 0.2s; }
+        .hx-action.liked { color: var(--error) !important; }
+        .hx-action.liked i { animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes heartPop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 
-        .comment-section { display: none; margin-top: 15px; border-top: 1px solid var(--border); max-height: 350px; overflow-y: auto; }
-        .comment-input-wrap { position: sticky; top: 0; background: var(--card); padding: 10px 0; z-index: 5; display: flex; gap: 8px; }
-        .comment-item { font-size: 13px; margin-bottom: 8px; color: #cbd5e1; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 10px; border-left: 3px solid var(--primary); }
+        .comment-section { display: none; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .comment-list { max-height: 200px; overflow-y: auto; margin-bottom: 10px; }
+        .comment-item { font-size: 13px; margin-bottom: 8px; color: #cbd5e1; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid var(--primary); }
 
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
-        .stat-card { background: rgba(15, 23, 42, 0.5); padding: 12px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
-        .stat-num { display: block; font-size: 18px; font-weight: bold; color: var(--primary); }
+        .stat-card { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .stat-num { display: block; font-size: 20px; font-weight: bold; color: var(--primary); }
 
-        .hx-btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .hx-btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .hx-btn:active { transform: scale(0.96); }
-        .hx-btn.outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .hx-btn.outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
         .hx-input { width: 100%; background: #0f172a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 12px; margin-bottom: 10px; outline: none; transition: 0.3s; }
-        .hx-input:focus { border-color: var(--primary); background: #1e293b; }
+        .hx-input:focus { border-color: var(--primary); }
+        
+        .catbox-link { font-size: 12px; color: var(--primary); text-decoration: none; display: block; margin-bottom: 15px; margin-left: 5px; cursor: pointer; font-weight: 600; opacity: 0.8; }
+        .catbox-link:hover { opacity: 1; text-decoration: underline; }
 
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 14px 0; z-index: 1000; }
-        .nav-item { color: var(--muted); font-size: 20px; cursor: pointer; transition: 0.3s; }
-        .nav-item.active { color: var(--primary); transform: translateY(-3px); }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 14px 0; z-index: 1000; backdrop-filter: blur(10px); }
+        .nav-item { color: var(--muted); font-size: 20px; cursor: pointer; transition: 0.3s; position: relative; }
+        .nav-item.active { color: var(--primary); transform: translateY(-5px); }
 
-        #bg-loader { position: fixed; top: 75px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #000; padding: 8px 20px; border-radius: 30px; font-size: 12px; font-weight: bold; z-index: 2000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        #bg-loader { position: fixed; top: 75px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #000; padding: 8px 20px; border-radius: 30px; font-size: 12px; font-weight: bold; z-index: 2000; display: none; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
@@ -68,69 +73,86 @@
 
 <header>
     <img src="logo1.png" class="logo" onclick="openScreen('home')">
-    <i class="fas fa-redo-alt" style="color:var(--primary); cursor:pointer;" onclick="loadFeed()"></i>
+    <i class="fas fa-sync-alt" style="color:var(--primary); cursor:pointer;" onclick="loadFeed(true)"></i>
 </header>
 
-<div class="fab" id="mainFab" onclick="handleFab()"><i class="fas fa-feather-alt"></i></div>
+<div class="fab" id="mainFab" onclick="handleFab()"><i class="fas fa-plus"></i></div>
 
 <div id="home-screen" class="screen active">
     <div id="feed-container"></div>
 </div>
 
 <div id="dm-screen" class="screen">
-    <h3><i class="fas fa-users"></i> HX Network</h3>
-    <input type="text" id="userSearch" class="hx-input" style="margin-top:15px;" placeholder="Search community..." onkeyup="filterUserList()">
+    <h3 style="margin-bottom:15px;"><i class="fas fa-users" style="color:var(--primary)"></i> HX Network</h3>
+    <input type="text" id="userSearch" class="hx-input" placeholder="Find members..." onkeyup="filterUserList()">
     <div id="user-list-container"></div>
 </div>
 
+<div id="chat-view-screen" class="screen">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:12px;">
+        <i class="fas fa-chevron-left" onclick="openScreen('dm')" style="cursor:pointer; padding:5px;"></i>
+        <div class="hx-pfp" style="width:35px; height:35px;" id="chat-target-pfp"></div>
+        <b id="chat-target-name">@User</b>
+    </div>
+    <div id="chat-messages" style="height:60vh; overflow-y:auto; padding:10px; background:rgba(255,255,255,0.02); border-radius:12px;"></div>
+    <div style="display:flex; gap:10px; margin-top:15px;">
+        <input type="text" id="msgInput" class="hx-input" style="margin:0;" placeholder="Message...">
+        <button class="hx-btn" style="width:55px;" onclick="sendDM()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
 <div id="compose-screen" class="screen">
-    <h3><i class="fas fa-plus-circle"></i> New Broadcast</h3>
-    <textarea id="postText" class="hx-input" style="height:150px; margin-top:15px;" placeholder="What's on your mind?"></textarea>
-    <input type="text" id="imageUrlInput" class="hx-input" placeholder="Image URL (Optional)">
-    <a href="https://catbox.moe" target="_blank" style="color:var(--primary); font-size:12px; text-decoration:none; margin-bottom:15px; display:block;">Upload to Catbox.moe <i class="fas fa-external-link-alt"></i></a>
-    <button class="hx-btn" id="broadcastBtn" onclick="submitBroadcast()">Broadcast</button>
+    <h3><i class="fas fa-paper-plane" style="color:var(--primary)"></i> New Broadcast</h3>
+    <textarea id="postText" class="hx-input" style="height:150px; margin-top:15px;" placeholder="What's the word?"></textarea>
+    <input type="text" id="imageUrlInput" class="hx-input" placeholder="Image URL (optional)...">
+    <a href="https://catbox.moe" target="_blank" class="catbox-link"><i class="fas fa-cloud-upload-alt"></i> Get image URL via Catbox</a>
+    <button class="hx-btn" id="broadcastBtn" onclick="submitBroadcast()">Broadcast Now</button>
 </div>
 
 <div id="profile-screen" class="screen">
     <div id="auth-box">
-        <h3><i class="fas fa-shield-alt"></i> Identity</h3>
+        <h3><i class="fas fa-shield-alt" style="color:var(--primary)"></i> Secure Access</h3>
         <input type="text" id="userIn" class="hx-input" placeholder="Username" style="margin-top:15px;">
-        <input type="email" id="emailIn" class="hx-input" placeholder="Email (Signup Only)">
+        <input type="email" id="emailIn" class="hx-input" placeholder="Email Address">
         <input type="password" id="passIn" class="hx-input" placeholder="Password">
-        <button class="hx-btn" onclick="userAuth('login')">Login</button>
-        <button class="hx-btn outline" style="margin-top:10px;" onclick="userAuth('signup')">Create Account</button>
+        <button class="hx-btn" onclick="userAuth('login')"><i class="fas fa-sign-in-alt"></i> Login</button>
+        <button class="hx-btn outline" style="margin-top:10px;" onclick="userAuth('signup')"><i class="fas fa-user-plus"></i> Create Account</button>
     </div>
     <div id="profile-box" style="display:none;">
         <div style="text-align:center;">
-            <div class="hx-pfp" id="pfpBig" style="width:80px; height:80px; margin:0 auto 15px; font-size:30px;">?</div>
+            <div class="hx-pfp" id="pfpBig" style="width:90px; height:90px; margin:0 auto 15px; font-size:35px; border:2px solid var(--primary)">?</div>
             <h2 id="nameDisplay">@User</h2>
             <div class="stats-grid" id="my-stats"></div>
-            <button class="hx-btn" style="background:var(--error); color:white;" onclick="logout()">Logout</button>
+            <button class="hx-btn" style="background:var(--error); color:white;" onclick="logout()"><i class="fas fa-power-off"></i> Logout</button>
         </div>
-        <h4 style="margin:20px 0 10px;"><i class="fas fa-history"></i> My Posts</h4>
+        <h4 style="margin:25px 0 15px; border-left:4px solid var(--primary); padding-left:10px;">My History</h4>
         <div id="my-posts-container"></div>
     </div>
 </div>
 
 <div id="user-profile-screen" class="screen">
-    <div style="margin-bottom:20px;"><i class="fas fa-chevron-left" onclick="openScreen('home')"></i> Back</div>
+    <div style="margin-bottom:20px;"><i class="fas fa-arrow-left" onclick="openScreen('home')" style="cursor:pointer;"></i></div>
     <div style="text-align:center;">
-        <div class="hx-pfp" style="width:80px; height:80px; margin:0 auto 15px; font-size:30px;" id="view-pfp"></div>
+        <div class="hx-pfp" style="width:90px; height:90px; margin:0 auto 15px; font-size:35px;" id="view-pfp"></div>
         <h2 id="view-name">@Username</h2>
-        <div class="stats-grid" id="view-stats"></div>
-        <div style="margin-top:20px;">
-            <button class="hx-btn" id="followBtn" onclick="toggleFollow()"><i class="fas fa-user-plus"></i> Follow</button>
+        <div class="stats-grid">
+            <div class="stat-card"><span class="stat-num" id="stat-followers">0</span>Followers</div>
+            <div class="stat-card"><span class="stat-num" id="stat-following">0</span>Following</div>
+        </div>
+        <div style="margin-top:20px; display:flex; gap:10px;">
+            <button class="hx-btn" id="followBtn" onclick="toggleFollow()">Follow</button>
+            <button class="hx-btn outline" onclick="startChat(viewTarget)"><i class="fas fa-envelope"></i> Message</button>
         </div>
     </div>
-    <h4 style="margin:20px 0 10px;">Broadcasts</h4>
+    <h4 style="margin:25px 0 15px; border-left:4px solid var(--primary); padding-left:10px;">Broadcasts</h4>
     <div id="user-posts-container"></div>
 </div>
 
 <div class="nav-bar">
     <div class="nav-item active" id="nav-home" onclick="openScreen('home')"><i class="fas fa-home"></i></div>
-    <div class="nav-item" id="nav-dm" onclick="openScreen('dm')"><i class="fas fa-search"></i></div>
-    <div class="nav-item" onclick="window.location.href='templates.html'"><i class="fas fa-shopping-bag"></i></div>
-    <div class="nav-item" id="nav-profile" onclick="openScreen('profile')"><i class="fas fa-user"></i></div>
+    <div class="nav-item" id="nav-dm" onclick="openScreen('dm')"><i class="fas fa-comments"></i></div>
+    <div class="nav-item" onclick="window.location.href='templates.html'"><i class="fas fa-store"></i></div>
+    <div class="nav-item" id="nav-profile" onclick="openScreen('profile')"><i class="fas fa-user-circle"></i></div>
 </div>
 
 <script>
@@ -138,49 +160,138 @@ const COMMUNITY_SCRIPT = "https://script.google.com/macros/s/AKfycby9eEtH55XibqV
 const STORE_SCRIPT = "https://script.google.com/macros/s/AKfycby9eEtH55XibqVgBOPeANg7WKYL61MOQYeBuKJWOD5UTRGn4VeSMcGNeFsUkk3WyfRpeA/exec";
 
 let currentUser = localStorage.getItem("hx_user");
+let likedPosts = JSON.parse(localStorage.getItem("hx_liked") || "[]");
+let viewTarget = "";
 let cachedFeed = [];
 let allUsers = [];
+let fabTimer;
+
+function wakeFab() {
+    const fab = document.getElementById('mainFab');
+    fab.classList.remove('dormant');
+    clearTimeout(fabTimer);
+    if(document.getElementById('home-screen').classList.contains('active')) {
+        fabTimer = setTimeout(() => fab.classList.add('dormant'), 4000);
+    }
+}
 
 function openScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById(id + '-screen').classList.add('active');
-    document.getElementById('nav-' + id.split('-')[0])?.classList.add('active');
+    document.getElementById('nav-' + id)?.classList.add('active');
     
-    // FAB Logic
-    const fab = document.getElementById('mainFab');
-    if(id === 'home') { loadFeed(); fab.classList.remove('hidden'); }
-    else if(id === 'dm') { loadAllUsers(); fab.classList.remove('hidden'); }
-    else { fab.classList.add('hidden'); }
-
+    if(id === 'home') { 
+        loadFeed(); 
+        document.getElementById('mainFab').classList.remove('hidden'); 
+        wakeFab(); 
+    } else { 
+        document.getElementById('mainFab').classList.add('hidden'); 
+    }
+    
+    if(id === 'dm') loadAllUsers();
     if(id === 'profile') checkUserStatus();
 }
+
+function handleFab() { currentUser ? openScreen('compose') : openScreen('profile'); }
 
 async function userAuth(mode) {
     const user = document.getElementById("userIn").value.trim().toLowerCase();
     const email = document.getElementById("emailIn").value.trim();
     const pass = document.getElementById("passIn").value.trim();
-    if(!user || !pass) return alert("Fill all fields");
-
+    
+    if(!user || !pass) return alert("Credentials required");
+    
     document.getElementById("bg-loader").style.display = "block";
     try {
-        const payload = { action: mode, username: user, email: email, password: pass };
-        // Syncing to both URLs
-        const res = await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify(payload)});
-        await fetch(STORE_SCRIPT, {method:"POST", body:JSON.stringify(payload)});
-        const data = await res.json();
+        const payload = { action: 'signup', username: user, email: email, password: pass };
+        
+        // Parallel sync to both scripts
+        const [resComm] = await Promise.all([
+            fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify(payload)}),
+            fetch(STORE_SCRIPT, {method:"POST", body:JSON.stringify(payload)})
+        ]);
+        
+        const dataComm = await resComm.json();
 
-        if(data.status === "Success") {
-            localStorage.setItem("hx_user", user);
-            location.reload();
-        } else { alert(data.data); }
+        if(dataComm.status === "Success") { 
+            localStorage.setItem("hx_user", user); 
+            location.reload(); 
+        } else {
+            alert(dataComm.data);
+        }
     } catch(e) { alert("Connection Error"); }
     document.getElementById("bg-loader").style.display = "none";
 }
 
-async function loadFeed() {
+function checkUserStatus() {
+    if(currentUser) {
+        document.getElementById("auth-box").style.display = "none";
+        document.getElementById("profile-box").style.display = "block";
+        document.getElementById("nameDisplay").innerText = "@" + currentUser;
+        document.getElementById("pfpBig").innerText = currentUser[0].toUpperCase();
+        fetchStats(currentUser, "my-stats");
+        renderUserPosts(currentUser, "my-posts-container");
+    }
+}
+
+async function viewProfile(username) {
+    if(username.toLowerCase() === currentUser.toLowerCase()) return openScreen('profile');
+    viewTarget = username;
+    openScreen('user-profile');
+    
+    document.getElementById("view-name").innerText = "@" + username;
+    document.getElementById("view-pfp").innerText = username[0].toUpperCase();
+    
+    // Reset buttons while loading
+    const btn = document.getElementById("followBtn");
+    btn.innerText = "Syncing...";
+    btn.disabled = true;
+
+    const r = await fetch(`${COMMUNITY_SCRIPT}?action=get_social_stats&uid=${username}`);
+    const res = await r.json();
+    
+    document.getElementById("stat-followers").innerText = res.data.followers;
+    document.getElementById("stat-following").innerText = res.data.following;
+    
+    btn.innerText = "Follow";
+    btn.classList.remove('outline');
+    btn.disabled = false;
+    
+    renderUserPosts(username, "user-posts-container");
+}
+
+async function toggleFollow() {
+    if(!currentUser) return openScreen('profile');
+    const btn = document.getElementById("followBtn");
+    btn.disabled = true;
+
+    const res = await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({
+        action: "follow", 
+        uid: currentUser, 
+        target: viewTarget
+    })});
+    const data = await res.json();
+
+    let countSpan = document.getElementById("stat-followers");
+    let currentCount = parseInt(countSpan.innerText);
+    
+    if(data.data === "Unfollowed") {
+        btn.innerText = "Follow";
+        btn.classList.remove('outline');
+        countSpan.innerText = Math.max(0, currentCount - 1);
+    } else {
+        btn.innerText = "Unfollow";
+        btn.classList.add('outline');
+        countSpan.innerText = currentCount + 1;
+    }
+    btn.disabled = false;
+}
+
+async function loadFeed(force = false) {
     const container = document.getElementById("feed-container");
-    container.innerHTML = "<p style='text-align:center; padding:50px; opacity:0.5;'>Scanning Frequency...</p>";
+    if(!force) container.innerHTML = "<p style='text-align:center; padding:20px; color:var(--muted);'><i class='fas fa-circle-notch fa-spin'></i> Syncing Feed...</p>";
+    
     try {
         const r = await fetch(`${COMMUNITY_SCRIPT}?action=get_feed`);
         const res = await r.json();
@@ -193,28 +304,30 @@ async function loadFeed() {
 function createPostCard(p) {
     const card = document.createElement('div');
     card.className = "hx-card";
+    const isLiked = likedPosts.includes(p.pid);
+    
     card.innerHTML = `
         <div class="hx-user-row" onclick="viewProfile('${p.author}')">
             <div class="hx-pfp">${p.author[0].toUpperCase()}</div>
             <div style="font-weight:bold;">@${p.author}</div>
         </div>
         <div style="line-height:1.5; color:#e2e8f0; white-space:pre-wrap;">${p.content}</div>
-        ${p.media ? `<img src="${p.media}" class="hx-media">` : ''}
-        <div style="margin-top:15px; display:flex; gap:25px;">
-            <span class="hx-action" onclick="doLike('${p.pid}', this)">
-                <i class="far fa-heart"></i> <span class="lc">${p.likes}</span>
+        ${p.media ? `<img src="${p.media}" class="hx-media" loading="lazy">` : ''}
+        <div style="margin-top:15px; display:flex; gap:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
+            <span class="hx-action ${isLiked ? 'liked' : ''}" onclick="doLike('${p.pid}', this)">
+                <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i> <span class="lc">${p.likes}</span>
             </span>
             <span class="hx-action" onclick="toggleComments('${p.pid}')">
-                <i class="far fa-comment-dots"></i> ${p.comment_count}
+                <i class="far fa-comment"></i> ${p.comment_count}
             </span>
         </div>
         <div id="comments-${p.pid}" class="comment-section">
-            <div class="comment-input-wrap">
-                <input type="text" id="in-${p.pid}" class="hx-input" style="margin:0; padding:10px; font-size:12px;" placeholder="Write a comment...">
-                <button class="hx-btn" style="width:70px; padding:0" onclick="sendComment('${p.pid}')"><i class="fas fa-paper-plane"></i></button>
-            </div>
-            <div class="comment-list" id="list-${p.pid}">
+            <div class="comment-list">
                 ${p.recent_comments.map(c => `<div class="comment-item"><b>@${c.user}:</b> ${c.text}</div>`).join('')}
+            </div>
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="in-${p.pid}" class="hx-input" style="margin:0; padding:10px; font-size:12px;" placeholder="Add a comment...">
+                <button class="hx-btn" style="width:70px; font-size:12px;" onclick="sendComment('${p.pid}')">Post</button>
             </div>
         </div>
     `;
@@ -224,85 +337,63 @@ function createPostCard(p) {
 async function doLike(pid, btn) {
     if(!currentUser) return openScreen('profile');
     if(btn.classList.contains('liked')) return;
+    
     btn.classList.add('liked');
     btn.querySelector('i').className = "fas fa-heart";
-    const lc = btn.querySelector('.lc');
-    lc.innerText = parseInt(lc.innerText) + 1;
-    await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"like", pid, uid:currentUser})});
+    const c = btn.querySelector('.lc');
+    c.innerText = parseInt(c.innerText) + 1;
+    
+    likedPosts.push(pid);
+    localStorage.setItem("hx_liked", JSON.stringify(likedPosts));
+    
+    await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"like", pid:pid, uid:currentUser})});
 }
 
 function toggleComments(pid) {
     const el = document.getElementById(`comments-${pid}`);
-    el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    el.style.display = el.style.display === "block" ? "none" : "block";
 }
 
 async function sendComment(pid) {
-    const input = document.getElementById(`in-${pid}`);
-    if(!input.value.trim() || !currentUser) return;
+    if(!currentUser) return openScreen('profile');
+    const i = document.getElementById(`in-${pid}`);
+    if(!i.value.trim()) return;
+    
     document.getElementById("bg-loader").style.display = "block";
-    await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"comment", pid, uid:currentUser, content:input.value})});
-    input.value = "";
-    loadFeed();
+    await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"comment", pid:pid, uid:currentUser, content:i.value})});
+    i.value = ""; 
+    loadFeed(true);
     document.getElementById("bg-loader").style.display = "none";
 }
 
 async function submitBroadcast() {
-    const text = document.getElementById("postText").value;
-    const media = document.getElementById("imageUrlInput").value;
-    if(!text || !currentUser) return;
+    const t = document.getElementById("postText").value;
+    const m = document.getElementById("imageUrlInput").value;
+    if(!t && !m) return;
+    
     document.getElementById("bg-loader").style.display = "block";
-    await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"post", uid:currentUser, content:text, media:media})});
+    await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"post", uid:currentUser, content:t, media:m})});
     document.getElementById("postText").value = "";
     document.getElementById("imageUrlInput").value = "";
     openScreen('home');
+    loadFeed(true);
     document.getElementById("bg-loader").style.display = "none";
-}
-
-async function viewProfile(username) {
-    const screen = document.getElementById("user-profile-screen");
-    document.getElementById("view-name").innerText = "@" + username;
-    document.getElementById("view-pfp").innerText = username[0].toUpperCase();
-    openScreen('user-profile-screen');
-    
-    // Get Stats
-    const r = await fetch(`${COMMUNITY_SCRIPT}?action=get_social_stats&uid=${username}`);
-    const res = await r.json();
-    document.getElementById("view-stats").innerHTML = `
-        <div class="stat-card"><span class="stat-num">${res.data.followers}</span>Followers</div>
-        <div class="stat-card"><span class="stat-num">${res.data.following}</span>Following</div>
-    `;
-
-    const container = document.getElementById("user-posts-container");
-    container.innerHTML = "";
-    cachedFeed.filter(p => p.author === username).forEach(p => container.appendChild(createPostCard(p)));
-}
-
-async function toggleFollow() {
-    if(!currentUser) return openScreen('profile');
-    const target = document.getElementById("view-name").innerText.replace("@", "");
-    const btn = document.getElementById("followBtn");
-    btn.innerText = "Processing...";
-    await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"follow", uid:currentUser, target:target})});
-    viewProfile(target); // Refresh stats
-    btn.innerHTML = `<i class="fas fa-check"></i> Updated`;
 }
 
 async function loadAllUsers() {
     const r = await fetch(COMMUNITY_SCRIPT + "?action=get_users");
     const res = await r.json();
-    allUsers = res.data;
+    allUsers = res.data.filter(u => u.username.toLowerCase() !== currentUser?.toLowerCase());
     renderUserList(allUsers);
 }
 
 function renderUserList(users) {
-    const container = document.getElementById("user-list-container");
-    container.innerHTML = users.map(u => `
-        <div class="hx-card" style="display:flex; align-items:center; gap:12px;" onclick="viewProfile('${u.username}')">
+    document.getElementById("user-list-container").innerHTML = users.map(u => `
+        <div class="hx-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="viewProfile('${u.username}')">
             <div class="hx-pfp">${u.username[0].toUpperCase()}</div>
             <div style="flex:1;"><b>@${u.username}</b></div>
-            <i class="fas fa-chevron-right" style="opacity:0.3"></i>
-        </div>
-    `).join("");
+            <i class="fas fa-chevron-right" style="color:var(--muted); font-size:12px;"></i>
+        </div>`).join("");
 }
 
 function filterUserList() {
@@ -310,37 +401,35 @@ function filterUserList() {
     renderUserList(allUsers.filter(u => u.username.toLowerCase().includes(q)));
 }
 
-async function checkUserStatus() {
-    if(currentUser) {
-        document.getElementById("auth-box").style.display = "none";
-        document.getElementById("profile-box").style.display = "block";
-        document.getElementById("nameDisplay").innerText = "@" + currentUser;
-        document.getElementById("pfpBig").innerText = currentUser[0].toUpperCase();
-        
-        const r = await fetch(`${COMMUNITY_SCRIPT}?action=get_social_stats&uid=${currentUser}`);
+function startChat(t) {
+    if(!currentUser) return openScreen('profile');
+    viewTarget = t; 
+    openScreen('chat-view');
+    document.getElementById("chat-target-name").innerText = "@" + t;
+    document.getElementById("chat-target-pfp").innerText = t[0].toUpperCase();
+}
+
+async function fetchStats(uid, divId) {
+    try {
+        const r = await fetch(`${COMMUNITY_SCRIPT}?action=get_social_stats&uid=${uid}`);
         const res = await r.json();
-        document.getElementById("my-stats").innerHTML = `
+        document.getElementById(divId).innerHTML = `
             <div class="stat-card"><span class="stat-num">${res.data.followers}</span>Followers</div>
             <div class="stat-card"><span class="stat-num">${res.data.following}</span>Following</div>
         `;
-        
-        const container = document.getElementById("my-posts-container");
-        container.innerHTML = "";
-        cachedFeed.filter(p => p.author === currentUser).forEach(p => container.appendChild(createPostCard(p)));
-    }
+    } catch(e) {}
 }
 
-function handleFab() { currentUser ? openScreen('compose') : openScreen('profile'); }
+function renderUserPosts(u, divId) {
+    const posts = cachedFeed.filter(p => p.author.toLowerCase() === u.toLowerCase());
+    const container = document.getElementById(divId);
+    container.innerHTML = posts.length ? "" : "<p style='color:var(--muted); padding:20px; text-align:center;'>No broadcasts yet.</p>";
+    posts.forEach(p => container.appendChild(createPostCard(p)));
+}
+
 function logout() { localStorage.clear(); location.reload(); }
 
-// Scroll hide FAB
-window.addEventListener('scroll', () => {
-    const fab = document.getElementById('mainFab');
-    fab.classList.add('dormant');
-    clearTimeout(window.fabT);
-    window.fabT = setTimeout(() => fab.classList.remove('dormant'), 1500);
-});
-
+document.addEventListener('touchstart', wakeFab);
 if(currentUser) loadFeed(); else openScreen('profile');
 </script>
 </body>
