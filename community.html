@@ -31,7 +31,7 @@
         .fab.visible { display: flex; }
         .fab.dormant { transform: translateX(35px); opacity: 0.4; }
 
-        .hx-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 12px; }
+        .hx-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 12px; position: relative; }
         .hx-user-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
         .hx-pfp { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; overflow: hidden; border: 1px solid var(--border); object-fit: cover; }
         .hx-media { width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border); max-height: 400px; object-fit: cover; background: #000; }
@@ -42,6 +42,9 @@
         .hx-action { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-right: 20px; font-size: 14px; color: var(--muted); }
         .hx-action.liked { color: var(--error) !important; }
         
+        .hx-delete-btn { position: absolute; top: 15px; right: 15px; color: var(--muted); font-size: 14px; cursor: pointer; padding: 5px; }
+        .hx-delete-btn:hover { color: var(--error); }
+
         .comment-item { font-size: 13px; margin-bottom: 12px; color: #cbd5e1; padding: 12px; background: var(--card); border-radius: 12px; border: 1px solid var(--border); }
 
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
@@ -67,11 +70,30 @@
         
         .auth-toggle { text-align: center; margin-top: 15px; font-size: 14px; color: var(--muted); cursor: pointer; }
         .auth-toggle span { color: var(--primary); font-weight: bold; }
+
+        /* Report Modal Styles */
+        #report-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content { background: var(--surface); width: 100%; max-width: 400px; padding: 20px; border-radius: 20px; border: 1px solid var(--border); }
+
+        .chat-bubble { display: inline-block; padding: 8px 12px; border-radius: 12px; font-size: 14px; position: relative; max-width: 85%; word-wrap: break-word; }
+        .chat-row { margin-bottom: 10px; position: relative; }
     </style>
 </head>
 <body>
 
 <div id="bg-loader"><i class="fas fa-satellite-dish fa-spin"></i> SYNCING...</div>
+
+<div id="report-modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom:15px;">Report Content</h3>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 10px;">Why are you reporting this broadcast?</p>
+        <textarea id="reportReason" class="hx-input" style="height:100px; margin-bottom:15px;" placeholder="Spam, Harassment, etc..."></textarea>
+        <div style="display:flex; gap:10px;">
+            <button class="hx-btn outline" onclick="closeReport()">Cancel</button>
+            <button class="hx-btn" onclick="submitToTelegram()">Submit Report</button>
+        </div>
+    </div>
+</div>
 
 <header>
     <img src="logo1.png" class="logo" onclick="openScreen('home')">
@@ -207,6 +229,7 @@ let likedPosts = JSON.parse(localStorage.getItem("hx_comm_liked") || "[]");
 let viewTarget = "";
 let cachedFeed = JSON.parse(localStorage.getItem("hx_feed_cache") || "[]");
 let fabTimer;
+let activeReportPid = "";
 
 function disableActions(btnId, text) { 
     document.querySelectorAll('.action-btn, .hx-input').forEach(b => b.disabled = true);
@@ -224,8 +247,8 @@ function enableActions(btnId) {
     }
 }
 
-// Logic to make links clickable and blue
 function linkify(text) {
+    if(!text) return "";
     const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
     const userPattern = /@(\w+)/g;
     return text
@@ -345,9 +368,11 @@ function createPostCard(p) {
     const card = document.createElement('div');
     card.className = "hx-card";
     const isLiked = likedPosts.includes(p.pid);
+    const isOwner = p.author === currentUser;
     const pfp = p.pic || `https://ui-avatars.com/api/?name=${p.author}&background=38bdf8&color=000`;
     
     card.innerHTML = `
+        ${isOwner ? `<div class="hx-delete-btn" onclick="confirmDeletePost('${p.pid}')"><i class="fas fa-trash"></i></div>` : ''}
         <div class="hx-user-row" onclick="viewProfile('${p.author}')">
             <img src="${pfp}" class="hx-pfp">
             <div style="font-weight:bold;">@${p.author}</div>
@@ -361,9 +386,45 @@ function createPostCard(p) {
             <span class="hx-action" onclick="openComments('${p.pid}')">
                 <i class="far fa-comment"></i> ${p.comment_count}
             </span>
+            <span class="hx-action" onclick="openReport('${p.pid}')">
+                <i class="fas fa-flag"></i> Report
+            </span>
         </div>
     `;
     return card;
+}
+
+// Report Logic
+function openReport(pid) {
+    activeReportPid = pid;
+    document.getElementById('report-modal').style.display = 'flex';
+}
+function closeReport() {
+    document.getElementById('report-modal').style.display = 'none';
+    document.getElementById('reportReason').value = "";
+}
+function submitToTelegram() {
+    const reason = document.getElementById('reportReason').value.trim();
+    if(!reason) return alert("Please provide a reason.");
+    const text = encodeURIComponent(`HX COMMUNITY REPORT\nPost ID: ${activeReportPid}\nReporter: @${currentUser}\nReason: ${reason}`);
+    window.open(`https://t.me/dechrisathx?text=${text}`, '_blank');
+    closeReport();
+}
+
+// Post Deletion Logic
+async function confirmDeletePost(pid) {
+    if(!confirm("Delete this broadcast forever?")) return;
+    document.getElementById("bg-loader").style.display = "block";
+    try {
+        const res = await fetch(COMMUNITY_SCRIPT, {
+            method: "POST",
+            body: JSON.stringify({ action: 'delete_post', pid: pid, uid: currentUser })
+        });
+        const data = await res.json();
+        if(data.status === "Success") loadFeed(true);
+        else alert(data.data);
+    } catch(e) { alert("Delete failed"); }
+    document.getElementById("bg-loader").style.display = "none";
 }
 
 function openComments(pid) {
@@ -404,7 +465,6 @@ async function loadDMList() {
     const container = document.getElementById("dm-list-container");
     container.innerHTML = "<p style='text-align:center; padding:20px;'><i class='fas fa-spinner fa-spin'></i> Syncing Social...</p>";
     
-    // Improved DM listing: showing users you might want to message
     const uRes = await fetch(`${COMMUNITY_SCRIPT}?action=get_users`);
     const users = await uRes.json();
     container.innerHTML = users.data.filter(u => u.username !== currentUser).map(u => `
@@ -426,12 +486,24 @@ async function loadDMs() {
     const res = await r.json();
     const box = document.getElementById("chat-messages");
     box.innerHTML = res.data.map(m => `
-        <div style="margin-bottom:10px; text-align:${m[0] == currentUser ? 'right' : 'left'}">
-            <div style="display:inline-block; padding:8px 12px; border-radius:12px; background:${m[0] == currentUser ? 'var(--primary)' : 'var(--card)'}; color:${m[0] == currentUser ? '#000' : '#fff'}; font-size:14px;">
+        <div class="chat-row" style="text-align:${m[0] == currentUser ? 'right' : 'left'}">
+            <div class="chat-bubble" 
+                 style="background:${m[0] == currentUser ? 'var(--primary)' : 'var(--card)'}; color:${m[0] == currentUser ? '#000' : '#fff'};"
+                 onclick="${m[0] == currentUser ? `confirmDeleteDM('${m[2]}')` : ''}">
                 ${linkify(m[2])}
             </div>
         </div>`).join("");
     box.scrollTop = box.scrollHeight;
+}
+
+// DM Deletion Logic
+async function confirmDeleteDM(msg) {
+    if(!confirm("Delete this message?")) return;
+    await fetch(COMMUNITY_SCRIPT, {
+        method: "POST",
+        body: JSON.stringify({ action: 'delete_dm', uid: currentUser, target: viewTarget, message: msg })
+    });
+    loadDMs();
 }
 
 async function sendDM() {
@@ -499,7 +571,7 @@ async function submitBroadcast() {
     loadFeed(true);
     openScreen('home');
     enableActions('postBtn');
-    document.getElementById("bg-loader").style.display = "none";
+    document.getElementById("bg-loader").style.none = "none";
 }
 
 function logout() { localStorage.removeItem("hx_comm_user"); location.reload(); }
