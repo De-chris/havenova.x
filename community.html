@@ -11,7 +11,7 @@
             --text:#f8fafc; --muted:#94a3b8; --primary:#38bdf8; --error:#ef4444; --success:#22c55e;
         }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); padding-bottom: 80px; overflow-x: hidden; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 80px; overflow-x: hidden; scroll-behavior: smooth; }
 
         .screen { display: none !important; padding: 15px; max-width: 600px; margin: 0 auto; min-height: 100vh; animation: fadeIn 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
         .screen.active { display: block !important; }
@@ -31,7 +31,9 @@
         .fab.visible { display: flex; }
         .fab.dormant { transform: translateX(35px); opacity: 0.4; }
 
-        .hx-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 12px; position: relative; }
+        .hx-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 12px; position: relative; transition: outline 0.5s; }
+        .hx-card.highlight { outline: 2px solid var(--primary); }
+        
         .hx-user-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
         .hx-pfp { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; overflow: hidden; border: 1px solid var(--border); object-fit: cover; }
         .hx-media { width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border); max-height: 400px; object-fit: cover; background: #000; }
@@ -42,7 +44,10 @@
         .hx-action { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-right: 20px; font-size: 14px; color: var(--muted); }
         .hx-action.liked { color: var(--error) !important; }
         
-        .hx-delete-btn { position: absolute; top: 15px; right: 15px; color: var(--muted); font-size: 14px; cursor: pointer; padding: 5px; }
+        /* Utility Buttons */
+        .card-top-actions { position: absolute; top: 15px; right: 15px; display: flex; gap: 12px; align-items: center; }
+        .hx-util-btn { color: var(--muted); font-size: 14px; cursor: pointer; padding: 5px; transition: 0.2s; }
+        .hx-util-btn:hover { color: var(--primary); }
         .hx-delete-btn:hover { color: var(--error); }
 
         .comment-item { font-size: 13px; margin-bottom: 12px; color: #cbd5e1; padding: 12px; background: var(--card); border-radius: 12px; border: 1px solid var(--border); }
@@ -71,12 +76,12 @@
         .auth-toggle { text-align: center; margin-top: 15px; font-size: 14px; color: var(--muted); cursor: pointer; }
         .auth-toggle span { color: var(--primary); font-weight: bold; }
 
-        /* Report Modal Styles */
-        #report-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: var(--surface); width: 100%; max-width: 400px; padding: 20px; border-radius: 20px; border: 1px solid var(--border); }
-
         .chat-bubble { display: inline-block; padding: 8px 12px; border-radius: 12px; font-size: 14px; position: relative; max-width: 85%; word-wrap: break-word; }
         .chat-row { margin-bottom: 10px; position: relative; }
+
+        /* Report Modal */
+        #report-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
+        .report-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; width: 100%; max-width: 400px; }
     </style>
 </head>
 <body>
@@ -84,13 +89,13 @@
 <div id="bg-loader"><i class="fas fa-satellite-dish fa-spin"></i> SYNCING...</div>
 
 <div id="report-modal">
-    <div class="modal-content">
-        <h3 style="margin-bottom:15px;">Report Content</h3>
-        <p style="font-size: 13px; color: var(--muted); margin-bottom: 10px;">Why are you reporting this broadcast?</p>
-        <textarea id="reportReason" class="hx-input" style="height:100px; margin-bottom:15px;" placeholder="Spam, Harassment, etc..."></textarea>
-        <div style="display:flex; gap:10px;">
+    <div class="report-box">
+        <h3>Report Content</h3>
+        <p style="color:var(--muted); font-size:12px; margin:10px 0;">Help us keep HX Community safe.</p>
+        <input type="text" id="report-reason" class="hx-input" placeholder="Why are you reporting this?">
+        <div style="display:flex; gap:10px; margin-top:15px;">
             <button class="hx-btn outline" onclick="closeReport()">Cancel</button>
-            <button class="hx-btn" onclick="submitToTelegram()">Submit Report</button>
+            <button class="hx-btn" onclick="submitReport()">Send Report</button>
         </div>
     </div>
 </div>
@@ -142,7 +147,7 @@
     <h3>New Broadcast</h3>
     <textarea id="postText" class="hx-input" style="height:150px; margin-top:15px;" placeholder="What's happening?"></textarea>
     <input type="text" id="imageUrlInput" class="hx-input" placeholder="Image URL (optional)...">
-    <a href="https://catbox.moe" target="_blank" class="catbox-link">Upload to Catbox</a>
+    <a href="https://catbox.moe" target="_blank" class="catbox-link">Get Image URL</a>
     <button class="hx-btn action-btn" id="postBtn" onclick="submitBroadcast()">Broadcast Now</button>
 </div>
 
@@ -229,7 +234,7 @@ let likedPosts = JSON.parse(localStorage.getItem("hx_comm_liked") || "[]");
 let viewTarget = "";
 let cachedFeed = JSON.parse(localStorage.getItem("hx_feed_cache") || "[]");
 let fabTimer;
-let activeReportPid = "";
+let activeReportId = null;
 
 function disableActions(btnId, text) { 
     document.querySelectorAll('.action-btn, .hx-input').forEach(b => b.disabled = true);
@@ -353,6 +358,7 @@ async function loadFeed(force = false) {
     if(cachedFeed.length > 0 && !force) {
         container.innerHTML = "";
         cachedFeed.forEach(p => container.appendChild(createPostCard(p)));
+        checkDeepLink();
     }
     try {
         const r = await fetch(`${COMMUNITY_SCRIPT}?action=get_feed`);
@@ -361,18 +367,24 @@ async function loadFeed(force = false) {
         localStorage.setItem("hx_feed_cache", JSON.stringify(cachedFeed));
         container.innerHTML = "";
         cachedFeed.forEach(p => container.appendChild(createPostCard(p)));
+        checkDeepLink();
     } catch(e) {}
 }
 
 function createPostCard(p) {
     const card = document.createElement('div');
     card.className = "hx-card";
+    card.id = `post-${p.pid}`;
     const isLiked = likedPosts.includes(p.pid);
     const isOwner = p.author === currentUser;
     const pfp = p.pic || `https://ui-avatars.com/api/?name=${p.author}&background=38bdf8&color=000`;
     
     card.innerHTML = `
-        ${isOwner ? `<div class="hx-delete-btn" onclick="confirmDeletePost('${p.pid}')"><i class="fas fa-trash"></i></div>` : ''}
+        <div class="card-top-actions">
+            <i class="fas fa-share hx-util-btn" onclick="sharePost('${p.pid}')"></i>
+            <i class="fas fa-flag hx-util-btn" onclick="openReport('${p.pid}')"></i>
+            ${isOwner ? `<i class="fas fa-trash hx-util-btn hx-delete-btn" onclick="confirmDeletePost('${p.pid}')"></i>` : ''}
+        </div>
         <div class="hx-user-row" onclick="viewProfile('${p.author}')">
             <img src="${pfp}" class="hx-pfp">
             <div style="font-weight:bold;">@${p.author}</div>
@@ -386,32 +398,60 @@ function createPostCard(p) {
             <span class="hx-action" onclick="openComments('${p.pid}')">
                 <i class="far fa-comment"></i> ${p.comment_count}
             </span>
-            <span class="hx-action" onclick="openReport('${p.pid}')">
-                <i class="fas fa-flag"></i> Report
-            </span>
         </div>
     `;
     return card;
 }
 
+// Deep Linking Logic
+function checkDeepLink() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pid = urlParams.get('post');
+    if(pid) {
+        const el = document.getElementById(`post-${pid}`);
+        if(el) {
+            setTimeout(() => {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('highlight');
+                setTimeout(() => el.classList.remove('highlight'), 3000);
+            }, 500);
+        }
+    }
+}
+
+function sharePost(pid) {
+    const url = `${window.location.origin}${window.location.pathname}?post=${pid}`;
+    if(navigator.share) {
+        navigator.share({ title: 'HX Community Post', url: url });
+    } else {
+        navigator.clipboard.writeText(url).then(() => alert("Post link copied to clipboard!"));
+    }
+}
+
 // Report Logic
 function openReport(pid) {
-    activeReportPid = pid;
-    document.getElementById('report-modal').style.display = 'flex';
+    activeReportId = pid;
+    document.getElementById("report-modal").style.display = "flex";
 }
 function closeReport() {
-    document.getElementById('report-modal').style.display = 'none';
-    document.getElementById('reportReason').value = "";
+    document.getElementById("report-modal").style.display = "none";
+    document.getElementById("report-reason").value = "";
 }
-function submitToTelegram() {
-    const reason = document.getElementById('reportReason').value.trim();
-    if(!reason) return alert("Please provide a reason.");
-    const text = encodeURIComponent(`HX COMMUNITY REPORT\nPost ID: ${activeReportPid}\nReporter: @${currentUser}\nReason: ${reason}`);
-    window.open(`https://t.me/dechrisathx?text=${text}`, '_blank');
+function submitReport() {
+    const reason = document.getElementById("report-reason").value.trim();
+    if(!reason) return alert("Please provide a reason");
+    
+    const post = cachedFeed.find(x => x.pid === activeReportId);
+    const reporter = currentUser || "Guest";
+    const postOwner = post ? post.author : "Unknown";
+    const postUrl = `${window.location.origin}${window.location.pathname}?post=${activeReportId}`;
+    
+    const message = `🚨 REPORT RECEIVED\n\nPost ID: ${activeReportId}\nPost Owner: @${postOwner}\nReporter: @${reporter}\nReason: ${reason}\n\nView Post: ${postUrl}`;
+    
+    window.open(`https://t.me/dechrisathx?text=${encodeURIComponent(message)}`, '_blank');
     closeReport();
 }
 
-// Post Deletion Logic
 async function confirmDeletePost(pid) {
     if(!confirm("Delete this broadcast forever?")) return;
     document.getElementById("bg-loader").style.display = "block";
@@ -496,7 +536,6 @@ async function loadDMs() {
     box.scrollTop = box.scrollHeight;
 }
 
-// DM Deletion Logic
 async function confirmDeleteDM(msg) {
     if(!confirm("Delete this message?")) return;
     await fetch(COMMUNITY_SCRIPT, {
@@ -571,7 +610,7 @@ async function submitBroadcast() {
     loadFeed(true);
     openScreen('home');
     enableActions('postBtn');
-    document.getElementById("bg-loader").style.none = "none";
+    document.getElementById("bg-loader").style.display = "none";
 }
 
 function logout() { localStorage.removeItem("hx_comm_user"); location.reload(); }
