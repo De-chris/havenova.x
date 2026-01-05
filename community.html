@@ -26,7 +26,7 @@
             display: flex; align-items: center; justify-content: center; font-size: 22px; 
             box-shadow: 0 4px 15px rgba(56,189,248,0.4); z-index: 900; cursor: pointer; 
             transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            display: none; /* Controlled by JS */
+            display: none;
         }
         .fab.visible { display: flex; }
         .fab.dormant { transform: translateX(35px); opacity: 0.4; }
@@ -36,6 +36,9 @@
         .hx-pfp { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; overflow: hidden; border: 1px solid var(--border); object-fit: cover; }
         .hx-media { width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border); max-height: 400px; object-fit: cover; background: #000; }
         
+        .hx-link { color: var(--primary); text-decoration: none; word-break: break-all; }
+        .hx-username-link { color: var(--primary); font-weight: bold; cursor: pointer; }
+
         .hx-action { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-right: 20px; font-size: 14px; color: var(--muted); }
         .hx-action.liked { color: var(--error) !important; }
         
@@ -46,10 +49,14 @@
         .stat-num { display: block; font-size: 20px; font-weight: bold; color: var(--primary); }
 
         .hx-btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .hx-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .hx-btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
         .hx-btn.outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
         
-        .hx-input { width: 100%; background: #0f172a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 12px; margin-bottom: 10px; outline: none; }
+        .hx-input-wrapper { position: relative; width: 100%; margin-bottom: 10px; }
+        .hx-input { width: 100%; background: #0f172a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 12px; outline: none; }
+        .hx-input:disabled { opacity: 0.6; }
+        .pass-toggle { position: absolute; right: 12px; top: 12px; color: var(--muted); cursor: pointer; }
+
         .catbox-link { font-size: 11px; color: var(--primary); text-decoration: none; display: inline-block; margin: 5px 0 10px 5px; font-weight: 600; }
 
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 14px 0; z-index: 1000; }
@@ -85,13 +92,13 @@
 <div id="chat-view-screen" class="screen">
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:12px;">
         <i class="fas fa-arrow-left" onclick="openScreen('dm')"></i>
-        <div class="hx-pfp" style="width:35px; height:35px;" id="chat-target-pfp"></div>
-        <b id="chat-target-name">@User</b>
+        <div class="hx-pfp" style="width:35px; height:35px; cursor:pointer;" id="chat-target-pfp" onclick="viewProfile(viewTarget)"></div>
+        <b id="chat-target-name" class="hx-username-link" onclick="viewProfile(viewTarget)">@User</b>
     </div>
     <div id="chat-messages" style="height:60vh; overflow-y:auto; padding:10px;"></div>
     <div style="display:flex; gap:10px; margin-top:15px;">
         <input type="text" id="msgInput" class="hx-input" style="margin:0;" placeholder="Message...">
-        <button class="hx-btn action-btn" style="width:55px;" onclick="sendDM()"><i class="fas fa-paper-plane"></i></button>
+        <button class="hx-btn action-btn" id="sendDmBtn" style="width:55px;" onclick="sendDM()"><i class="fas fa-paper-plane"></i></button>
     </div>
 </div>
 
@@ -114,7 +121,7 @@
     <textarea id="postText" class="hx-input" style="height:150px; margin-top:15px;" placeholder="What's happening?"></textarea>
     <input type="text" id="imageUrlInput" class="hx-input" placeholder="Image URL (optional)...">
     <a href="https://catbox.moe" target="_blank" class="catbox-link">Upload to Catbox</a>
-    <button class="hx-btn action-btn" onclick="submitBroadcast()">Broadcast Now</button>
+    <button class="hx-btn action-btn" id="postBtn" onclick="submitBroadcast()">Broadcast Now</button>
 </div>
 
 <div id="profile-screen" class="screen">
@@ -122,21 +129,27 @@
         <h3>Welcome Back</h3>
         <p style="color:var(--muted); font-size:14px; margin-bottom:15px;">Enter your credentials to continue</p>
         <input type="text" id="logUser" class="hx-input" placeholder="Username or Email">
-        <input type="password" id="logPass" class="hx-input" placeholder="Password">
-        <button class="hx-btn action-btn" onclick="userAuth('login')">Login</button>
+        <div class="hx-input-wrapper">
+            <input type="password" id="logPass" class="hx-input" placeholder="Password">
+            <i class="fas fa-eye pass-toggle" onclick="togglePass('logPass')"></i>
+        </div>
+        <button class="hx-btn action-btn" id="loginBtn" onclick="userAuth('login')">Login</button>
         <div class="auth-toggle" onclick="toggleAuthView('signup')">New here? <span>Create Account</span></div>
     </div>
 
     <div id="signup-view" style="display:none;">
         <h3>Join HX Community</h3>
-        <p style="color:var(--muted); font-size:14px; margin-bottom:15px;">Create your profile</p>
-        <input type="text" id="sigUser" class="hx-input" placeholder="Desired Username">
+        <input type="text" id="sigUser" class="hx-input" placeholder="Username">
         <input type="email" id="sigEmail" class="hx-input" placeholder="Email Address">
-        <input type="password" id="sigPass" class="hx-input" placeholder="Password">
-        <input type="text" id="sigBio" class="hx-input" placeholder="Tell us about yourself (Bio)">
+        <div class="hx-input-wrapper">
+            <input type="password" id="sigPass" class="hx-input" placeholder="Password">
+        </div>
+        <div class="hx-input-wrapper">
+            <input type="password" id="sigPassConfirm" class="hx-input" placeholder="Confirm Password">
+        </div>
+        <input type="text" id="sigBio" class="hx-input" placeholder="Bio (optional)">
         <input type="text" id="sigPfp" class="hx-input" placeholder="Profile Pic URL (optional)">
-        <a href="https://catbox.moe" target="_blank" class="catbox-link">Get URL from Catbox</a>
-        <button class="hx-btn action-btn" onclick="userAuth('signup')">Create Account</button>
+        <button class="hx-btn action-btn" id="signupBtn" onclick="userAuth('signup')">Create Account</button>
         <div class="auth-toggle" onclick="toggleAuthView('login')">Already have an account? <span>Login</span></div>
     </div>
 
@@ -147,9 +160,9 @@
             <p id="bioDisplay" style="color:var(--muted); margin:5px 0; font-size:14px;"></p>
             
             <div id="profile-updates" style="margin-top:10px;">
-                <input type="text" id="updateBio" class="hx-input" style="font-size:12px; padding:8px;" placeholder="Update Bio...">
-                <input type="text" id="updatePfp" class="hx-input" style="font-size:12px; padding:8px;" placeholder="Update Profile Pic URL...">
-                <button class="hx-btn action-btn outline" style="padding:8px; font-size:12px;" onclick="updateProfileData()">Save Changes</button>
+                <input type="text" id="updateBio" class="hx-input" style="font-size:12px;" placeholder="Update Bio...">
+                <input type="text" id="updatePfp" class="hx-input" style="font-size:12px;" placeholder="Update Profile Pic URL...">
+                <button class="hx-btn action-btn outline" id="saveProfileBtn" onclick="updateProfileData()">Save Changes</button>
             </div>
 
             <div class="stats-grid" id="my-stats"></div>
@@ -161,7 +174,7 @@
 </div>
 
 <div id="user-profile-screen" class="screen">
-    <div style="margin-bottom:20px;"><i class="fas fa-arrow-left" onclick="openScreen('home')"></i></div>
+    <div style="margin-bottom:20px;"><i class="fas fa-arrow-left" style="cursor:pointer;" onclick="openScreen('home')"></i></div>
     <div style="text-align:center;">
         <img class="hx-pfp" style="width:90px; height:90px; margin:0 auto 15px;" id="view-pfp">
         <h2 id="view-name">@Username</h2>
@@ -195,19 +208,34 @@ let viewTarget = "";
 let cachedFeed = JSON.parse(localStorage.getItem("hx_feed_cache") || "[]");
 let fabTimer;
 
-function disableActions() { document.querySelectorAll('.action-btn').forEach(b => b.disabled = true); }
-function enableActions() { document.querySelectorAll('.action-btn').forEach(b => b.disabled = false); }
+function disableActions(btnId, text) { 
+    document.querySelectorAll('.action-btn, .hx-input').forEach(b => b.disabled = true);
+    if(btnId) {
+        const btn = document.getElementById(btnId);
+        btn.dataset.oldText = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${text || 'Processing...'}`;
+    }
+}
+function enableActions(btnId) { 
+    document.querySelectorAll('.action-btn, .hx-input').forEach(b => b.disabled = false);
+    if(btnId) {
+        const btn = document.getElementById(btnId);
+        btn.innerHTML = btn.dataset.oldText || btn.innerHTML;
+    }
+}
 
-function wakeFab() {
-    const fab = document.getElementById('mainFab');
-    const isHome = document.getElementById('home-screen').classList.contains('active');
-    
-    if(!isHome) { fab.classList.remove('visible'); return; }
-    
-    fab.classList.add('visible');
-    fab.classList.remove('dormant');
-    clearTimeout(fabTimer);
-    fabTimer = setTimeout(() => fab.classList.add('dormant'), 4500);
+// Logic to make links clickable and blue
+function linkify(text) {
+    const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    const userPattern = /@(\w+)/g;
+    return text
+        .replace(urlPattern, '<a href="$1" target="_blank" class="hx-link">$1</a>')
+        .replace(userPattern, '<span class="hx-username-link" onclick="viewProfile(\'$1\')">@$1</span>');
+}
+
+function togglePass(id) {
+    const el = document.getElementById(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
 }
 
 function openScreen(id) {
@@ -222,29 +250,27 @@ function openScreen(id) {
     if(id === 'profile') checkUserStatus();
 }
 
-function handleFab() { currentUser ? openScreen('compose') : openScreen('profile'); }
-
-function toggleAuthView(view) {
-    document.getElementById('login-view').style.display = view === 'login' ? 'block' : 'none';
-    document.getElementById('signup-view').style.display = view === 'signup' ? 'block' : 'none';
-}
-
 async function userAuth(mode) {
+    const btnId = mode === 'login' ? 'loginBtn' : 'signupBtn';
     let payload = { action: mode };
+
     if(mode === 'login') {
-        payload.username = document.getElementById("logUser").value.trim().toLowerCase();
+        payload.username = document.getElementById("logUser").value.trim();
         payload.password = document.getElementById("logPass").value.trim();
     } else {
-        payload.username = document.getElementById("sigUser").value.trim().toLowerCase();
+        const p1 = document.getElementById("sigPass").value;
+        const p2 = document.getElementById("sigPassConfirm").value;
+        if(p1 !== p2) return alert("Passwords do not match");
+        payload.username = document.getElementById("sigUser").value.trim();
         payload.email = document.getElementById("sigEmail").value.trim();
-        payload.password = document.getElementById("sigPass").value.trim();
+        payload.password = p1;
         payload.bio = document.getElementById("sigBio").value.trim();
         payload.pic = document.getElementById("sigPfp").value.trim();
     }
 
-    if(!payload.username || !payload.password) return alert("Missing credentials");
+    if(!payload.username || !payload.password) return alert("Fill all fields");
 
-    disableActions();
+    disableActions(btnId, mode === 'login' ? "Verifying..." : "Creating...");
     document.getElementById("bg-loader").style.display = "block";
     
     try {
@@ -252,17 +278,15 @@ async function userAuth(mode) {
         const data = await res.json();
         
         if(data.status === "Success") {
-            // Your script signup returns {uid, username}, login logic would need to be verified
-            // If user login fails (e.g. account doesn't exist), script usually returns "Error"
-            localStorage.setItem("hx_comm_user", payload.username);
+            localStorage.setItem("hx_comm_user", data.data.username);
+            currentUser = data.data.username;
             location.reload();
         } else {
             alert(data.data);
-            if(data.data.toLowerCase().includes("not found")) toggleAuthView('signup');
         }
-    } catch(e) { alert("Connectivity Error"); }
+    } catch(e) { alert("Server Error"); }
     
-    enableActions();
+    enableActions(btnId);
     document.getElementById("bg-loader").style.display = "none";
 }
 
@@ -271,11 +295,10 @@ async function updateProfileData() {
     const pic = document.getElementById("updatePfp").value.trim();
     if(!bio && !pic) return;
 
-    disableActions();
-    // Using update_profile_pic as a base, you can expand this if script handles bio
+    disableActions('saveProfileBtn', 'Updating...');
     await fetch(COMMUNITY_SCRIPT, {
         method: "POST", 
-        body: JSON.stringify({ action: 'update_profile_pic', uid: currentUser, pic: pic, bio: bio })
+        body: JSON.stringify({ action: 'update_profile', uid: currentUser, pic: pic, bio: bio })
     });
     alert("Profile Updated");
     location.reload();
@@ -288,13 +311,12 @@ function checkUserStatus() {
         document.getElementById("profile-box").style.display = "block";
         document.getElementById("nameDisplay").innerText = "@" + currentUser;
         
-        // Fetch specific user data for Bio and Pic
         fetch(`${COMMUNITY_SCRIPT}?action=get_user_data&uid=${currentUser}`)
             .then(r => r.json())
             .then(res => {
                 if(res.status === "Success") {
                     document.getElementById("pfpBig").src = res.data.pic || `https://ui-avatars.com/api/?name=${currentUser}`;
-                    document.getElementById("bioDisplay").innerText = res.data.bio || "No bio yet.";
+                    document.getElementById("bioDisplay").innerHTML = linkify(res.data.bio || "No bio yet.");
                 }
             });
 
@@ -312,7 +334,7 @@ async function loadFeed(force = false) {
     try {
         const r = await fetch(`${COMMUNITY_SCRIPT}?action=get_feed`);
         const res = await r.json();
-        cachedFeed = res.data.reverse();
+        cachedFeed = res.data;
         localStorage.setItem("hx_feed_cache", JSON.stringify(cachedFeed));
         container.innerHTML = "";
         cachedFeed.forEach(p => container.appendChild(createPostCard(p)));
@@ -330,7 +352,7 @@ function createPostCard(p) {
             <img src="${pfp}" class="hx-pfp">
             <div style="font-weight:bold;">@${p.author}</div>
         </div>
-        <div style="line-height:1.5; color:#e2e8f0; white-space:pre-wrap;">${p.content}</div>
+        <div style="line-height:1.5; color:#e2e8f0; white-space:pre-wrap;">${linkify(p.content)}</div>
         ${p.media ? `<img src="${p.media}" class="hx-media" loading="lazy">` : ''}
         <div style="margin-top:15px; display:flex; gap:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
             <span class="hx-action ${isLiked ? 'liked' : ''}" onclick="doLike('${p.pid}', this)">
@@ -350,7 +372,7 @@ function openComments(pid) {
     const list = document.getElementById("full-comment-list");
     list.innerHTML = post.recent_comments.length ? "" : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments yet.</p>";
     post.recent_comments.forEach(c => {
-        list.innerHTML += `<div class="comment-item"><b>@${c.user}</b><p style="margin-top:5px;">${c.text}</p></div>`;
+        list.innerHTML += `<div class="comment-item"><b class="hx-username-link" onclick="viewProfile('${c.user}')">@${c.user}</b><p style="margin-top:5px;">${linkify(c.text)}</p></div>`;
     });
     document.getElementById("active-comment-btn").onclick = () => sendComment(pid);
     openScreen('comment-view');
@@ -359,12 +381,12 @@ function openComments(pid) {
 async function sendComment(pid) {
     const input = document.getElementById("active-comment-input");
     if(!input.value.trim() || !currentUser) return;
-    disableActions();
+    disableActions('active-comment-btn', '...');
     await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"comment", pid:pid, uid:currentUser, content:input.value})});
     input.value = "";
     loadFeed(true);
     openScreen('home');
-    enableActions();
+    enableActions('active-comment-btn');
 }
 
 async function doLike(pid, btn) {
@@ -381,6 +403,8 @@ async function doLike(pid, btn) {
 async function loadDMList() {
     const container = document.getElementById("dm-list-container");
     container.innerHTML = "<p style='text-align:center; padding:20px;'><i class='fas fa-spinner fa-spin'></i> Syncing Social...</p>";
+    
+    // Improved DM listing: showing users you might want to message
     const uRes = await fetch(`${COMMUNITY_SCRIPT}?action=get_users`);
     const users = await uRes.json();
     container.innerHTML = users.data.filter(u => u.username !== currentUser).map(u => `
@@ -404,7 +428,7 @@ async function loadDMs() {
     box.innerHTML = res.data.map(m => `
         <div style="margin-bottom:10px; text-align:${m[0] == currentUser ? 'right' : 'left'}">
             <div style="display:inline-block; padding:8px 12px; border-radius:12px; background:${m[0] == currentUser ? 'var(--primary)' : 'var(--card)'}; color:${m[0] == currentUser ? '#000' : '#fff'}; font-size:14px;">
-                ${m[2]}
+                ${linkify(m[2])}
             </div>
         </div>`).join("");
     box.scrollTop = box.scrollHeight;
@@ -413,9 +437,9 @@ async function loadDMs() {
 async function sendDM() {
     const i = document.getElementById("msgInput");
     if(!i.value.trim()) return;
-    disableActions();
+    disableActions('sendDmBtn', '...');
     await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"dm", uid:currentUser, target:viewTarget, message:i.value})});
-    i.value = ""; loadDMs(); enableActions();
+    i.value = ""; loadDMs(); enableActions('sendDmBtn');
 }
 
 async function viewProfile(username) {
@@ -427,7 +451,7 @@ async function viewProfile(username) {
         .then(r => r.json())
         .then(res => {
             document.getElementById("view-pfp").src = res.data.pic || `https://ui-avatars.com/api/?name=${username}`;
-            document.getElementById("view-bio").innerText = res.data.bio || "";
+            document.getElementById("view-bio").innerHTML = linkify(res.data.bio || "");
         });
 
     fetchStats(username, "stat-followers");
@@ -435,12 +459,12 @@ async function viewProfile(username) {
 }
 
 async function toggleFollow() {
-    disableActions();
+    disableActions('followBtn', '...');
     const res = await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action: "follow", uid: currentUser, target: viewTarget})});
     const data = await res.json();
     document.getElementById("followBtn").innerText = (data.data === "Followed") ? "Unfollow" : "Follow";
     fetchStats(viewTarget, "stat-followers");
-    enableActions();
+    enableActions('followBtn');
 }
 
 async function fetchStats(uid, elementId) {
@@ -467,24 +491,37 @@ async function submitBroadcast() {
     const t = document.getElementById("postText").value;
     const m = document.getElementById("imageUrlInput").value;
     if(!t && !m) return;
-    disableActions();
+    disableActions('postBtn', 'Posting...');
     document.getElementById("bg-loader").style.display = "block";
     await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"post", uid:currentUser, content:t, media:m})});
     document.getElementById("postText").value = "";
     document.getElementById("imageUrlInput").value = "";
     loadFeed(true);
     openScreen('home');
-    enableActions();
+    enableActions('postBtn');
     document.getElementById("bg-loader").style.display = "none";
 }
 
 function logout() { localStorage.removeItem("hx_comm_user"); location.reload(); }
 
-// Event Listeners for Activity
-document.addEventListener('touchstart', wakeFab);
-document.addEventListener('mousemove', wakeFab);
-document.addEventListener('keydown', wakeFab);
+function wakeFab() {
+    const fab = document.getElementById('mainFab');
+    const isHome = document.getElementById('home-screen').classList.contains('active');
+    if(!isHome) { fab.classList.remove('visible'); return; }
+    fab.classList.add('visible');
+    fab.classList.remove('dormant');
+    clearTimeout(fabTimer);
+    fabTimer = setTimeout(() => fab.classList.add('dormant'), 4500);
+}
 
+function handleFab() { currentUser ? openScreen('compose') : openScreen('profile'); }
+
+function toggleAuthView(view) {
+    document.getElementById('login-view').style.display = view === 'login' ? 'block' : 'none';
+    document.getElementById('signup-view').style.display = view === 'signup' ? 'block' : 'none';
+}
+
+document.addEventListener('touchstart', wakeFab);
 if(currentUser) loadFeed(); else openScreen('profile');
 </script>
 </body>
