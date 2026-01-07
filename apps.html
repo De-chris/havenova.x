@@ -5,95 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Our Apps | Havenova-X</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-  <style>
-    /* Clean Vibe Styling */
-    * { box-sizing: border-box; transition: all 0.3s ease; }
-    body {
-      margin: 0;
-      font-family: 'Inter', 'Segoe UI', sans-serif;
-      background: #f8fafc;
-      color: #1e293b;
-    }
-    .dark { background: #0f172a; color: #f1f5f9; }
-
-    header {
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(10px);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 15px 5%;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      position: fixed;
-      width: 100%;
-      top: 0;
-      z-index: 1000;
-    }
-    .dark header { background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #334155; }
-
-    .logo { height: 45px; }
-
-    main { padding: 120px 5% 60px; max-width: 900px; margin: auto; }
-
-    .intro { text-align: center; margin-bottom: 50px; }
-    .intro h1 { font-size: 2.2rem; color: #00d2ff; margin-bottom: 10px; }
-
-    /* App Cards Grid */
-    .apps-list {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-    }
-    article.app {
-      background: #ffffff;
-      padding: 25px;
-      border-radius: 16px;
-      border: 1px solid #e2e8f0;
-      position: relative;
-      overflow: hidden;
-    }
-    .dark article.app { background: #1e293b; border-color: #334155; }
-
-    .app h2 { margin-top: 0; display: flex; align-items: center; gap: 10px; color: #00d2ff; }
-    .app p { font-size: 0.95rem; color: #64748b; }
-    .dark .app p { color: #94a3b8; }
-
-    .btn-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
-
-    .btn {
-      padding: 10px 20px;
-      background: #00d2ff;
-      color: white;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 14px;
-    }
-    .btn:hover { background: #3a7bd5; transform: translateY(-2px); }
-    
-    .btn-secondary { background: #64748b; }
-    .btn-outline { background: transparent; border: 2px solid #00d2ff; color: #00d2ff; }
-
-    .status-badge {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: #f1f5f9;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-    .dark .status-badge { background: #334155; color: #00d2ff; }
-
-    footer { text-align: center; padding: 40px; margin-top: 40px; opacity: 0.7; font-size: 13px; }
-
-    #darkModeToggle {
-      background: #f1f5f9; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer;
-    }
-    .dark #darkModeToggle { background: #334155; color: white; }
-  </style>
+  <link rel="stylesheet" href="css/apps.css" />
 </head>
 <body class="dark"> <header>
     <a href="index.html"><img src="logo1.png" alt="HX" class="logo" /></a>
@@ -153,14 +65,6 @@
     <p>&copy; 2025 Havenova-X. Integrity & Innovation.</p>
   </footer>
 
-  <script>
-    const toggle = document.getElementById('darkModeToggle');
-    toggle.onclick = () => {
-      document.body.classList.toggle('dark');
-      const icon = toggle.querySelector('i');
-      icon.classList.toggle('fa-moon');
-      icon.classList.toggle('fa-sun');
-    };
-  </script>
+  <script src="js/apps.js"></script>
 </body>
   </html>                                                                          
