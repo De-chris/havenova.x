@@ -38,9 +38,6 @@
         .hx-pfp { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; overflow: hidden; border: 1px solid var(--border); object-fit: cover; }
         .hx-media { width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border); max-height: 400px; object-fit: cover; background: #000; }
         
-        .hx-link { color: var(--primary); text-decoration: none; word-break: break-all; }
-        .hx-username-link { color: var(--primary); font-weight: bold; cursor: pointer; }
-
         .hx-action { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-right: 20px; font-size: 14px; color: var(--muted); transition: 0.2s; }
         .hx-action.liked { color: var(--error) !important; }
         .hx-action:active { transform: scale(1.2); }
@@ -55,34 +52,18 @@
         .stat-num { display: block; font-size: 20px; font-weight: bold; color: var(--primary); }
 
         .hx-btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .hx-btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
-        .hx-btn.outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
-        
         .hx-input { width: 100%; background: #0f172a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 12px; outline: none; margin-bottom: 10px; }
         .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 14px 0; z-index: 1000; }
         .nav-item { color: var(--muted); font-size: 20px; cursor: pointer; }
         .nav-item.active { color: var(--primary); }
         
         #bg-loader { position: fixed; top: 65px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #000; padding: 8px 20px; border-radius: 30px; font-size: 12px; font-weight: bold; z-index: 2000; display: none; }
-        #report-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
-        .report-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; width: 100%; max-width: 400px; }
         .upload-status { font-size: 11px; color: var(--success); display: block; margin-bottom: 10px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div id="bg-loader"><i class="fas fa-satellite-dish fa-spin"></i> SYNCING...</div>
-
-<div id="report-modal">
-    <div class="report-box">
-        <h3>Report Content</h3>
-        <input type="text" id="report-reason" class="hx-input" placeholder="Why are you reporting this?">
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button class="hx-btn outline" onclick="closeReport()">Cancel</button>
-            <button class="hx-btn" onclick="submitReport()">Send Report</button>
-        </div>
-    </div>
-</div>
 
 <header>
     <img src="logo1.png" class="logo" onclick="openScreen('home')">
@@ -108,32 +89,20 @@
     <div id="chat-messages" style="height:60vh; overflow-y:auto; padding:10px;"></div>
     <div style="display:flex; gap:10px; margin-top:15px;">
         <input type="text" id="msgInput" class="hx-input" style="margin:0;" placeholder="Message...">
-        <button class="hx-btn action-btn" id="sendDmBtn" style="width:55px;" onclick="sendDM()"><i class="fas fa-paper-plane"></i></button>
-    </div>
-</div>
-
-<div id="comment-view-screen" class="screen">
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
-        <i class="fas fa-arrow-left" onclick="openScreen('home')"></i>
-        <h3>Comments</h3>
-    </div>
-    <div id="full-comment-list" style="margin-bottom:80px;"></div>
-    <div style="position:fixed; bottom:75px; left:0; right:0; padding:15px; background:var(--surface); border-top:1px solid var(--border);">
-        <div style="display:flex; gap:8px; max-width:600px; margin:0 auto;">
-            <input type="text" id="active-comment-input" class="hx-input" style="margin:0;" placeholder="Write a comment...">
-            <button class="hx-btn" style="width:70px;" id="active-comment-btn">Post</button>
-        </div>
+        <button class="hx-btn" id="sendDmBtn" style="width:55px;" onclick="sendDM()"><i class="fas fa-paper-plane"></i></button>
     </div>
 </div>
 
 <div id="compose-screen" class="screen">
     <h3>New Broadcast</h3>
     <textarea id="postText" class="hx-input" style="height:150px; margin-top:15px;" placeholder="What's happening?"></textarea>
+    
     <input type="file" id="postFile" accept="image/*" style="display:none;" onchange="uploadToCatbox(this, 'imageUrlInput', 'post-up-status')">
     <button class="hx-btn outline" onclick="document.getElementById('postFile').click()"><i class="fas fa-camera"></i> Attach Media</button>
     <span id="post-up-status" class="upload-status"></span>
+    
     <input type="hidden" id="imageUrlInput">
-    <button class="hx-btn action-btn" id="postBtn" onclick="submitBroadcast()" style="margin-top:10px;">Broadcast Now</button>
+    <button class="hx-btn" id="postBtn" onclick="submitBroadcast()" style="margin-top:10px;">Broadcast Now</button>
 </div>
 
 <div id="profile-screen" class="screen">
@@ -144,18 +113,22 @@
         <button class="hx-btn" onclick="userAuth('login')">Login</button>
         <div style="text-align:center; margin-top:15px; cursor:pointer;" onclick="toggleAuthView('signup')">Create Account</div>
     </div>
+
     <div id="signup-view" style="display:none;">
         <h3>Join HX Community</h3>
         <input type="text" id="sigUser" class="hx-input" placeholder="Username">
         <input type="email" id="sigEmail" class="hx-input" placeholder="Email">
         <input type="password" id="sigPass" class="hx-input" placeholder="Password">
+        
         <input type="file" id="pfpFile" accept="image/*" style="display:none;" onchange="uploadToCatbox(this, 'sigPfp', 'sig-up-status')">
         <button class="hx-btn outline" onclick="document.getElementById('pfpFile').click()"><i class="fas fa-image"></i> Import Profile Pic</button>
         <span id="sig-up-status" class="upload-status"></span>
+        
         <input type="hidden" id="sigPfp">
         <button class="hx-btn" onclick="userAuth('signup')" style="margin-top:10px;">Sign Up</button>
         <div style="text-align:center; margin-top:15px; cursor:pointer;" onclick="toggleAuthView('login')">Login instead</div>
     </div>
+
     <div id="profile-box" style="display:none;">
         <div style="text-align:center;">
             <img class="hx-pfp" id="pfpBig" style="width:90px; height:90px; margin:0 auto 15px; border:2px solid var(--primary)">
@@ -165,23 +138,6 @@
         </div>
         <div id="my-posts-container" style="margin-top:25px;"></div>
     </div>
-</div>
-
-<div id="user-profile-screen" class="screen">
-    <i class="fas fa-arrow-left" onclick="openScreen('home')"></i>
-    <div style="text-align:center; margin-top:20px;">
-        <img class="hx-pfp" style="width:90px; height:90px; margin:0 auto 15px;" id="view-pfp">
-        <h2 id="view-name">@User</h2>
-        <div class="stats-grid">
-            <div class="stat-card"><span class="stat-num" id="stat-followers">0</span>Followers</div>
-            <div class="stat-card"><span class="stat-num" id="stat-following">0</span>Following</div>
-        </div>
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button class="hx-btn" id="followBtn" onclick="toggleFollow()">Follow</button>
-            <button class="hx-btn outline" onclick="startChat(viewTarget)">Message</button>
-        </div>
-    </div>
-    <div id="user-posts-container" style="margin-top:25px;"></div>
 </div>
 
 <nav class="nav-bar">
@@ -196,18 +152,8 @@ let currentUser = localStorage.getItem("hx_comm_user");
 let likedPosts = JSON.parse(localStorage.getItem("hx_comm_liked") || "[]");
 let viewTarget = "";
 let cachedFeed = [];
-let fabTimer;
 
-function openScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById(id + '-screen').classList.add('active');
-    document.getElementById('nav-' + id)?.classList.add('active');
-    wakeFab();
-    if(id === 'home') loadFeed();
-    if(id === 'dm') loadDMList();
-    if(id === 'profile') checkUserStatus();
-}
+// --- UPLOADER ---
 
 async function uploadToCatbox(fileInput, hiddenId, statusId) {
     const file = fileInput.files[0];
@@ -223,11 +169,12 @@ async function uploadToCatbox(fileInput, hiddenId, statusId) {
         });
         const url = await res.text();
         document.getElementById(hiddenId).value = url.trim();
-        statusEl.innerText = "Linked! ✅";
+        statusEl.innerText = "Ready! ✅";
         if(hiddenId === 'sigPfp') document.getElementById('pfpBig').src = url.trim();
     } catch(e) { statusEl.innerText = "Failed ❌"; }
 }
 
+// --- FEED & ACTIONS ---
 async function loadFeed(force = false) {
     const container = document.getElementById("feed-container");
     const r = await fetch(`${SCRIPT_URL}?action=get_feed`);
@@ -235,14 +182,13 @@ async function loadFeed(force = false) {
     cachedFeed = res.data;
     container.innerHTML = "";
     cachedFeed.forEach(p => {
-        const isLiked = likedPosts.includes(p.pid);
         const isOwner = p.author === currentUser;
+        const isLiked = likedPosts.includes(p.pid);
         const card = document.createElement('div');
         card.className = "hx-card";
         card.innerHTML = `
             <div class="card-top-actions">
                 <i class="fas fa-paper-plane hx-util-btn" onclick="startChat('${p.author}')"></i>
-                <i class="fas fa-flag hx-util-btn" onclick="openReport('${p.pid}')"></i>
                 ${isOwner ? `<i class="fas fa-trash hx-util-btn" style="color:var(--error)" onclick="deletePost('${p.pid}')"></i>` : ''}
             </div>
             <div class="hx-user-row" onclick="viewProfile('${p.author}')">
@@ -255,79 +201,46 @@ async function loadFeed(force = false) {
                 <span class="hx-action ${isLiked ? 'liked' : ''}" onclick="doLike('${p.pid}', this)">
                     <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i> <span class="l-count">${p.likes}</span>
                 </span>
-                <span class="hx-action" onclick="openComments('${p.pid}')"><i class="far fa-comment"></i> ${p.comment_count}</span>
             </div>
         `;
         container.appendChild(card);
     });
 }
 
-// --- FIXED LIKE LOGIC ---
 async function doLike(pid, btn) {
     if(!currentUser || likedPosts.includes(pid)) return;
-    
-    // UI Update immediately
     likedPosts.push(pid);
     localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
     btn.classList.add('liked');
-    const icon = btn.querySelector('i');
-    icon.classList.replace('far', 'fas');
+    btn.querySelector('i').className = "fas fa-heart";
     const count = btn.querySelector('.l-count');
     count.innerText = parseInt(count.innerText) + 1;
 
-    // Server Update
-    await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "like", pid: pid, uid: currentUser })
-    });
+    await fetch(SCRIPT_URL, {method: "POST", body: JSON.stringify({ action: "like", pid: pid, uid: currentUser })});
 }
 
-// --- FIXED DELETE LOGIC ---
 async function deletePost(pid) {
-    if(!confirm("Delete this broadcast forever?")) return;
+    if(!confirm("Delete forever?")) return;
     document.getElementById("bg-loader").style.display = "block";
-    try {
-        const res = await fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "delete_post", pid: pid, uid: currentUser })
-        });
-        const data = await res.json();
-        if(data.status === "Success") {
-            loadFeed(true);
-        } else {
-            alert("Delete failed: " + data.data);
-        }
-    } catch(e) { alert("Server Error"); }
-    document.getElementById("bg-loader").style.display = "none";
+    const res = await fetch(SCRIPT_URL, {method: "POST", body: JSON.stringify({ action: "delete_post", pid: pid, uid: currentUser })});
+    location.reload();
 }
 
-function openComments(pid) {
-    const post = cachedFeed.find(x => x.pid === pid);
-    const list = document.getElementById("full-comment-list");
-    list.innerHTML = post.recent_comments.length ? "" : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments yet.</p>";
-    post.recent_comments.forEach(c => {
-        list.innerHTML += `<div class="comment-item"><b>@${c.user}</b><p>${c.text}</p></div>`;
-    });
-    document.getElementById("active-comment-btn").onclick = () => sendComment(pid);
-    openScreen('comment-view');
+async function submitBroadcast() {
+    const t = document.getElementById("postText").value;
+    const m = document.getElementById("imageUrlInput").value;
+    document.getElementById("bg-loader").style.display = "block";
+    await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"post", uid:currentUser, content:t, media:m})});
+    location.reload();
 }
 
-async function sendComment(pid) {
-    const input = document.getElementById("active-comment-input");
-    if(!input.value.trim() || !currentUser) return;
-    await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"comment", pid:pid, uid:currentUser, content:input.value})});
-    input.value = ""; loadFeed(true); openScreen('home');
-}
-
+// --- AUTH & NAV ---
 async function userAuth(mode) {
     let payload = { action: mode };
-    if(mode === 'login') {
-        payload.username = document.getElementById("logUser").value;
-        payload.password = document.getElementById("logPass").value;
-    } else {
-        payload.username = document.getElementById("sigUser").value;
+    payload.username = document.getElementById(mode === 'login' ? "logUser" : "sigUser").value;
+    payload.password = document.getElementById(mode === 'login' ? "logPass" : "sigPass").value;
+    if(mode === 'signup') {
         payload.email = document.getElementById("sigEmail").value;
-        payload.password = document.getElementById("sigPass").value;
         payload.pic = document.getElementById("sigPfp").value;
     }
     document.getElementById("bg-loader").style.display = "block";
@@ -342,59 +255,22 @@ function checkUserStatus() {
         document.getElementById("login-view").style.display = "none";
         document.getElementById("profile-box").style.display = "block";
         document.getElementById("nameDisplay").innerText = "@" + currentUser;
-        fetchStats(currentUser, "my-stats");
         fetch(`${SCRIPT_URL}?action=get_user_data&uid=${currentUser}`).then(r => r.json()).then(res => {
             document.getElementById("pfpBig").src = res.data.pic || `https://ui-avatars.com/api/?name=${currentUser}`;
         });
     }
 }
 
-async function fetchStats(uid, elementId) {
-    const r = await fetch(`${SCRIPT_URL}?action=get_social_stats&uid=${uid}`);
-    const res = await r.json();
-    if(elementId === "my-stats") {
-        document.getElementById(elementId).innerHTML = `<div class="stat-card"><span class="stat-num">${res.data.followers}</span>Followers</div><div class="stat-card"><span class="stat-num">${res.data.following}</span>Following</div>`;
-    } else {
-        document.getElementById("stat-followers").innerText = res.data.followers;
-        document.getElementById("stat-following").innerText = res.data.following;
-    }
+function openScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id + '-screen').classList.add('active');
+    if(id === 'home') loadFeed();
 }
 
-async function viewProfile(username) {
-    if(username === currentUser) return openScreen('profile');
-    viewTarget = username; openScreen('user-profile');
-    document.getElementById("view-name").innerText = "@" + username;
-    fetchStats(username, "stat-followers");
-    const r = await fetch(`${SCRIPT_URL}?action=get_user_data&uid=${username}`);
-    const res = await r.json();
-    document.getElementById("view-pfp").src = res.data.pic || `https://ui-avatars.com/api/?name=${username}`;
-}
-
-async function startChat(t) { viewTarget = t; openScreen('chat-view'); document.getElementById("chat-target-name").innerText = "@" + t; loadDMs(); }
-async function loadDMs() {
-    const r = await fetch(`${SCRIPT_URL}?action=get_dms&uid=${currentUser}&target=${viewTarget}`);
-    const res = await r.json();
-    document.getElementById("chat-messages").innerHTML = res.data.map(m => `<div style="text-align:${m[0] == currentUser ? 'right' : 'left'}; margin-bottom:10px;"><div style="display:inline-block; padding:8px 12px; border-radius:12px; background:${m[0] == currentUser ? 'var(--primary)' : 'var(--card)'}; color:${m[0] == currentUser ? '#000' : '#fff'}">${m[2]}</div></div>`).join("");
-}
-async function sendDM() {
-    const i = document.getElementById("msgInput");
-    if(!i.value) return;
-    await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"dm", uid:currentUser, target:viewTarget, message:i.value})});
-    i.value = ""; loadDMs();
-}
-
-async function submitBroadcast() {
-    const t = document.getElementById("postText").value;
-    const m = document.getElementById("imageUrlInput").value;
-    document.getElementById("bg-loader").style.display = "block";
-    await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"post", uid:currentUser, content:t, media:m})});
-    location.reload();
-}
-
-function wakeFab() { const f = document.getElementById('mainFab'); f.classList.add('visible'); f.classList.remove('dormant'); clearTimeout(fabTimer); fabTimer = setTimeout(() => f.classList.add('dormant'), 4000); }
 function handleFab() { currentUser ? openScreen('compose') : openScreen('profile'); }
-function toggleAuthView(v) { document.getElementById('login-view').style.display = v === 'login' ? 'block' : 'none'; document.getElementById('signup-view').style.display = v === 'signup' ? 'block' : 'none'; }
+function wakeFab() { const f = document.getElementById('mainFab'); f.classList.add('visible'); }
 function logout() { localStorage.removeItem("hx_comm_user"); location.reload(); }
+function toggleAuthView(v) { document.getElementById('login-view').style.display = v === 'login' ? 'block' : 'none'; document.getElementById('signup-view').style.display = v === 'signup' ? 'block' : 'none'; }
 
 if(currentUser) loadFeed(); else openScreen('profile');
 </script>
