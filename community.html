@@ -41,8 +41,9 @@
         .hx-link { color: var(--primary); text-decoration: none; word-break: break-all; }
         .hx-username-link { color: var(--primary); font-weight: bold; cursor: pointer; }
 
-        .hx-action { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-right: 20px; font-size: 14px; color: var(--muted); }
+        .hx-action { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-right: 20px; font-size: 14px; color: var(--muted); transition: 0.2s; }
         .hx-action.liked { color: var(--error) !important; }
+        .hx-action:active { transform: scale(1.2); }
         
         .card-top-actions { position: absolute; top: 15px; right: 15px; display: flex; gap: 12px; align-items: center; }
         .hx-util-btn { color: var(--muted); font-size: 14px; cursor: pointer; padding: 5px; transition: 0.2s; }
@@ -128,11 +129,9 @@
 <div id="compose-screen" class="screen">
     <h3>New Broadcast</h3>
     <textarea id="postText" class="hx-input" style="height:150px; margin-top:15px;" placeholder="What's happening?"></textarea>
-    
     <input type="file" id="postFile" accept="image/*" style="display:none;" onchange="uploadToCatbox(this, 'imageUrlInput', 'post-up-status')">
     <button class="hx-btn outline" onclick="document.getElementById('postFile').click()"><i class="fas fa-camera"></i> Attach Media</button>
     <span id="post-up-status" class="upload-status"></span>
-    
     <input type="hidden" id="imageUrlInput">
     <button class="hx-btn action-btn" id="postBtn" onclick="submitBroadcast()" style="margin-top:10px;">Broadcast Now</button>
 </div>
@@ -145,22 +144,18 @@
         <button class="hx-btn" onclick="userAuth('login')">Login</button>
         <div style="text-align:center; margin-top:15px; cursor:pointer;" onclick="toggleAuthView('signup')">Create Account</div>
     </div>
-
     <div id="signup-view" style="display:none;">
         <h3>Join HX Community</h3>
         <input type="text" id="sigUser" class="hx-input" placeholder="Username">
         <input type="email" id="sigEmail" class="hx-input" placeholder="Email">
         <input type="password" id="sigPass" class="hx-input" placeholder="Password">
-        
         <input type="file" id="pfpFile" accept="image/*" style="display:none;" onchange="uploadToCatbox(this, 'sigPfp', 'sig-up-status')">
         <button class="hx-btn outline" onclick="document.getElementById('pfpFile').click()"><i class="fas fa-image"></i> Import Profile Pic</button>
         <span id="sig-up-status" class="upload-status"></span>
-        
         <input type="hidden" id="sigPfp">
         <button class="hx-btn" onclick="userAuth('signup')" style="margin-top:10px;">Sign Up</button>
         <div style="text-align:center; margin-top:15px; cursor:pointer;" onclick="toggleAuthView('login')">Login instead</div>
     </div>
-
     <div id="profile-box" style="display:none;">
         <div style="text-align:center;">
             <img class="hx-pfp" id="pfpBig" style="width:90px; height:90px; margin:0 auto 15px; border:2px solid var(--primary)">
@@ -203,7 +198,6 @@ let viewTarget = "";
 let cachedFeed = [];
 let fabTimer;
 
-// --- CORE LOGIC ---
 function openScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -219,21 +213,19 @@ async function uploadToCatbox(fileInput, hiddenId, statusId) {
     const file = fileInput.files[0];
     if(!file) return;
     const statusEl = document.getElementById(statusId);
-    statusEl.innerText = "Syncing with HX Cloud...";
-    
+    statusEl.innerText = "Syncing Image...";
     const formData = new FormData();
     formData.append('reqtype', 'fileupload');
     formData.append('fileToUpload', file);
-
     try {
         const res = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://catbox.moe/user/api.php'), {
             method: 'POST', body: formData
         });
         const url = await res.text();
         document.getElementById(hiddenId).value = url.trim();
-        statusEl.innerText = "Image Linked! ✅";
+        statusEl.innerText = "Linked! ✅";
         if(hiddenId === 'sigPfp') document.getElementById('pfpBig').src = url.trim();
-    } catch(e) { statusEl.innerText = "Upload Failed ❌"; }
+    } catch(e) { statusEl.innerText = "Failed ❌"; }
 }
 
 async function loadFeed(force = false) {
@@ -243,6 +235,7 @@ async function loadFeed(force = false) {
     cachedFeed = res.data;
     container.innerHTML = "";
     cachedFeed.forEach(p => {
+        const isLiked = likedPosts.includes(p.pid);
         const isOwner = p.author === currentUser;
         const card = document.createElement('div');
         card.className = "hx-card";
@@ -253,13 +246,15 @@ async function loadFeed(force = false) {
                 ${isOwner ? `<i class="fas fa-trash hx-util-btn" style="color:var(--error)" onclick="deletePost('${p.pid}')"></i>` : ''}
             </div>
             <div class="hx-user-row" onclick="viewProfile('${p.author}')">
-                <img src="${p.pic && p.pic.startsWith('http') ? p.pic : 'https://ui-avatars.com/api/?name='+p.author}" class="hx-pfp">
+                <img src="${p.pic || 'https://ui-avatars.com/api/?name='+p.author}" class="hx-pfp">
                 <b>@${p.author}</b>
             </div>
             <div style="white-space:pre-wrap;">${p.content}</div>
             ${p.media ? `<img src="${p.media}" class="hx-media">` : ''}
             <div style="margin-top:15px; display:flex; gap:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
-                <span class="hx-action" onclick="doLike('${p.pid}', this)"><i class="far fa-heart"></i> ${p.likes}</span>
+                <span class="hx-action ${isLiked ? 'liked' : ''}" onclick="doLike('${p.pid}', this)">
+                    <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i> <span class="l-count">${p.likes}</span>
+                </span>
                 <span class="hx-action" onclick="openComments('${p.pid}')"><i class="far fa-comment"></i> ${p.comment_count}</span>
             </div>
         `;
@@ -267,7 +262,45 @@ async function loadFeed(force = false) {
     });
 }
 
-// --- COMMENTS restored ---
+// --- FIXED LIKE LOGIC ---
+async function doLike(pid, btn) {
+    if(!currentUser || likedPosts.includes(pid)) return;
+    
+    // UI Update immediately
+    likedPosts.push(pid);
+    localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
+    btn.classList.add('liked');
+    const icon = btn.querySelector('i');
+    icon.classList.replace('far', 'fas');
+    const count = btn.querySelector('.l-count');
+    count.innerText = parseInt(count.innerText) + 1;
+
+    // Server Update
+    await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "like", pid: pid, uid: currentUser })
+    });
+}
+
+// --- FIXED DELETE LOGIC ---
+async function deletePost(pid) {
+    if(!confirm("Delete this broadcast forever?")) return;
+    document.getElementById("bg-loader").style.display = "block";
+    try {
+        const res = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "delete_post", pid: pid, uid: currentUser })
+        });
+        const data = await res.json();
+        if(data.status === "Success") {
+            loadFeed(true);
+        } else {
+            alert("Delete failed: " + data.data);
+        }
+    } catch(e) { alert("Server Error"); }
+    document.getElementById("bg-loader").style.display = "none";
+}
+
 function openComments(pid) {
     const post = cachedFeed.find(x => x.pid === pid);
     const list = document.getElementById("full-comment-list");
@@ -286,36 +319,6 @@ async function sendComment(pid) {
     input.value = ""; loadFeed(true); openScreen('home');
 }
 
-// --- DELETION restored ---
-async function deletePost(pid) {
-    if(!confirm("Delete this?")) return;
-    await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"delete_post", pid:pid, uid:currentUser})});
-    loadFeed(true);
-}
-
-// --- STATS restored ---
-async function fetchStats(uid, elementId) {
-    const r = await fetch(`${SCRIPT_URL}?action=get_social_stats&uid=${uid}`);
-    const res = await r.json();
-    if(elementId === "my-stats") {
-        document.getElementById(elementId).innerHTML = `<div class="stat-card"><span class="stat-num">${res.data.followers}</span>Followers</div><div class="stat-card"><span class="stat-num">${res.data.following}</span>Following</div>`;
-    } else {
-        document.getElementById("stat-followers").innerText = res.data.followers;
-        document.getElementById("stat-following").innerText = res.data.following;
-    }
-}
-
-async function viewProfile(username) {
-    if(username === currentUser) return openScreen('profile');
-    viewTarget = username; openScreen('user-profile');
-    document.getElementById("view-name").innerText = "@" + username;
-    fetchStats(username, "stat-followers");
-    const r = await fetch(`${SCRIPT_URL}?action=get_user_data&uid=${username}`);
-    const res = await r.json();
-    document.getElementById("view-pfp").src = res.data.pic || `https://ui-avatars.com/api/?name=${username}`;
-}
-
-// --- AUTH ---
 async function userAuth(mode) {
     let payload = { action: mode };
     if(mode === 'login') {
@@ -344,6 +347,27 @@ function checkUserStatus() {
             document.getElementById("pfpBig").src = res.data.pic || `https://ui-avatars.com/api/?name=${currentUser}`;
         });
     }
+}
+
+async function fetchStats(uid, elementId) {
+    const r = await fetch(`${SCRIPT_URL}?action=get_social_stats&uid=${uid}`);
+    const res = await r.json();
+    if(elementId === "my-stats") {
+        document.getElementById(elementId).innerHTML = `<div class="stat-card"><span class="stat-num">${res.data.followers}</span>Followers</div><div class="stat-card"><span class="stat-num">${res.data.following}</span>Following</div>`;
+    } else {
+        document.getElementById("stat-followers").innerText = res.data.followers;
+        document.getElementById("stat-following").innerText = res.data.following;
+    }
+}
+
+async function viewProfile(username) {
+    if(username === currentUser) return openScreen('profile');
+    viewTarget = username; openScreen('user-profile');
+    document.getElementById("view-name").innerText = "@" + username;
+    fetchStats(username, "stat-followers");
+    const r = await fetch(`${SCRIPT_URL}?action=get_user_data&uid=${username}`);
+    const res = await r.json();
+    document.getElementById("view-pfp").src = res.data.pic || `https://ui-avatars.com/api/?name=${username}`;
 }
 
 async function startChat(t) { viewTarget = t; openScreen('chat-view'); document.getElementById("chat-target-name").innerText = "@" + t; loadDMs(); }
