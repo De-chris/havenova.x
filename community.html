@@ -5,7 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HX Community</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="css/community.css">
+    <style>
+        :root {
+            --bg:#020617; --surface:#0f172a; --card:#1e293b; --border:#334155;
+            --text:#f8fafc; --muted:#94a3b8; --primary:#38bdf8; --error:#ef4444; --success:#22c55e;
+        }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 80px; overflow-x: hidden; scroll-behavior: smooth; }
+
+        .screen { display: none !important; padding: 15px; max-width: 600px; margin: 0 auto; min-height: 100vh; animation: fadeIn 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
+        .screen.active { display: block !important; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        header { background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; height: 50px; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); }
+        .logo { height: 22px; cursor: pointer; }
+
+        .fab { 
+            position: fixed; bottom: 90px; right: 20px; width: 55px; height: 55px; 
+            border-radius: 18px; background: var(--primary); color: #000; 
+            display: flex; align-items: center; justify-content: center; font-size: 22px; 
+            box-shadow: 0 4px 15px rgba(56,189,248,0.4); z-index: 900; cursor: pointer; 
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            display: none;
+        }
+        .fab.visible { display: flex; }
+        .fab.dormant { transform: translateX(35px); opacity: 0.4; }
+
+        .hx-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 12px; position: relative; transition: outline 0.5s; }
+        .hx-card.highlight { outline: 2px solid var(--primary); }
+        
+        .hx-user-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; cursor: pointer; }
+        .hx-pfp { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; overflow: hidden; border: 1px solid var(--border); object-fit: cover; }
+        .hx-media { width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border); max-height: 400px; object-fit: cover; background: #000; }
+        
+        .hx-link { color: var(--primary); text-decoration: none; word-break: break-all; }
+        .hx-username-link { color: var(--primary); font-weight: bold; cursor: pointer; }
+
+        .hx-action { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin-right: 20px; font-size: 14px; color: var(--muted); }
+        .hx-action.liked { color: var(--error) !important; }
+        
+        /* Utility Buttons */
+        .card-top-actions { position: absolute; top: 15px; right: 15px; display: flex; gap: 12px; align-items: center; }
+        .hx-util-btn { color: var(--muted); font-size: 14px; cursor: pointer; padding: 5px; transition: 0.2s; }
+        .hx-util-btn:hover { color: var(--primary); }
+        .hx-delete-btn:hover { color: var(--error); }
+
+        .comment-item { font-size: 13px; margin-bottom: 12px; color: #cbd5e1; padding: 12px; background: var(--card); border-radius: 12px; border: 1px solid var(--border); }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .stat-card { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .stat-num { display: block; font-size: 20px; font-weight: bold; color: var(--primary); }
+
+        .hx-btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .hx-btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
+        .hx-btn.outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        
+        .hx-input-wrapper { position: relative; width: 100%; margin-bottom: 10px; }
+        .hx-input { width: 100%; background: #0f172a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 12px; outline: none; }
+        .hx-input:disabled { opacity: 0.6; }
+        .pass-toggle { position: absolute; right: 12px; top: 12px; color: var(--muted); cursor: pointer; }
+
+        .catbox-link { font-size: 11px; color: var(--primary); text-decoration: none; display: inline-block; margin: 5px 0 10px 5px; font-weight: 600; }
+
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 14px 0; z-index: 1000; }
+        .nav-item { color: var(--muted); font-size: 20px; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+
+        #bg-loader { position: fixed; top: 65px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #000; padding: 8px 20px; border-radius: 30px; font-size: 12px; font-weight: bold; z-index: 2000; display: none; }
+        
+        .auth-toggle { text-align: center; margin-top: 15px; font-size: 14px; color: var(--muted); cursor: pointer; }
+        .auth-toggle span { color: var(--primary); font-weight: bold; }
+
+        .chat-bubble { display: inline-block; padding: 8px 12px; border-radius: 12px; font-size: 14px; position: relative; max-width: 85%; word-wrap: break-word; }
+        .chat-row { margin-bottom: 10px; position: relative; }
+
+        /* Report Modal */
+        #report-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
+        .report-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; width: 100%; max-width: 400px; }
+    </style>
 </head>
 <body>
 
@@ -69,8 +146,8 @@
 <div id="compose-screen" class="screen">
     <h3>New Broadcast</h3>
     <textarea id="postText" class="hx-input" style="height:150px; margin-top:15px;" placeholder="What's happening?"></textarea>
-    <input type="file" id="imageFileInput" class="hx-input" accept="image/*" style="margin-top:10px;">
-    <div style="margin-top:10px; font-size:12px; color:var(--muted);">Supported formats: JPG, PNG, GIF, WebP (max 10MB)</div>
+    <input type="text" id="imageUrlInput" class="hx-input" placeholder="Image URL (optional)...">
+    <a href="https://catbox.moe" target="_blank" class="catbox-link">Get Image URL</a>
     <button class="hx-btn action-btn" id="postBtn" onclick="submitBroadcast()">Broadcast Now</button>
 </div>
 
@@ -98,8 +175,7 @@
             <input type="password" id="sigPassConfirm" class="hx-input" placeholder="Confirm Password">
         </div>
         <input type="text" id="sigBio" class="hx-input" placeholder="Bio (optional)">
-        <input type="file" id="sigPfpFile" class="hx-input" accept="image/*" style="margin-top:10px;">
-        <div style="margin-top:5px; font-size:12px; color:var(--muted);">Profile picture (optional)</div>
+        <input type="text" id="sigPfp" class="hx-input" placeholder="Profile Pic URL (optional)">
         <button class="hx-btn action-btn" id="signupBtn" onclick="userAuth('signup')">Create Account</button>
         <div class="auth-toggle" onclick="toggleAuthView('login')">Already have an account? <span>Login</span></div>
     </div>
@@ -112,8 +188,7 @@
             
             <div id="profile-updates" style="margin-top:10px;">
                 <input type="text" id="updateBio" class="hx-input" style="font-size:12px;" placeholder="Update Bio...">
-                <input type="file" id="updatePfpFile" class="hx-input" accept="image/*" style="font-size:12px; margin-top:5px;">
-                <div style="margin-top:5px; font-size:12px; color:var(--muted);">Update profile picture</div>
+                <input type="text" id="updatePfp" class="hx-input" style="font-size:12px;" placeholder="Update Profile Pic URL...">
                 <button class="hx-btn action-btn outline" id="saveProfileBtn" onclick="updateProfileData()">Save Changes</button>
             </div>
 
@@ -151,6 +226,414 @@
     <div class="nav-item" id="nav-profile" onclick="openScreen('profile')"><i class="fas fa-user-circle"></i></div>
 </div>
 
-<script src="js/community.js"></script>
+<script>
+const COMMUNITY_SCRIPT = "https://script.google.com/macros/s/AKfycby9eEtH55XibqVgBOPeANg7WKYL61MOQYeBuKJWOD5UTRGn4VeSMcGNeFsUkk3WyfRpeA/exec";
+
+let currentUser = localStorage.getItem("hx_comm_user");
+let likedPosts = JSON.parse(localStorage.getItem("hx_comm_liked") || "[]");
+let viewTarget = "";
+let cachedFeed = JSON.parse(localStorage.getItem("hx_feed_cache") || "[]");
+let fabTimer;
+let activeReportId = null;
+
+function disableActions(btnId, text) { 
+    document.querySelectorAll('.action-btn, .hx-input').forEach(b => b.disabled = true);
+    if(btnId) {
+        const btn = document.getElementById(btnId);
+        btn.dataset.oldText = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${text || 'Processing...'}`;
+    }
+}
+function enableActions(btnId) { 
+    document.querySelectorAll('.action-btn, .hx-input').forEach(b => b.disabled = false);
+    if(btnId) {
+        const btn = document.getElementById(btnId);
+        btn.innerHTML = btn.dataset.oldText || btn.innerHTML;
+    }
+}
+
+function linkify(text) {
+    if(!text) return "";
+    const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    const userPattern = /@(\w+)/g;
+    return text
+        .replace(urlPattern, '<a href="$1" target="_blank" class="hx-link">$1</a>')
+        .replace(userPattern, '<span class="hx-username-link" onclick="viewProfile(\'$1\')">@$1</span>');
+}
+
+function togglePass(id) {
+    const el = document.getElementById(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+function openScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(id + '-screen').classList.add('active');
+    document.getElementById('nav-' + id)?.classList.add('active');
+    
+    wakeFab();
+    if(id === 'home') loadFeed();
+    if(id === 'dm') loadDMList();
+    if(id === 'profile') checkUserStatus();
+}
+
+async function userAuth(mode) {
+    const btnId = mode === 'login' ? 'loginBtn' : 'signupBtn';
+    let payload = { action: mode };
+
+    if(mode === 'login') {
+        payload.username = document.getElementById("logUser").value.trim();
+        payload.password = document.getElementById("logPass").value.trim();
+    } else {
+        const p1 = document.getElementById("sigPass").value;
+        const p2 = document.getElementById("sigPassConfirm").value;
+        if(p1 !== p2) return alert("Passwords do not match");
+        payload.username = document.getElementById("sigUser").value.trim();
+        payload.email = document.getElementById("sigEmail").value.trim();
+        payload.password = p1;
+        payload.bio = document.getElementById("sigBio").value.trim();
+        payload.pic = document.getElementById("sigPfp").value.trim();
+    }
+
+    if(!payload.username || !payload.password) return alert("Fill all fields");
+
+    disableActions(btnId, mode === 'login' ? "Verifying..." : "Creating...");
+    document.getElementById("bg-loader").style.display = "block";
+    
+    try {
+        const res = await fetch(COMMUNITY_SCRIPT, { method: "POST", body: JSON.stringify(payload) });
+        const data = await res.json();
+        
+        if(data.status === "Success") {
+            localStorage.setItem("hx_comm_user", data.data.username);
+            currentUser = data.data.username;
+            location.reload();
+        } else {
+            alert(data.data);
+        }
+    } catch(e) { alert("Server Error"); }
+    
+    enableActions(btnId);
+    document.getElementById("bg-loader").style.display = "none";
+}
+
+async function updateProfileData() {
+    const bio = document.getElementById("updateBio").value.trim();
+    const pic = document.getElementById("updatePfp").value.trim();
+    if(!bio && !pic) return;
+
+    disableActions('saveProfileBtn', 'Updating...');
+    await fetch(COMMUNITY_SCRIPT, {
+        method: "POST", 
+        body: JSON.stringify({ action: 'update_profile', uid: currentUser, pic: pic, bio: bio })
+    });
+    alert("Profile Updated");
+    location.reload();
+}
+
+function checkUserStatus() {
+    if(currentUser) {
+        document.getElementById("login-view").style.display = "none";
+        document.getElementById("signup-view").style.display = "none";
+        document.getElementById("profile-box").style.display = "block";
+        document.getElementById("nameDisplay").innerText = "@" + currentUser;
+        
+        fetch(`${COMMUNITY_SCRIPT}?action=get_user_data&uid=${currentUser}`)
+            .then(r => r.json())
+            .then(res => {
+                if(res.status === "Success") {
+                    document.getElementById("pfpBig").src = res.data.pic || `https://ui-avatars.com/api/?name=${currentUser}`;
+                    document.getElementById("bioDisplay").innerHTML = linkify(res.data.bio || "No bio yet.");
+                }
+            });
+
+        fetchStats(currentUser, "my-stats");
+        renderUserPosts(currentUser, "my-posts-container");
+    }
+}
+
+async function loadFeed(force = false) {
+    const container = document.getElementById("feed-container");
+    if(cachedFeed.length > 0 && !force) {
+        container.innerHTML = "";
+        cachedFeed.forEach(p => container.appendChild(createPostCard(p)));
+        checkDeepLink();
+    }
+    try {
+        const r = await fetch(`${COMMUNITY_SCRIPT}?action=get_feed`);
+        const res = await r.json();
+        cachedFeed = res.data;
+        localStorage.setItem("hx_feed_cache", JSON.stringify(cachedFeed));
+        container.innerHTML = "";
+        cachedFeed.forEach(p => container.appendChild(createPostCard(p)));
+        checkDeepLink();
+    } catch(e) {}
+}
+
+function createPostCard(p) {
+    const card = document.createElement('div');
+    card.className = "hx-card";
+    card.id = `post-${p.pid}`;
+    const isLiked = likedPosts.includes(p.pid);
+    const isOwner = p.author === currentUser;
+    const pfp = p.pic || `https://ui-avatars.com/api/?name=${p.author}&background=38bdf8&color=000`;
+    
+    card.innerHTML = `
+        <div class="card-top-actions">
+            <i class="fas fa-share hx-util-btn" onclick="sharePost('${p.pid}')"></i>
+            <i class="fas fa-flag hx-util-btn" onclick="openReport('${p.pid}')"></i>
+            ${isOwner ? `<i class="fas fa-trash hx-util-btn hx-delete-btn" onclick="confirmDeletePost('${p.pid}')"></i>` : ''}
+        </div>
+        <div class="hx-user-row" onclick="viewProfile('${p.author}')">
+            <img src="${pfp}" class="hx-pfp">
+            <div style="font-weight:bold;">@${p.author}</div>
+        </div>
+        <div style="line-height:1.5; color:#e2e8f0; white-space:pre-wrap;">${linkify(p.content)}</div>
+        ${p.media ? `<img src="${p.media}" class="hx-media" loading="lazy">` : ''}
+        <div style="margin-top:15px; display:flex; gap:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
+            <span class="hx-action ${isLiked ? 'liked' : ''}" onclick="doLike('${p.pid}', this)">
+                <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i> <span class="lc">${p.likes}</span>
+            </span>
+            <span class="hx-action" onclick="openComments('${p.pid}')">
+                <i class="far fa-comment"></i> ${p.comment_count}
+            </span>
+        </div>
+    `;
+    return card;
+}
+
+// Deep Linking Logic
+function checkDeepLink() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pid = urlParams.get('post');
+    if(pid) {
+        const el = document.getElementById(`post-${pid}`);
+        if(el) {
+            setTimeout(() => {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('highlight');
+                setTimeout(() => el.classList.remove('highlight'), 3000);
+            }, 500);
+        }
+    }
+}
+
+function sharePost(pid) {
+    const url = `${window.location.origin}${window.location.pathname}?post=${pid}`;
+    if(navigator.share) {
+        navigator.share({ title: 'HX Community Post', url: url });
+    } else {
+        navigator.clipboard.writeText(url).then(() => alert("Post link copied to clipboard!"));
+    }
+}
+
+// Report Logic
+function openReport(pid) {
+    activeReportId = pid;
+    document.getElementById("report-modal").style.display = "flex";
+}
+function closeReport() {
+    document.getElementById("report-modal").style.display = "none";
+    document.getElementById("report-reason").value = "";
+}
+function submitReport() {
+    const reason = document.getElementById("report-reason").value.trim();
+    if(!reason) return alert("Please provide a reason");
+    
+    const post = cachedFeed.find(x => x.pid === activeReportId);
+    const reporter = currentUser || "Guest";
+    const postOwner = post ? post.author : "Unknown";
+    const postUrl = `${window.location.origin}${window.location.pathname}?post=${activeReportId}`;
+    
+    const message = `🚨 REPORT RECEIVED\n\nPost ID: ${activeReportId}\nPost Owner: @${postOwner}\nReporter: @${reporter}\nReason: ${reason}\n\nView Post: ${postUrl}`;
+    
+    window.open(`https://t.me/dechrisathx?text=${encodeURIComponent(message)}`, '_blank');
+    closeReport();
+}
+
+async function confirmDeletePost(pid) {
+    if(!confirm("Delete this broadcast forever?")) return;
+    document.getElementById("bg-loader").style.display = "block";
+    try {
+        const res = await fetch(COMMUNITY_SCRIPT, {
+            method: "POST",
+            body: JSON.stringify({ action: 'delete_post', pid: pid, uid: currentUser })
+        });
+        const data = await res.json();
+        if(data.status === "Success") loadFeed(true);
+        else alert(data.data);
+    } catch(e) { alert("Delete failed"); }
+    document.getElementById("bg-loader").style.display = "none";
+}
+
+function openComments(pid) {
+    const post = cachedFeed.find(x => x.pid === pid);
+    if(!post) return;
+    const list = document.getElementById("full-comment-list");
+    list.innerHTML = post.recent_comments.length ? "" : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments yet.</p>";
+    post.recent_comments.forEach(c => {
+        list.innerHTML += `<div class="comment-item"><b class="hx-username-link" onclick="viewProfile('${c.user}')">@${c.user}</b><p style="margin-top:5px;">${linkify(c.text)}</p></div>`;
+    });
+    document.getElementById("active-comment-btn").onclick = () => sendComment(pid);
+    openScreen('comment-view');
+}
+
+async function sendComment(pid) {
+    const input = document.getElementById("active-comment-input");
+    if(!input.value.trim() || !currentUser) return;
+    disableActions('active-comment-btn', '...');
+    await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"comment", pid:pid, uid:currentUser, content:input.value})});
+    input.value = "";
+    loadFeed(true);
+    openScreen('home');
+    enableActions('active-comment-btn');
+}
+
+async function doLike(pid, btn) {
+    if(!currentUser || btn.classList.contains('liked')) return;
+    btn.classList.add('liked');
+    btn.querySelector('i').className = "fas fa-heart";
+    const c = btn.querySelector('.lc');
+    c.innerText = parseInt(c.innerText) + 1;
+    likedPosts.push(pid);
+    localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
+    await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"like", pid:pid, uid:currentUser})});
+}
+
+async function loadDMList() {
+    const container = document.getElementById("dm-list-container");
+    container.innerHTML = "<p style='text-align:center; padding:20px;'><i class='fas fa-spinner fa-spin'></i> Syncing Social...</p>";
+    
+    const uRes = await fetch(`${COMMUNITY_SCRIPT}?action=get_users`);
+    const users = await uRes.json();
+    container.innerHTML = users.data.filter(u => u.username !== currentUser).map(u => `
+        <div class="hx-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="startChat('${u.username}')">
+            <img src="${u.pic || 'https://ui-avatars.com/api/?name='+u.username}" class="hx-pfp" style="width:35px; height:35px;">
+            <div style="flex:1;"><b>@${u.username}</b></div>
+            <i class="fas fa-chevron-right" style="font-size:12px; color:var(--muted)"></i>
+        </div>`).join("");
+}
+
+async function startChat(t) {
+    viewTarget = t; openScreen('chat-view');
+    document.getElementById("chat-target-name").innerText = "@" + t;
+    loadDMs();
+}
+
+async function loadDMs() {
+    const r = await fetch(`${COMMUNITY_SCRIPT}?action=get_dms&uid=${currentUser}&target=${viewTarget}`);
+    const res = await r.json();
+    const box = document.getElementById("chat-messages");
+    box.innerHTML = res.data.map(m => `
+        <div class="chat-row" style="text-align:${m[0] == currentUser ? 'right' : 'left'}">
+            <div class="chat-bubble" 
+                 style="background:${m[0] == currentUser ? 'var(--primary)' : 'var(--card)'}; color:${m[0] == currentUser ? '#000' : '#fff'};"
+                 onclick="${m[0] == currentUser ? `confirmDeleteDM('${m[2]}')` : ''}">
+                ${linkify(m[2])}
+            </div>
+        </div>`).join("");
+    box.scrollTop = box.scrollHeight;
+}
+
+async function confirmDeleteDM(msg) {
+    if(!confirm("Delete this message?")) return;
+    await fetch(COMMUNITY_SCRIPT, {
+        method: "POST",
+        body: JSON.stringify({ action: 'delete_dm', uid: currentUser, target: viewTarget, message: msg })
+    });
+    loadDMs();
+}
+
+async function sendDM() {
+    const i = document.getElementById("msgInput");
+    if(!i.value.trim()) return;
+    disableActions('sendDmBtn', '...');
+    await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"dm", uid:currentUser, target:viewTarget, message:i.value})});
+    i.value = ""; loadDMs(); enableActions('sendDmBtn');
+}
+
+async function viewProfile(username) {
+    if(username === currentUser) return openScreen('profile');
+    viewTarget = username; openScreen('user-profile');
+    document.getElementById("view-name").innerText = "@" + username;
+    
+    fetch(`${COMMUNITY_SCRIPT}?action=get_user_data&uid=${username}`)
+        .then(r => r.json())
+        .then(res => {
+            document.getElementById("view-pfp").src = res.data.pic || `https://ui-avatars.com/api/?name=${username}`;
+            document.getElementById("view-bio").innerHTML = linkify(res.data.bio || "");
+        });
+
+    fetchStats(username, "stat-followers");
+    renderUserPosts(username, "user-posts-container");
+}
+
+async function toggleFollow() {
+    disableActions('followBtn', '...');
+    const res = await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action: "follow", uid: currentUser, target: viewTarget})});
+    const data = await res.json();
+    document.getElementById("followBtn").innerText = (data.data === "Followed") ? "Unfollow" : "Follow";
+    fetchStats(viewTarget, "stat-followers");
+    enableActions('followBtn');
+}
+
+async function fetchStats(uid, elementId) {
+    const r = await fetch(`${COMMUNITY_SCRIPT}?action=get_social_stats&uid=${uid}`);
+    const res = await r.json();
+    if(elementId === "my-stats") {
+        document.getElementById(elementId).innerHTML = `
+            <div class="stat-card"><span class="stat-num">${res.data.followers}</span>Followers</div>
+            <div class="stat-card"><span class="stat-num">${res.data.following}</span>Following</div>`;
+    } else {
+        document.getElementById("stat-followers").innerText = res.data.followers;
+        document.getElementById("stat-following").innerText = res.data.following;
+    }
+}
+
+function renderUserPosts(u, divId) {
+    const posts = cachedFeed.filter(p => p.author === u);
+    const container = document.getElementById(divId);
+    container.innerHTML = posts.length ? "" : "<p style='color:var(--muted); padding:20px; text-align:center;'>No posts yet.</p>";
+    posts.forEach(p => container.appendChild(createPostCard(p)));
+}
+
+async function submitBroadcast() {
+    const t = document.getElementById("postText").value;
+    const m = document.getElementById("imageUrlInput").value;
+    if(!t && !m) return;
+    disableActions('postBtn', 'Posting...');
+    document.getElementById("bg-loader").style.display = "block";
+    await fetch(COMMUNITY_SCRIPT, {method:"POST", body:JSON.stringify({action:"post", uid:currentUser, content:t, media:m})});
+    document.getElementById("postText").value = "";
+    document.getElementById("imageUrlInput").value = "";
+    loadFeed(true);
+    openScreen('home');
+    enableActions('postBtn');
+    document.getElementById("bg-loader").style.display = "none";
+}
+
+function logout() { localStorage.removeItem("hx_comm_user"); location.reload(); }
+
+function wakeFab() {
+    const fab = document.getElementById('mainFab');
+    const isHome = document.getElementById('home-screen').classList.contains('active');
+    if(!isHome) { fab.classList.remove('visible'); return; }
+    fab.classList.add('visible');
+    fab.classList.remove('dormant');
+    clearTimeout(fabTimer);
+    fabTimer = setTimeout(() => fab.classList.add('dormant'), 4500);
+}
+
+function handleFab() { currentUser ? openScreen('compose') : openScreen('profile'); }
+
+function toggleAuthView(view) {
+    document.getElementById('login-view').style.display = view === 'login' ? 'block' : 'none';
+    document.getElementById('signup-view').style.display = view === 'signup' ? 'block' : 'none';
+}
+
+document.addEventListener('touchstart', wakeFab);
+if(currentUser) loadFeed(); else openScreen('profile');
+</script>
 </body>
 </html>
