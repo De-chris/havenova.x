@@ -273,7 +273,7 @@
         border: 1px dashed var(--border);
         padding: 10px;
         border-radius: 10px;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         font-size: 14px;
         color: #94a3b8;
         white-space: pre-wrap;
@@ -292,13 +292,6 @@
         font-weight: bold;
         z-index: 2000;
         display: none;
-      }
-      .upload-status {
-        font-size: 11px;
-        color: var(--success);
-        display: block;
-        margin: 5px 0;
-        text-align: center;
       }
       .comment-item {
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -432,7 +425,6 @@
       >
         <i class="fas fa-camera"></i> Media
       </button>
-      <span id="post-up-status" class="upload-status"></span>
       <input type="hidden" id="imageUrlInput" />
       <button
         class="hx-btn"
@@ -499,7 +491,6 @@
         >
           Import PFP
         </button>
-        <span id="sig-up-status" class="upload-status"></span>
         <input type="hidden" id="sigPfp" />
         <button
           class="hx-btn"
@@ -552,7 +543,6 @@
           >
             Update Picture
           </button>
-          <span id="profile-up-status" class="upload-status"></span>
           <input type="hidden" id="updatePfpUrl" />
           <button
             class="hx-btn"
@@ -699,11 +689,9 @@
             <div style="margin-top:15px; display:flex; gap:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
                 <span class="hx-action ${
                   isLiked ? "liked" : ""
-                }" onclick="doLike('${p.pid}', this)">
-                    <i class="${
-                      isLiked ? "fas" : "far"
-                    } fa-heart"></i> <span class="l-count">${p.likes}</span>
-                </span>
+                }" onclick="doLike('${p.pid}', this)"><i class="${
+            isLiked ? "fas" : "far"
+          } fa-heart"></i> <span class="l-count">${p.likes}</span></span>
                 <span class="hx-action" onclick="openComments('${
                   p.pid
                 }')"><i class="far fa-comment"></i> ${p.comment_count}</span>
@@ -713,39 +701,28 @@
         localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
       }
 
-      async function doLike(pid, btn) {
-        if (!currentUser || likedPosts.includes(pid)) return;
-        likedPosts.push(pid);
-        localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
-        btn.classList.add("liked");
-        btn.querySelector("i").className = "fas fa-heart";
-        const count = btn.querySelector(".l-count");
-        count.innerText = parseInt(count.innerText) + 1;
-        fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "like", pid: pid, uid: currentUser }),
-        });
-      }
-
       function openComments(pid) {
-        currentActivePost = pid; // FIX: Update current active post ID
+        currentActivePost = pid; // Fix: Set ID immediately
+        document.getElementById("full-comment-list").innerHTML =
+          "<p style='text-align:center; padding:40px;'>Loading...</p>";
+        openScreen("comment-view"); // Fix: Open instantly
+
         fetch(`${SCRIPT_URL}?action=get_feed`)
           .then((r) => r.json())
           .then((res) => {
             const p = res.data.find((x) => x.pid === pid);
             const list = document.getElementById("full-comment-list");
-            list.innerHTML = p.recent_comments
-              ? ""
-              : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments.</p>";
-            // Check if recent_comments exists to avoid errors
-            if (p.recent_comments) {
-              p.recent_comments.forEach((c) => {
-                list.innerHTML += `<div class="comment-item"><b>${getEliteName(
-                  c.user
-                )}</b><p>${linkify(c.text)}</p></div>`;
-              });
+            if (!p || !p.recent_comments || p.recent_comments.length === 0) {
+              list.innerHTML =
+                "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments yet.</p>";
+              return;
             }
-            openScreen("comment-view");
+            list.innerHTML = "";
+            p.recent_comments.forEach((c) => {
+              list.innerHTML += `<div class="comment-item"><b>${getEliteName(
+                c.user
+              )}</b><p>${linkify(c.text)}</p></div>`;
+            });
           });
       }
 
@@ -764,37 +741,24 @@
         });
         input.value = "";
         document.getElementById("comment-preview").innerHTML = "";
-        openScreen("home");
-        loadFeed();
+        document.getElementById("bg-loader").style.display = "none";
+        openComments(currentActivePost); // Refresh current post comments
       }
 
-      async function deletePost(pid, author) {
-        if (!confirm("Delete broadcast forever?")) return;
-        document.getElementById(`post-${pid}`).style.display = "none";
-        const isPowerful = currentRole === "Admin" || currentRole === "Owner";
-        if (isPowerful && author !== currentUser) {
-          await fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({
-              action: "dm",
-              uid: currentUser,
-              target: author,
-              message:
-                "*System Warning:* An admin has deleted your post. Please mind what you broadcast.",
-            }),
-          });
-        }
-        await fetch(SCRIPT_URL, {
+      // --- KEEP ALL OTHER LOGIC (Follow, DM, Auth, etc.) ---
+      async function doLike(pid, btn) {
+        if (!currentUser || likedPosts.includes(pid)) return;
+        likedPosts.push(pid);
+        localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
+        btn.classList.add("liked");
+        btn.querySelector("i").className = "fas fa-heart";
+        const count = btn.querySelector(".l-count");
+        count.innerText = parseInt(count.innerText) + 1;
+        fetch(SCRIPT_URL, {
           method: "POST",
-          body: JSON.stringify({
-            action: "delete_post",
-            pid: pid,
-            uid: currentUser,
-          }),
+          body: JSON.stringify({ action: "like", pid: pid, uid: currentUser }),
         });
       }
-
-      // REST OF CORE UTILITIES (ViewProfile, FetchStats, Upload, Auth, Nav)
       async function viewProfile(u) {
         if (u === currentUser) return openScreen("profile");
         viewTarget = u;
@@ -819,7 +783,6 @@
           : "Follow";
         await fetchStats(u, "user-profile-stats");
       }
-
       function checkUserStatus() {
         if (currentUser) {
           document.getElementById("login-view").style.display = "none";
@@ -843,7 +806,6 @@
             });
         }
       }
-
       async function fetchStats(uid, elementId) {
         const r = await fetch(
           `${SCRIPT_URL}?action=get_social_stats&uid=${uid}`
@@ -859,7 +821,6 @@
           }</span><span class="stat-label">Following</span></div>`;
         return res.data;
       }
-
       async function uploadToCatbox(fileInput, hiddenId, statusId) {
         const file = fileInput.files[0];
         if (!file) return;
@@ -882,7 +843,6 @@
           document.getElementById(statusId).innerText = "Failed ❌";
         }
       }
-
       async function updateProfileData() {
         const bio = document.getElementById("updateBio").value.trim();
         const pic = document.getElementById("updatePfpUrl").value.trim();
@@ -898,14 +858,12 @@
         });
         location.reload();
       }
-
       async function loadDMList() {
         const res = await fetch(`${SCRIPT_URL}?action=get_users`);
         const data = await res.json();
         allUsersData = data.data;
         filterUsers();
       }
-
       function filterUsers() {
         const query = document.getElementById("userSearch").value.toLowerCase();
         const container = document.getElementById("dm-list-container");
@@ -929,14 +887,12 @@
           .join("");
         localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
       }
-
       async function startChat(t) {
         viewTarget = t;
         openScreen("chat-view");
         document.getElementById("chat-target-name").innerHTML = getEliteName(t);
         loadDMs();
       }
-
       async function loadDMs() {
         const r = await fetch(
           `${SCRIPT_URL}?action=get_dms&uid=${currentUser}&target=${viewTarget}`
@@ -957,7 +913,6 @@
         document.getElementById("chat-messages").scrollTop =
           document.getElementById("chat-messages").scrollHeight;
       }
-
       async function sendDM() {
         const i = document.getElementById("msgInput");
         if (!i.value) return;
@@ -973,7 +928,6 @@
         i.value = "";
         loadDMs();
       }
-
       async function submitBroadcast() {
         const t = document.getElementById("postText").value;
         const m = document.getElementById("imageUrlInput").value;
@@ -989,24 +943,33 @@
         });
         location.reload();
       }
-
-      async function toggleFollow() {
-        const btn = document.getElementById("followBtn");
-        btn.disabled = true;
-        const res = await fetch(SCRIPT_URL, {
+      async function deletePost(pid, author) {
+        if (!confirm("Delete broadcast?")) return;
+        document.getElementById(`post-${pid}`).style.display = "none";
+        if (
+          (currentRole === "Admin" || currentRole === "Owner") &&
+          author !== currentUser
+        ) {
+          await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+              action: "dm",
+              uid: currentUser,
+              target: author,
+              message:
+                "*System Warning:* An admin has deleted your post. Please mind what you broadcast.",
+            }),
+          });
+        }
+        await fetch(SCRIPT_URL, {
           method: "POST",
           body: JSON.stringify({
-            action: "follow",
+            action: "delete_post",
+            pid: pid,
             uid: currentUser,
-            target: viewTarget,
           }),
         });
-        btn.innerText =
-          (await res.json()).data === "Followed" ? "Unfollow" : "Follow";
-        await fetchStats(viewTarget, "user-profile-stats");
-        btn.disabled = false;
       }
-
       function openScreen(id) {
         document
           .querySelectorAll(".screen")
@@ -1016,26 +979,46 @@
           .forEach((n) => n.classList.remove("active"));
         document.getElementById(id + "-screen").classList.add("active");
         document.getElementById("nav-" + id)?.classList.add("active");
-        document
-          .getElementById("mainFab")
-          .classList.toggle("visible", id === "home");
+        const fab = document.getElementById("mainFab");
+        fab.classList.toggle("visible", id === "home");
         if (id === "home") loadFeed();
         if (id === "dm") loadDMList();
         if (id === "profile") checkUserStatus();
       }
-
+      async function userAuth(mode) {
+        let payload = {
+          action: mode,
+          username: document.getElementById(
+            mode === "login" ? "logUser" : "sigUser"
+          ).value,
+          password: document.getElementById(
+            mode === "login" ? "logPass" : "sigPass"
+          ).value,
+        };
+        if (mode === "signup") {
+          payload.email = document.getElementById("sigEmail").value;
+          payload.pic = document.getElementById("sigPfp").value;
+        }
+        const r = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        const res = await r.json();
+        if (res.status === "Success") {
+          localStorage.setItem("hx_comm_user", res.data.username);
+          localStorage.setItem(
+            "hx_comm_role",
+            (res.data.role || "User").trim()
+          );
+          location.reload();
+        } else alert(res.data);
+      }
       function logout() {
         localStorage.clear();
         location.reload();
       }
       function handleFab() {
         currentUser ? openScreen("compose") : openScreen("profile");
-      }
-      function toggleAuthView(v) {
-        document.getElementById("login-view").style.display =
-          v === "login" ? "block" : "none";
-        document.getElementById("signup-view").style.display =
-          v === "signup" ? "block" : "none";
       }
       function sharePost(pid) {
         const url = `${window.location.origin}${window.location.pathname}?post=${pid}`;
