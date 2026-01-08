@@ -22,6 +22,8 @@
         --primary: #38bdf8;
         --error: #ef4444;
         --success: #22c55e;
+        --admin: #3b82f6;
+        --owner: #ef4444;
       }
       * {
         box-sizing: border-box;
@@ -197,6 +199,10 @@
         background: transparent;
         border: 1px solid var(--primary);
         color: var(--primary);
+      }
+      .hx-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
       .hx-input {
         width: 100%;
@@ -569,13 +575,24 @@
 
     <script>
       const SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbwFLdZch3piPyZQI3wXx_egiv6J0gztXtYECfyoeuCQ0CKOnrwYU4e1b4DudzTsyUUasA/exec";
+        "https://script.google.com/macros/s/AKfycby_XMBGnauA-2fm7b8K96rLUJIpHgeV3VZ_I_mkynLo0vWnVUEdaz-nvwq72ZomydT7SA/exec";
       let currentUser = localStorage.getItem("hx_comm_user");
+      let currentRole = localStorage.getItem("hx_comm_role") || "User";
+      let userRolesCache = JSON.parse(
+        localStorage.getItem("hx_roles_cache") || "{}"
+      );
       let likedPosts = JSON.parse(
         localStorage.getItem("hx_comm_liked") || "[]"
       );
       let viewTarget = "";
       let currentActivePost = "";
+
+      function getRoleColor(username) {
+        const role = userRolesCache[username?.toLowerCase()] || "User";
+        if (role === "Owner") return "var(--owner)";
+        if (role === "Admin") return "var(--admin)";
+        return "#fff";
+      }
 
       function linkify(text) {
         if (!text) return "";
@@ -591,14 +608,16 @@
           .replace(/~(.*?)~/g, "<strike>$1</strike>")
           .replace(
             /@(\w+)/g,
-            '<span class="hx-username-link" style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="viewProfile(\'$1\')">@$1</span>'
+            (match, u) =>
+              `<span style="color:${getRoleColor(
+                u
+              )}; font-weight:bold; cursor:pointer;" onclick="viewProfile('${u}')">@${u}</span>`
           );
       }
 
       function updatePreview(inputId, previewId) {
         const val = document.getElementById(inputId).value;
-        document.getElementById(previewId).innerHTML =
-          linkify(val) || "No text yet...";
+        document.getElementById(previewId).innerHTML = linkify(val) || "...";
       }
 
       function openScreen(id) {
@@ -647,7 +666,10 @@
         const container = document.getElementById("feed-container");
         container.innerHTML = "";
         res.data.forEach((p) => {
+          userRolesCache[p.author.toLowerCase()] = p.role;
           const isOwner = p.author === currentUser;
+          const isAdminTier =
+            currentRole === "Admin" || currentRole === "Owner";
           const isLiked = likedPosts.includes(p.pid);
           const card = document.createElement("div");
           card.className = "hx-card";
@@ -661,8 +683,8 @@
                   p.author
                 }')"></i>
                 ${
-                  isOwner
-                    ? `<i class="fas fa-trash hx-util-btn" style="color:var(--error)" onclick="deletePost('${p.pid}')"></i>`
+                  isOwner || isAdminTier
+                    ? `<i class="fas fa-trash hx-util-btn" style="color:var(--error)" onclick="deletePost('${p.pid}', '${p.author}')"></i>`
                     : ""
                 }
             </div>
@@ -670,7 +692,7 @@
                 <img src="${
                   p.pic || "https://ui-avatars.com/api/?name=" + p.author
                 }" class="hx-pfp">
-                <b>@${p.author}</b>
+                <b style="color:${getRoleColor(p.author)}">@${p.author}</b>
             </div>
             <div style="white-space:pre-wrap;">${linkify(p.content)}</div>
             ${p.media ? `<img src="${p.media}" class="hx-media">` : ""}
@@ -688,6 +710,38 @@
             </div>`;
           container.appendChild(card);
         });
+        localStorage.setItem("hx_roles_cache", JSON.stringify(userRolesCache));
+      }
+
+      async function deletePost(pid, author) {
+        if (!confirm("Delete forever?")) return;
+        document.getElementById(`post-${pid}`).style.display = "none";
+
+        // Auto-Warning if Admin/Owner deletes someone else's post
+        if (
+          (currentRole === "Admin" || currentRole === "Owner") &&
+          author !== currentUser
+        ) {
+          await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+              action: "dm",
+              uid: currentUser,
+              target: author,
+              message:
+                "*System Warning:* An admin has deleted your post. Please mind what you broadcast to the community.",
+            }),
+          });
+        }
+
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "delete_post",
+            pid: pid,
+            uid: currentUser,
+          }),
+        });
       }
 
       function sharePost(pid) {
@@ -704,24 +758,11 @@
         likedPosts.push(pid);
         localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
         btn.classList.add("liked");
-        const count = btn.querySelector(".l-count");
-        count.innerText = parseInt(count.innerText) + 1;
+        btn.querySelector(".l-count").innerText =
+          parseInt(btn.querySelector(".l-count").innerText) + 1;
         fetch(SCRIPT_URL, {
           method: "POST",
           body: JSON.stringify({ action: "like", pid: pid, uid: currentUser }),
-        });
-      }
-
-      async function deletePost(pid) {
-        if (!confirm("Delete forever?")) return;
-        document.getElementById(`post-${pid}`).style.display = "none";
-        fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "delete_post",
-            pid: pid,
-            uid: currentUser,
-          }),
         });
       }
 
@@ -731,7 +772,8 @@
         );
         const now = Date.now();
         const last7Days = updates.filter((t) => now - t < 7 * 86400000);
-        if (last7Days.length >= 2) return alert("Limit reached: 2 per week.");
+        if (last7Days.length >= 2)
+          return alert("Limit reached: 2 updates per week.");
         const bio = document.getElementById("updateBio").value.trim();
         const pic = document.getElementById("updatePfpUrl").value.trim();
         document.getElementById("bg-loader").style.display = "block";
@@ -744,7 +786,8 @@
             bio: bio,
           }),
         });
-        if ((await res.json()).status === "Success") {
+        const data = await res.json();
+        if (data.status === "Success") {
           last7Days.push(now);
           localStorage.setItem(
             `updates_${currentUser}`,
@@ -774,6 +817,7 @@
         const data = await res.json();
         if (data.status === "Success") {
           localStorage.setItem("hx_comm_user", data.data.username);
+          localStorage.setItem("hx_comm_role", data.data.role || "User");
           location.reload();
         } else alert(data.data);
       }
@@ -783,6 +827,8 @@
           document.getElementById("login-view").style.display = "none";
           document.getElementById("profile-box").style.display = "block";
           document.getElementById("nameDisplay").innerText = "@" + currentUser;
+          document.getElementById("nameDisplay").style.color =
+            getRoleColor(currentUser);
           fetchStats(currentUser, "my-stats");
           fetch(`${SCRIPT_URL}?action=get_user_data&uid=${currentUser}`)
             .then((r) => r.json())
@@ -793,6 +839,8 @@
               document.getElementById("bioDisplay").innerText =
                 res.data.bio || "No bio yet.";
               document.getElementById("updateBio").value = res.data.bio || "";
+              currentRole = res.data.role || "User";
+              localStorage.setItem("hx_comm_role", currentRole);
             });
         }
       }
@@ -816,6 +864,7 @@
         viewTarget = u;
         openScreen("user-profile");
         document.getElementById("view-name").innerText = "@" + u;
+        document.getElementById("view-name").style.color = getRoleColor(u);
         const followBtn = document.getElementById("followBtn");
         followBtn.innerText = "...";
         fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
@@ -825,10 +874,16 @@
               res.data.pic || `https://ui-avatars.com/api/?name=${u}`;
             document.getElementById("view-bio").innerText =
               res.data.bio || "No bio.";
+            userRolesCache[u.toLowerCase()] = res.data.role;
+            localStorage.setItem(
+              "hx_roles_cache",
+              JSON.stringify(userRolesCache)
+            );
           });
         const mySocial = await fetchStats(currentUser, null);
-        const followingList = mySocial.followingList || [];
-        followBtn.innerText = followingList.includes(viewTarget)
+        followBtn.innerText = (mySocial.followingList || []).includes(
+          viewTarget
+        )
           ? "Unfollow"
           : "Follow";
         await fetchStats(u, "user-profile-stats");
@@ -856,23 +911,28 @@
         const data = await res.json();
         document.getElementById("dm-list-container").innerHTML = data.data
           .filter((u) => u.username !== currentUser)
-          .map(
-            (u) =>
-              `<div class="hx-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="startChat('${
-                u.username
-              }')"><img src="${
+          .map((u) => {
+            userRolesCache[u.username.toLowerCase()] = u.role;
+            return `<div class="hx-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="startChat('${
+              u.username
+            }')">
+              <img src="${
                 u.pic || "https://ui-avatars.com/api/?name=" + u.username
-              }" class="hx-pfp" style="width:35px; height:35px;"><b>@${
-                u.username
-              }</b></div>`
-          )
+              }" class="hx-pfp" style="width:35px; height:35px;">
+              <b style="color:${getRoleColor(u.username)}">@${
+              u.username
+            }</b></div>`;
+          })
           .join("");
+        localStorage.setItem("hx_roles_cache", JSON.stringify(userRolesCache));
       }
 
       async function startChat(t) {
         viewTarget = t;
         openScreen("chat-view");
         document.getElementById("chat-target-name").innerText = "@" + t;
+        document.getElementById("chat-target-name").style.color =
+          getRoleColor(t);
         loadDMs();
       }
       async function loadDMs() {
@@ -923,9 +983,9 @@
               ? ""
               : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments.</p>";
             post.recent_comments.forEach((c) => {
-              list.innerHTML += `<div class="comment-item"><b>@${
+              list.innerHTML += `<div class="comment-item"><b style="color:${getRoleColor(
                 c.user
-              }</b><p>${linkify(c.text)}</p></div>`;
+              )}">@${c.user}</b><p>${linkify(c.text)}</p></div>`;
             });
             openScreen("comment-view");
           });
@@ -969,6 +1029,7 @@
       }
       function logout() {
         localStorage.removeItem("hx_comm_user");
+        localStorage.removeItem("hx_comm_role");
         location.reload();
       }
       function toggleAuthView(v) {
