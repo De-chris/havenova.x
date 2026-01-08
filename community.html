@@ -198,10 +198,6 @@
         border: 1px solid var(--primary);
         color: var(--primary);
       }
-      .hx-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
       .hx-input {
         width: 100%;
         background: #0f172a;
@@ -246,12 +242,24 @@
         z-index: 2000;
         display: none;
       }
-      .upload-status {
-        font-size: 11px;
-        color: var(--success);
+      .live-preview {
+        background: rgba(56, 189, 248, 0.05);
+        border: 1px dashed var(--primary);
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        font-size: 14px;
+        min-height: 20px;
+        color: #e2e8f0;
+        white-space: pre-wrap;
+      }
+      .preview-label {
+        font-size: 10px;
+        color: var(--primary);
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 4px;
         display: block;
-        margin-bottom: 5px;
-        text-align: center;
       }
     </style>
   </head>
@@ -334,6 +342,8 @@
           border-top: 1px solid var(--border);
         "
       >
+        <span class="preview-label">Comment Preview:</span>
+        <div id="comment-preview" class="live-preview"></div>
         <div style="display: flex; gap: 8px; max-width: 600px; margin: 0 auto">
           <input
             type="text"
@@ -341,6 +351,7 @@
             class="hx-input"
             style="margin: 0"
             placeholder="Write a comment..."
+            oninput="updatePreview('active-comment-input', 'comment-preview')"
           />
           <button class="hx-btn" style="width: 70px" onclick="sendComment()">
             Post
@@ -354,9 +365,12 @@
       <textarea
         id="postText"
         class="hx-input"
-        style="height: 150px; margin-top: 15px"
+        style="height: 120px; margin-top: 15px"
         placeholder="What's happening?"
+        oninput="updatePreview('postText', 'post-preview')"
       ></textarea>
+      <span class="preview-label">Live Preview:</span>
+      <div id="post-preview" class="live-preview"></div>
       <input
         type="file"
         id="postFile"
@@ -563,6 +577,30 @@
       let viewTarget = "";
       let currentActivePost = "";
 
+      function linkify(text) {
+        if (!text) return "";
+        const urlPattern =
+          /(\b(https?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
+        return text
+          .replace(
+            urlPattern,
+            '<a href="$1" target="_blank" class="hx-link" style="color:var(--primary);">$1</a>'
+          )
+          .replace(/\*(.*?)\*/g, "<b>$1</b>")
+          .replace(/_(.*?)_/g, "<i>$1</i>")
+          .replace(/~(.*?)~/g, "<strike>$1</strike>")
+          .replace(
+            /@(\w+)/g,
+            '<span class="hx-username-link" style="color:var(--primary); font-weight:bold; cursor:pointer;" onclick="viewProfile(\'$1\')">@$1</span>'
+          );
+      }
+
+      function updatePreview(inputId, previewId) {
+        const val = document.getElementById(inputId).value;
+        document.getElementById(previewId).innerHTML =
+          linkify(val) || "No text yet...";
+      }
+
       function openScreen(id) {
         document
           .querySelectorAll(".screen")
@@ -572,8 +610,9 @@
           .forEach((n) => n.classList.remove("active"));
         document.getElementById(id + "-screen").classList.add("active");
         document.getElementById("nav-" + id)?.classList.add("active");
-        const fab = document.getElementById("mainFab");
-        fab.classList.toggle("visible", id === "home");
+        document
+          .getElementById("mainFab")
+          .classList.toggle("visible", id === "home");
         if (id === "home") loadFeed();
         if (id === "dm") loadDMList();
         if (id === "profile") checkUserStatus();
@@ -633,14 +672,16 @@
                 }" class="hx-pfp">
                 <b>@${p.author}</b>
             </div>
-            <div style="white-space:pre-wrap;">${p.content}</div>
+            <div style="white-space:pre-wrap;">${linkify(p.content)}</div>
             ${p.media ? `<img src="${p.media}" class="hx-media">` : ""}
             <div style="margin-top:15px; display:flex; gap:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
                 <span class="hx-action ${
                   isLiked ? "liked" : ""
-                }" onclick="doLike('${p.pid}', this)"><i class="${
-            isLiked ? "fas" : "far"
-          } fa-heart"></i> <span class="l-count">${p.likes}</span></span>
+                }" onclick="doLike('${
+            p.pid
+          }', this)"><i class="fas fa-heart"></i> <span class="l-count">${
+            p.likes
+          }</span></span>
                 <span class="hx-action" onclick="openComments('${
                   p.pid
                 }')"><i class="far fa-comment"></i> ${p.comment_count}</span>
@@ -663,7 +704,6 @@
         likedPosts.push(pid);
         localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
         btn.classList.add("liked");
-        btn.querySelector("i").className = "fas fa-heart";
         const count = btn.querySelector(".l-count");
         count.innerText = parseInt(count.innerText) + 1;
         fetch(SCRIPT_URL, {
@@ -691,8 +731,7 @@
         );
         const now = Date.now();
         const last7Days = updates.filter((t) => now - t < 7 * 86400000);
-        if (last7Days.length >= 2) return alert("Limit: 2 updates per week.");
-
+        if (last7Days.length >= 2) return alert("Limit reached: 2 per week.");
         const bio = document.getElementById("updateBio").value.trim();
         const pic = document.getElementById("updatePfpUrl").value.trim();
         document.getElementById("bg-loader").style.display = "block";
@@ -705,14 +744,12 @@
             bio: bio,
           }),
         });
-        const data = await res.json();
-        if (data.status === "Success") {
+        if ((await res.json()).status === "Success") {
           last7Days.push(now);
           localStorage.setItem(
             `updates_${currentUser}`,
             JSON.stringify(last7Days)
           );
-          alert("Updated!");
           location.reload();
         }
       }
@@ -769,9 +806,7 @@
         const fing = res.data.following || 0;
         const container = document.getElementById(elementId);
         if (container) {
-          container.innerHTML = `
-            <div class="stat-card"><span class="stat-num">${fers}</span>Followers</div>
-            <div class="stat-card"><span class="stat-num">${fing}</span>Following</div>`;
+          container.innerHTML = `<div class="stat-card"><span class="stat-num">${fers}</span>Followers</div><div class="stat-card"><span class="stat-num">${fing}</span>Following</div>`;
         }
         return res.data;
       }
@@ -783,8 +818,6 @@
         document.getElementById("view-name").innerText = "@" + u;
         const followBtn = document.getElementById("followBtn");
         followBtn.innerText = "...";
-
-        // Fetch target bio/pfp
         fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
           .then((r) => r.json())
           .then((res) => {
@@ -793,16 +826,11 @@
             document.getElementById("view-bio").innerText =
               res.data.bio || "No bio.";
           });
-
-        // Relationship Check: Load MY social list to see if I follow this person
         const mySocial = await fetchStats(currentUser, null);
         const followingList = mySocial.followingList || [];
-
         followBtn.innerText = followingList.includes(viewTarget)
           ? "Unfollow"
           : "Follow";
-
-        // Update target's counts
         await fetchStats(u, "user-profile-stats");
       }
 
@@ -817,8 +845,8 @@
             target: viewTarget,
           }),
         });
-        const data = await res.json();
-        btn.innerText = data.data === "Followed" ? "Unfollow" : "Follow";
+        btn.innerText =
+          (await res.json()).data === "Followed" ? "Unfollow" : "Follow";
         await fetchStats(viewTarget, "user-profile-stats");
         btn.disabled = false;
       }
@@ -859,13 +887,13 @@
                 m[0] == currentUser ? "right" : "left"
               }; margin-bottom:10px;"><div style="display:inline-block; padding:8px 12px; border-radius:12px; background:${
                 m[0] == currentUser ? "var(--primary)" : "var(--card)"
-              }; color:${m[0] == currentUser ? "#000" : "#fff"}">${
+              }; color:${m[0] == currentUser ? "#000" : "#fff"}">${linkify(
                 m[2]
-              }</div></div>`
+              )}</div></div>`
           )
           .join("");
-        const msgBox = document.getElementById("chat-messages");
-        msgBox.scrollTop = msgBox.scrollHeight;
+        document.getElementById("chat-messages").scrollTop =
+          document.getElementById("chat-messages").scrollHeight;
       }
 
       async function sendDM() {
@@ -882,6 +910,42 @@
         });
         i.value = "";
         loadDMs();
+      }
+
+      function openComments(pid) {
+        currentActivePost = pid;
+        fetch(`${SCRIPT_URL}?action=get_feed`)
+          .then((r) => r.json())
+          .then((res) => {
+            const post = res.data.find((x) => x.pid === pid);
+            const list = document.getElementById("full-comment-list");
+            list.innerHTML = post.recent_comments.length
+              ? ""
+              : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments.</p>";
+            post.recent_comments.forEach((c) => {
+              list.innerHTML += `<div class="comment-item"><b>@${
+                c.user
+              }</b><p>${linkify(c.text)}</p></div>`;
+            });
+            openScreen("comment-view");
+          });
+      }
+
+      async function sendComment() {
+        const input = document.getElementById("active-comment-input");
+        if (!input.value) return;
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "comment",
+            pid: currentActivePost,
+            uid: currentUser,
+            content: input.value,
+          }),
+        });
+        input.value = "";
+        document.getElementById("comment-preview").innerHTML = "";
+        openScreen("home");
       }
 
       async function submitBroadcast() {
@@ -902,9 +966,6 @@
 
       function handleFab() {
         currentUser ? openScreen("compose") : openScreen("profile");
-      }
-      function wakeFab() {
-        document.getElementById("mainFab").classList.add("visible");
       }
       function logout() {
         localStorage.removeItem("hx_comm_user");
