@@ -40,7 +40,6 @@
         scroll-behavior: smooth;
       }
 
-      /* ELITE NAME STYLES */
       .name-owner {
         color: var(--owner) !important;
         text-shadow: 0 0 10px rgba(248, 113, 113, 0.4);
@@ -101,7 +100,6 @@
         height: 22px;
         cursor: pointer;
       }
-
       .fab {
         position: fixed;
         bottom: 90px;
@@ -163,7 +161,6 @@
         object-fit: cover;
       }
 
-      /* RESTORED STATS STYLING */
       .stats-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -202,6 +199,23 @@
         color: var(--muted);
         font-size: 15px;
         cursor: pointer;
+      }
+
+      .hx-action {
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-right: 20px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .hx-action.liked {
+        color: var(--error) !important;
+      }
+      .hx-action.liked i {
+        color: var(--error) !important;
+        font-weight: 900;
       }
 
       .hx-btn {
@@ -259,7 +273,7 @@
         border: 1px dashed var(--border);
         padding: 10px;
         border-radius: 10px;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
         font-size: 14px;
         color: #94a3b8;
         white-space: pre-wrap;
@@ -593,13 +607,14 @@
 
     <script>
       const SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycby_XMBGnauA-2fm7b8K96rLUJIpHgeV3VZ_I_mkynLo0vWnVUEdaz-nvwq72ZomydT7SA/exec";
+        "https://script.google.com/macros/s/AKfycbxUbeOpwL9iEwqU6AfKKVrLOaT_UcvRm_XjIXRbMq3daFMphQw87ybSc6ZYvhCD-8kavQ/exec";
       let currentUser = localStorage.getItem("hx_comm_user");
       let currentRole = localStorage.getItem("hx_comm_role") || "User";
       let likedPosts = JSON.parse(
         localStorage.getItem("hx_comm_liked") || "[]"
       );
       let viewTarget = "";
+      let currentActivePost = "";
       let roleCache = JSON.parse(
         localStorage.getItem("hx_roles_cache") || "{}"
       );
@@ -649,6 +664,7 @@
         res.data.forEach((p) => {
           roleCache[p.author.toLowerCase()] = p.role;
           const hasPower = currentRole === "Admin" || currentRole === "Owner";
+          const isLiked = likedPosts.includes(p.pid);
           const card = document.createElement("div");
           card.className = "hx-card";
           card.id = `post-${p.pid}`;
@@ -678,12 +694,12 @@
             ${p.media ? `<img src="${p.media}" class="hx-media">` : ""}
             <div style="margin-top:15px; display:flex; gap:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
                 <span class="hx-action ${
-                  likedPosts.includes(p.pid) ? "liked" : ""
-                }" onclick="doLike('${
-            p.pid
-          }', this)"><i class="fas fa-heart"></i> <span class="l-count">${
-            p.likes
-          }</span></span>
+                  isLiked ? "liked" : ""
+                }" onclick="doLike('${p.pid}', this)">
+                    <i class="${
+                      isLiked ? "fas" : "far"
+                    } fa-heart"></i> <span class="l-count">${p.likes}</span>
+                </span>
                 <span class="hx-action" onclick="openComments('${
                   p.pid
                 }')"><i class="far fa-comment"></i> ${p.comment_count}</span>
@@ -691,6 +707,46 @@
           container.appendChild(card);
         });
         localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
+      }
+
+      async function doLike(pid, btn) {
+        if (!currentUser || likedPosts.includes(pid)) return;
+        likedPosts.push(pid);
+        localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
+        btn.classList.add("liked");
+        btn.querySelector("i").className = "fas fa-heart";
+        const count = btn.querySelector(".l-count");
+        count.innerText = parseInt(count.innerText) + 1;
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "like", pid: pid, uid: currentUser }),
+        });
+      }
+
+      async function deletePost(pid, author) {
+        if (!confirm("Delete broadcast forever?")) return;
+        document.getElementById(`post-${pid}`).style.display = "none";
+        const isPowerful = currentRole === "Admin" || currentRole === "Owner";
+        if (isPowerful && author !== currentUser) {
+          await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+              action: "dm",
+              uid: currentUser,
+              target: author,
+              message:
+                "*System Warning:* An admin has deleted your post. Please mind what you broadcast.",
+            }),
+          });
+        }
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "delete_post",
+            pid: pid,
+            uid: currentUser,
+          }),
+        });
       }
 
       function buildStatHTML(data) {
@@ -726,7 +782,7 @@
         ).includes(viewTarget)
           ? "Unfollow"
           : "Follow";
-        const targetStats = await fetchStats(u, "user-profile-stats");
+        await fetchStats(u, "user-profile-stats");
       }
 
       function checkUserStatus() {
@@ -841,6 +897,7 @@
         document.getElementById("chat-target-name").innerHTML = getEliteName(t);
         loadDMs();
       }
+
       async function loadDMs() {
         const r = await fetch(
           `${SCRIPT_URL}?action=get_dms&uid=${currentUser}&target=${viewTarget}`
@@ -944,36 +1001,6 @@
         if (id === "home") loadFeed();
         if (id === "dm") loadDMList();
         if (id === "profile") checkUserStatus();
-      }
-
-      async function doLike(pid, btn) {
-        if (!currentUser || likedPosts.includes(pid)) return;
-        likedPosts.push(pid);
-        localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
-        btn.classList.add("liked");
-        btn.querySelector(".l-count").innerText =
-          parseInt(btn.querySelector(".l-count").innerText) + 1;
-        fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "like", pid: pid, uid: currentUser }),
-        });
-      }
-
-      async function toggleFollow() {
-        const btn = document.getElementById("followBtn");
-        btn.disabled = true;
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "follow",
-            uid: currentUser,
-            target: viewTarget,
-          }),
-        });
-        btn.innerText =
-          (await res.json()).data === "Followed" ? "Unfollow" : "Follow";
-        await fetchStats(viewTarget, "user-profile-stats");
-        btn.disabled = false;
       }
 
       function logout() {
