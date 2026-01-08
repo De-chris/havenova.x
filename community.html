@@ -199,10 +199,6 @@
         border: 1px solid var(--primary);
         color: var(--primary);
       }
-      .hx-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
       .hx-input {
         width: 100%;
         background: #0f172a;
@@ -545,7 +541,6 @@
         localStorage.getItem("hx_comm_liked") || "[]"
       );
       let viewTarget = "";
-      let currentActivePost = "";
       let roleCache = JSON.parse(localStorage.getItem("hx_roles") || "{}");
       let allUsersData = [];
 
@@ -588,7 +583,7 @@
         const container = document.getElementById("feed-container");
         container.innerHTML = "";
         res.data.forEach((p) => {
-          roleCache[p.author.toLowerCase()] = p.role; // SYNC ROLE
+          roleCache[p.author.toLowerCase()] = p.role; // DB ROLE SYNC
           const hasPower = currentRole === "Admin" || currentRole === "Owner";
           const card = document.createElement("div");
           card.className = "hx-card";
@@ -646,7 +641,7 @@
               uid: currentUser,
               target: author,
               message:
-                "*System Warning:* An admin has deleted your post. Please mind what you broadcast.",
+                "*System Warning:* An admin has deleted your post. Please mind what you broadcast to the community.",
             }),
           });
         }
@@ -663,13 +658,15 @@
       async function userAuth(mode) {
         let payload = {
           action: mode,
-          username: document.getElementById("logUser").value,
-          password: document.getElementById("logPass").value,
+          username: document.getElementById(
+            mode === "login" ? "logUser" : "sigUser"
+          ).value,
+          password: document.getElementById(
+            mode === "login" ? "logPass" : "sigPass"
+          ).value,
         };
         if (mode === "signup") {
-          payload.username = document.getElementById("sigUser").value;
           payload.email = document.getElementById("sigEmail").value;
-          payload.password = document.getElementById("sigPass").value;
           payload.pic = document.getElementById("sigPfp").value;
         }
         const r = await fetch(SCRIPT_URL, {
@@ -701,6 +698,8 @@
               document.getElementById("updateBio").value = res.data.bio || "";
               currentRole = res.data.role;
               localStorage.setItem("hx_comm_role", res.data.role);
+              roleCache[currentUser.toLowerCase()] = res.data.role; // FORCE REFRESH ROLE
+              localStorage.setItem("hx_roles", JSON.stringify(roleCache));
               document.getElementById("nameDisplay").style.color =
                 getRoleColor(currentUser);
             });
@@ -744,7 +743,6 @@
         viewTarget = u;
         openScreen("user-profile");
         document.getElementById("view-name").innerText = "@" + u;
-        document.getElementById("view-name").style.color = getRoleColor(u);
         fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
           .then((r) => r.json())
           .then((res) => {
@@ -752,7 +750,7 @@
               res.data.pic || `https://ui-avatars.com/api/?name=${u}`;
             document.getElementById("view-bio").innerText =
               res.data.bio || "No bio.";
-            roleCache[u.toLowerCase()] = res.data.role;
+            roleCache[u.toLowerCase()] = res.data.role; // SYNC TARGET ROLE
             localStorage.setItem("hx_roles", JSON.stringify(roleCache));
             document.getElementById("view-name").style.color = getRoleColor(u);
           });
@@ -765,7 +763,6 @@
         await fetchStats(u, "user-profile-stats");
       }
 
-      // -- REMAINING HELPER FUNCTIONS --
       async function uploadToCatbox(fileInput, hiddenId, statusId) {
         const file = fileInput.files[0];
         if (!file) return;
@@ -786,6 +783,7 @@
           document.getElementById(statusId).innerText = "Failed ❌";
         }
       }
+
       function openScreen(id) {
         document
           .querySelectorAll(".screen")
@@ -802,6 +800,7 @@
         if (id === "dm") loadDMList();
         if (id === "profile") checkUserStatus();
       }
+
       async function fetchStats(uid, elementId) {
         const r = await fetch(
           `${SCRIPT_URL}?action=get_social_stats&uid=${uid}`
@@ -817,6 +816,7 @@
           }</span>Following</div>`;
         return res.data;
       }
+
       async function toggleFollow() {
         const btn = document.getElementById("followBtn");
         btn.disabled = true;
@@ -833,6 +833,7 @@
         await fetchStats(viewTarget, "user-profile-stats");
         btn.disabled = false;
       }
+
       async function startChat(t) {
         viewTarget = t;
         openScreen("chat-view");
@@ -861,6 +862,7 @@
         document.getElementById("chat-messages").scrollTop =
           document.getElementById("chat-messages").scrollHeight;
       }
+
       async function sendDM() {
         const i = document.getElementById("msgInput");
         if (!i.value) return;
@@ -876,8 +878,8 @@
         i.value = "";
         loadDMs();
       }
+
       function openComments(pid) {
-        currentActivePost = pid;
         fetch(`${SCRIPT_URL}?action=get_feed`)
           .then((r) => r.json())
           .then((res) => {
@@ -894,6 +896,7 @@
             openScreen("comment-view");
           });
       }
+
       async function sendComment() {
         const input = document.getElementById("active-comment-input");
         if (!input.value) return;
@@ -909,6 +912,7 @@
         input.value = "";
         openScreen("home");
       }
+
       async function submitBroadcast() {
         const t = document.getElementById("postText").value;
         const m = document.getElementById("imageUrlInput").value;
@@ -924,6 +928,7 @@
         });
         location.reload();
       }
+
       async function updateProfileData() {
         const bio = document.getElementById("updateBio").value.trim();
         await fetch(SCRIPT_URL, {
@@ -936,9 +941,7 @@
         });
         location.reload();
       }
-      function handleFab() {
-        currentUser ? openScreen("compose") : openScreen("profile");
-      }
+
       function logout() {
         localStorage.clear();
         location.reload();
@@ -948,6 +951,9 @@
           v === "login" ? "block" : "none";
         document.getElementById("signup-view").style.display =
           v === "signup" ? "block" : "none";
+      }
+      function handleFab() {
+        currentUser ? openScreen("compose") : openScreen("profile");
       }
       function sharePost(pid) {
         const url = `${window.location.origin}${window.location.pathname}?post=${pid}`;
