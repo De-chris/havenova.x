@@ -124,7 +124,6 @@
         justify-content: center;
         color: #000;
         font-weight: bold;
-        overflow: hidden;
         border: 1px solid var(--border);
         object-fit: cover;
       }
@@ -135,7 +134,6 @@
         border: 1px solid var(--border);
         max-height: 400px;
         object-fit: cover;
-        background: #000;
       }
       .hx-action {
         cursor: pointer;
@@ -233,6 +231,17 @@
       .nav-item.active {
         color: var(--primary);
       }
+      .live-preview {
+        background: rgba(56, 189, 248, 0.05);
+        border: 1px dashed var(--primary);
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        font-size: 14px;
+        color: #e2e8f0;
+        white-space: pre-wrap;
+        min-height: 40px;
+      }
       #bg-loader {
         position: fixed;
         top: 65px;
@@ -247,21 +256,12 @@
         z-index: 2000;
         display: none;
       }
-      .live-preview {
-        background: rgba(56, 189, 248, 0.05);
-        border: 1px dashed var(--primary);
-        padding: 10px;
-        border-radius: 10px;
-        margin-bottom: 15px;
-        font-size: 14px;
-        min-height: 20px;
-        color: #e2e8f0;
-        white-space: pre-wrap;
-      }
     </style>
   </head>
   <body>
-    <div id="bg-loader">SYNCING...</div>
+    <div id="bg-loader">
+      <i class="fas fa-satellite-dish fa-spin"></i> SYNCING...
+    </div>
 
     <header>
       <img src="logo1.png" class="logo" onclick="openScreen('home')" />
@@ -475,7 +475,7 @@
         <h2 id="nameDisplay">@User</h2>
         <p
           id="bioDisplay"
-          style="color: var(--muted); font-size: 13px; margin-bottom: 10px"
+          style="color: var(--muted); font-size: 13px; margin: 10px 0"
         ></p>
         <div id="my-stats" class="stats-grid"></div>
         <div style="border-top: 1px solid var(--border); padding-top: 15px">
@@ -538,7 +538,7 @@
 
     <script>
       const SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycby_XMBGnauA-2fm7b8K96rLUJIpHgeV3VZ_I_mkynLo0vWnVUEdaz-nvwq72ZomydT7SA/exec";
+        "https://script.google.com/macros/s/AKfycbwUbeOpwL9iEwqU6AfKKVrLOaT_UcvRm_XjIXRbMq3daFMphQw87ybSc6ZYvhCD-8kavQ/exec";
       let currentUser = localStorage.getItem("hx_comm_user");
       let currentRole = localStorage.getItem("hx_comm_role") || "User";
       let likedPosts = JSON.parse(
@@ -546,7 +546,9 @@
       );
       let viewTarget = "";
       let currentActivePost = "";
-      let roleCache = JSON.parse(localStorage.getItem("hx_roles") || "{}");
+      let roleCache = JSON.parse(
+        localStorage.getItem("hx_roles_cache") || "{}"
+      );
       let allUsersData = [];
 
       function getRoleColor(username) {
@@ -570,7 +572,7 @@
           .replace(/~(.*?)~/g, "<strike>$1</strike>")
           .replace(
             /@(\w+)/g,
-            (match, u) =>
+            (m, u) =>
               `<span style="color:${getRoleColor(
                 u
               )}; font-weight:bold; cursor:pointer;" onclick="viewProfile('${u}')">@${u}</span>`
@@ -588,7 +590,7 @@
         const container = document.getElementById("feed-container");
         container.innerHTML = "";
         res.data.forEach((p) => {
-          roleCache[p.author.toLowerCase()] = p.role; // SYNC ROLE
+          roleCache[p.author.toLowerCase()] = p.role;
           const hasPower = currentRole === "Admin" || currentRole === "Owner";
           const card = document.createElement("div");
           card.className = "hx-card";
@@ -629,11 +631,11 @@
             </div>`;
           container.appendChild(card);
         });
-        localStorage.setItem("hx_roles", JSON.stringify(roleCache));
+        localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
       }
 
       async function deletePost(pid, author) {
-        if (!confirm("Delete broadcast?")) return;
+        if (!confirm("Delete forever?")) return;
         document.getElementById(`post-${pid}`).style.display = "none";
         if (
           (currentRole === "Admin" || currentRole === "Owner") &&
@@ -650,7 +652,7 @@
             }),
           });
         }
-        fetch(SCRIPT_URL, {
+        await fetch(SCRIPT_URL, {
           method: "POST",
           body: JSON.stringify({
             action: "delete_post",
@@ -707,6 +709,86 @@
         }
       }
 
+      async function uploadToCatbox(fileInput, hiddenId, statusId) {
+        const file = fileInput.files[0];
+        if (!file) return;
+        document.getElementById(statusId).innerText = "Syncing...";
+        const fd = new FormData();
+        fd.append("reqtype", "fileupload");
+        fd.append("fileToUpload", file);
+        try {
+          const r = await fetch(
+            "https://corsproxy.io/?" +
+              encodeURIComponent("https://catbox.moe/user/api.php"),
+            { method: "POST", body: fd }
+          );
+          const url = await r.text();
+          document.getElementById(hiddenId).value = url.trim();
+          document.getElementById(statusId).innerText = "Linked! ✅";
+        } catch (e) {
+          document.getElementById(statusId).innerText = "Failed ❌";
+        }
+      }
+
+      async function fetchStats(uid, elementId) {
+        const r = await fetch(
+          `${SCRIPT_URL}?action=get_social_stats&uid=${uid}`
+        );
+        const res = await r.json();
+        const container = document.getElementById(elementId);
+        if (container) {
+          container.innerHTML = `<div class="stat-card"><span class="stat-num">${
+            res.data.followers || 0
+          }</span>Followers</div><div class="stat-card"><span class="stat-num">${
+            res.data.following || 0
+          }</span>Following</div>`;
+        }
+        return res.data;
+      }
+
+      async function viewProfile(u) {
+        if (u === currentUser) return openScreen("profile");
+        viewTarget = u;
+        openScreen("user-profile");
+        document.getElementById("view-name").innerText = "@" + u;
+        document.getElementById("view-name").style.color = getRoleColor(u);
+        fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
+          .then((r) => r.json())
+          .then((res) => {
+            document.getElementById("view-pfp").src =
+              res.data.pic || `https://ui-avatars.com/api/?name=${u}`;
+            document.getElementById("view-bio").innerText =
+              res.data.bio || "No bio.";
+            roleCache[u.toLowerCase()] = res.data.role;
+            localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
+            document.getElementById("view-name").style.color = getRoleColor(u);
+          });
+        const mySocial = await fetchStats(currentUser, null);
+        document.getElementById("followBtn").innerText = (
+          mySocial.followingList || []
+        ).includes(viewTarget)
+          ? "Unfollow"
+          : "Follow";
+        await fetchStats(u, "user-profile-stats");
+      }
+
+      async function toggleFollow() {
+        const btn = document.getElementById("followBtn");
+        btn.disabled = true;
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "follow",
+            uid: currentUser,
+            target: viewTarget,
+          }),
+        });
+        btn.innerText =
+          (await res.json()).data === "Followed" ? "Unfollow" : "Follow";
+        await fetchStats(viewTarget, "user-profile-stats");
+        btn.disabled = false;
+      }
+
       async function loadDMList() {
         const res = await fetch(`${SCRIPT_URL}?action=get_users`);
         const data = await res.json();
@@ -731,108 +813,13 @@
             <img src="${
               u.pic || "https://ui-avatars.com/api/?name=" + u.username
             }" class="hx-pfp" style="width:35px; height:35px;">
-            <b style="color:${getRoleColor(u.username)}">@${
-              u.username
-            }</b></div>`;
+            <b style="color:${getRoleColor(u.username)}">@${u.username}</b>
+        </div>`;
           })
           .join("");
-        localStorage.setItem("hx_roles", JSON.stringify(roleCache));
+        localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
       }
 
-      async function viewProfile(u) {
-        if (u === currentUser) return openScreen("profile");
-        viewTarget = u;
-        openScreen("user-profile");
-        document.getElementById("view-name").innerText = "@" + u;
-        document.getElementById("view-name").style.color = getRoleColor(u);
-        fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
-          .then((r) => r.json())
-          .then((res) => {
-            document.getElementById("view-pfp").src =
-              res.data.pic || `https://ui-avatars.com/api/?name=${u}`;
-            document.getElementById("view-bio").innerText =
-              res.data.bio || "No bio.";
-            roleCache[u.toLowerCase()] = res.data.role;
-            localStorage.setItem("hx_roles", JSON.stringify(roleCache));
-            document.getElementById("view-name").style.color = getRoleColor(u);
-          });
-        const mySocial = await fetchStats(currentUser, null);
-        document.getElementById("followBtn").innerText = (
-          mySocial.followingList || []
-        ).includes(viewTarget)
-          ? "Unfollow"
-          : "Follow";
-        await fetchStats(u, "user-profile-stats");
-      }
-
-      // -- REMAINING HELPER FUNCTIONS --
-      async function uploadToCatbox(fileInput, hiddenId, statusId) {
-        const file = fileInput.files[0];
-        if (!file) return;
-        document.getElementById(statusId).innerText = "Syncing...";
-        const fd = new FormData();
-        fd.append("reqtype", "fileupload");
-        fd.append("fileToUpload", file);
-        try {
-          const res = await fetch(
-            "https://corsproxy.io/?" +
-              encodeURIComponent("https://catbox.moe/user/api.php"),
-            { method: "POST", body: fd }
-          );
-          const url = await res.text();
-          document.getElementById(hiddenId).value = url.trim();
-          document.getElementById(statusId).innerText = "Linked! ✅";
-        } catch (e) {
-          document.getElementById(statusId).innerText = "Failed ❌";
-        }
-      }
-      function openScreen(id) {
-        document
-          .querySelectorAll(".screen")
-          .forEach((s) => s.classList.remove("active"));
-        document
-          .querySelectorAll(".nav-item")
-          .forEach((n) => n.classList.remove("active"));
-        document.getElementById(id + "-screen").classList.add("active");
-        document.getElementById("nav-" + id)?.classList.add("active");
-        document
-          .getElementById("mainFab")
-          .classList.toggle("visible", id === "home");
-        if (id === "home") loadFeed();
-        if (id === "dm") loadDMList();
-        if (id === "profile") checkUserStatus();
-      }
-      async function fetchStats(uid, elementId) {
-        const r = await fetch(
-          `${SCRIPT_URL}?action=get_social_stats&uid=${uid}`
-        );
-        const res = await r.json();
-        if (elementId)
-          document.getElementById(
-            elementId
-          ).innerHTML = `<div class="stat-card"><span class="stat-num">${
-            res.data.followers || 0
-          }</span>Followers</div><div class="stat-card"><span class="stat-num">${
-            res.data.following || 0
-          }</span>Following</div>`;
-        return res.data;
-      }
-      async function toggleFollow() {
-        const btn = document.getElementById("followBtn");
-        btn.disabled = true;
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "follow",
-            uid: currentUser,
-            target: viewTarget,
-          }),
-        });
-        btn.innerText =
-          (await res.json()).data === "Followed" ? "Unfollow" : "Follow";
-        await fetchStats(viewTarget, "user-profile-stats");
-        btn.disabled = false;
-      }
       async function startChat(t) {
         viewTarget = t;
         openScreen("chat-view");
@@ -861,6 +848,7 @@
         document.getElementById("chat-messages").scrollTop =
           document.getElementById("chat-messages").scrollHeight;
       }
+
       async function sendDM() {
         const i = document.getElementById("msgInput");
         if (!i.value) return;
@@ -876,17 +864,18 @@
         i.value = "";
         loadDMs();
       }
+
       function openComments(pid) {
         currentActivePost = pid;
         fetch(`${SCRIPT_URL}?action=get_feed`)
           .then((r) => r.json())
           .then((res) => {
-            const p = res.data.find((x) => x.pid === pid);
+            const post = res.data.find((x) => x.pid === pid);
             const list = document.getElementById("full-comment-list");
-            list.innerHTML = p.recent_comments.length
+            list.innerHTML = post.recent_comments
               ? ""
               : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments.</p>";
-            p.recent_comments.forEach((c) => {
+            post.recent_comments.forEach((c) => {
               list.innerHTML += `<div class="comment-item"><b style="color:${getRoleColor(
                 c.user
               )}">@${c.user}</b><p>${linkify(c.text)}</p></div>`;
@@ -894,6 +883,7 @@
             openScreen("comment-view");
           });
       }
+
       async function sendComment() {
         const input = document.getElementById("active-comment-input");
         if (!input.value) return;
@@ -909,6 +899,7 @@
         input.value = "";
         openScreen("home");
       }
+
       async function submitBroadcast() {
         const t = document.getElementById("postText").value;
         const m = document.getElementById("imageUrlInput").value;
@@ -924,24 +915,42 @@
         });
         location.reload();
       }
-      async function updateProfileData() {
+
+      function updateProfileData() {
         const bio = document.getElementById("updateBio").value.trim();
-        await fetch(SCRIPT_URL, {
+        fetch(SCRIPT_URL, {
           method: "POST",
           body: JSON.stringify({
             action: "update_profile",
             uid: currentUser,
             bio: bio,
           }),
-        });
+        }).then(() => location.reload());
+      }
+
+      function openScreen(id) {
+        document
+          .querySelectorAll(".screen")
+          .forEach((s) => s.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+        document.getElementById(id + "-screen").classList.add("active");
+        document.getElementById("nav-" + id)?.classList.add("active");
+        document
+          .getElementById("mainFab")
+          .classList.toggle("visible", id === "home");
+        if (id === "home") loadFeed();
+        if (id === "dm") loadDMList();
+        if (id === "profile") checkUserStatus();
+      }
+
+      function logout() {
+        localStorage.clear();
         location.reload();
       }
       function handleFab() {
         currentUser ? openScreen("compose") : openScreen("profile");
-      }
-      function logout() {
-        localStorage.clear();
-        location.reload();
       }
       function toggleAuthView(v) {
         document.getElementById("login-view").style.display =
