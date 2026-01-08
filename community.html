@@ -191,16 +191,11 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        transition: 0.2s;
       }
       .hx-btn.outline {
         background: transparent;
         border: 1px solid var(--primary);
         color: var(--primary);
-      }
-      .hx-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
       }
       .hx-input {
         width: 100%;
@@ -638,9 +633,11 @@
             <div style="margin-top:15px; display:flex; gap:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
                 <span class="hx-action ${
                   isLiked ? "liked" : ""
-                }" onclick="doLike('${p.pid}', this)"><i class="${
-            isLiked ? "fas" : "far"
-          } fa-heart"></i> <span class="l-count">${p.likes}</span></span>
+                }" onclick="doLike('${
+            p.pid
+          }', this)"><i class="fas fa-heart"></i> <span class="l-count">${
+            p.likes
+          }</span></span>
                 <span class="hx-action" onclick="openComments('${
                   p.pid
                 }')"><i class="far fa-comment"></i> ${p.comment_count}</span>
@@ -663,7 +660,6 @@
         likedPosts.push(pid);
         localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
         btn.classList.add("liked");
-        btn.querySelector("i").className = "fas fa-heart";
         const count = btn.querySelector(".l-count");
         count.innerText = parseInt(count.innerText) + 1;
         fetch(SCRIPT_URL, {
@@ -720,15 +716,15 @@
       }
 
       async function userAuth(mode) {
-        let payload = { action: mode };
-        payload.username = document.getElementById(
-          mode === "login" ? "logUser" : "sigUser"
-        ).value;
-        payload.password = document.getElementById(
-          mode === "login" ? "logPass" : "sigPass"
-        ).value;
+        let payload = {
+          action: mode,
+          username: document.getElementById("logUser").value,
+          password: document.getElementById("logPass").value,
+        };
         if (mode === "signup") {
+          payload.username = document.getElementById("sigUser").value;
           payload.email = document.getElementById("sigEmail").value;
+          payload.password = document.getElementById("sigPass").value;
           payload.pic = document.getElementById("sigPfp").value;
         }
         document.getElementById("bg-loader").style.display = "block";
@@ -767,9 +763,11 @@
           `${SCRIPT_URL}?action=get_social_stats&uid=${uid}`
         );
         const res = await r.json();
+        const followers = res.data.followers || 0;
+        const following = res.data.following || 0;
         document.getElementById(elementId).innerHTML = `
-            <div class="stat-card"><span class="stat-num">${res.data.followers}</span>Followers</div>
-            <div class="stat-card"><span class="stat-num">${res.data.following}</span>Following</div>`;
+            <div class="stat-card"><span class="stat-num">${followers}</span>Followers</div>
+            <div class="stat-card"><span class="stat-num">${following}</span>Following</div>`;
       }
 
       function openComments(pid) {
