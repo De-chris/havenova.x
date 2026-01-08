@@ -293,6 +293,13 @@
         z-index: 2000;
         display: none;
       }
+      .upload-status {
+        font-size: 11px;
+        color: var(--success);
+        display: block;
+        margin: 5px 0;
+        text-align: center;
+      }
       .comment-item {
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         padding: 10px 0;
@@ -425,6 +432,7 @@
       >
         <i class="fas fa-camera"></i> Media
       </button>
+      <span id="post-up-status" class="upload-status"></span>
       <input type="hidden" id="imageUrlInput" />
       <button
         class="hx-btn"
@@ -491,6 +499,7 @@
         >
           Import PFP
         </button>
+        <span id="sig-up-status" class="upload-status"></span>
         <input type="hidden" id="sigPfp" />
         <button
           class="hx-btn"
@@ -543,6 +552,7 @@
           >
             Update Picture
           </button>
+          <span id="profile-up-status" class="upload-status"></span>
           <input type="hidden" id="updatePfpUrl" />
           <button
             class="hx-btn"
@@ -601,7 +611,7 @@
 
     <script>
       const SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbxUbeOpwL9iEwqU6AfKKVrLOaT_UcvRm_XjIXRbMq3daFMphQw87ybSc6ZYvhCD-8kavQ/exec";
+        "https://script.google.com/macros/s/AKfycbw7r4-_Y2k-rh_5Z_vaLNMYxPQ9erwvK8PohDyDUNiux0PVHD-UVMxYbEaGyYFnZFmcCQ/exec";
       let currentUser = localStorage.getItem("hx_comm_user");
       let currentRole = localStorage.getItem("hx_comm_role") || "User";
       let likedPosts = JSON.parse(
@@ -702,16 +712,16 @@
       }
 
       function openComments(pid) {
-        currentActivePost = pid; // Fix: Set ID immediately
-        document.getElementById("full-comment-list").innerHTML =
+        currentActivePost = pid;
+        const list = document.getElementById("full-comment-list");
+        list.innerHTML =
           "<p style='text-align:center; padding:40px;'>Loading...</p>";
-        openScreen("comment-view"); // Fix: Open instantly
+        openScreen("comment-view");
 
         fetch(`${SCRIPT_URL}?action=get_feed`)
           .then((r) => r.json())
           .then((res) => {
             const p = res.data.find((x) => x.pid === pid);
-            const list = document.getElementById("full-comment-list");
             if (!p || !p.recent_comments || p.recent_comments.length === 0) {
               list.innerHTML =
                 "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments yet.</p>";
@@ -742,10 +752,9 @@
         input.value = "";
         document.getElementById("comment-preview").innerHTML = "";
         document.getElementById("bg-loader").style.display = "none";
-        openComments(currentActivePost); // Refresh current post comments
+        openComments(currentActivePost);
       }
 
-      // --- KEEP ALL OTHER LOGIC (Follow, DM, Auth, etc.) ---
       async function doLike(pid, btn) {
         if (!currentUser || likedPosts.includes(pid)) return;
         likedPosts.push(pid);
@@ -759,6 +768,7 @@
           body: JSON.stringify({ action: "like", pid: pid, uid: currentUser }),
         });
       }
+
       async function viewProfile(u) {
         if (u === currentUser) return openScreen("profile");
         viewTarget = u;
@@ -783,6 +793,7 @@
           : "Follow";
         await fetchStats(u, "user-profile-stats");
       }
+
       function checkUserStatus() {
         if (currentUser) {
           document.getElementById("login-view").style.display = "none";
@@ -806,6 +817,7 @@
             });
         }
       }
+
       async function fetchStats(uid, elementId) {
         const r = await fetch(
           `${SCRIPT_URL}?action=get_social_stats&uid=${uid}`
@@ -821,6 +833,7 @@
           }</span><span class="stat-label">Following</span></div>`;
         return res.data;
       }
+
       async function uploadToCatbox(fileInput, hiddenId, statusId) {
         const file = fileInput.files[0];
         if (!file) return;
@@ -843,6 +856,7 @@
           document.getElementById(statusId).innerText = "Failed ❌";
         }
       }
+
       async function updateProfileData() {
         const bio = document.getElementById("updateBio").value.trim();
         const pic = document.getElementById("updatePfpUrl").value.trim();
@@ -858,12 +872,14 @@
         });
         location.reload();
       }
+
       async function loadDMList() {
         const res = await fetch(`${SCRIPT_URL}?action=get_users`);
         const data = await res.json();
         allUsersData = data.data;
         filterUsers();
       }
+
       function filterUsers() {
         const query = document.getElementById("userSearch").value.toLowerCase();
         const container = document.getElementById("dm-list-container");
@@ -887,6 +903,7 @@
           .join("");
         localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
       }
+
       async function startChat(t) {
         viewTarget = t;
         openScreen("chat-view");
@@ -913,6 +930,7 @@
         document.getElementById("chat-messages").scrollTop =
           document.getElementById("chat-messages").scrollHeight;
       }
+
       async function sendDM() {
         const i = document.getElementById("msgInput");
         if (!i.value) return;
@@ -928,6 +946,7 @@
         i.value = "";
         loadDMs();
       }
+
       async function submitBroadcast() {
         const t = document.getElementById("postText").value;
         const m = document.getElementById("imageUrlInput").value;
@@ -943,6 +962,7 @@
         });
         location.reload();
       }
+
       async function deletePost(pid, author) {
         if (!confirm("Delete broadcast?")) return;
         document.getElementById(`post-${pid}`).style.display = "none";
@@ -970,6 +990,7 @@
           }),
         });
       }
+
       function openScreen(id) {
         document
           .querySelectorAll(".screen")
@@ -985,6 +1006,7 @@
         if (id === "dm") loadDMList();
         if (id === "profile") checkUserStatus();
       }
+
       async function userAuth(mode) {
         let payload = {
           action: mode,
@@ -1013,6 +1035,7 @@
           location.reload();
         } else alert(res.data);
       }
+
       function logout() {
         localStorage.clear();
         location.reload();
