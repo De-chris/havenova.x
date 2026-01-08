@@ -40,7 +40,7 @@
         scroll-behavior: smooth;
       }
 
-      /* ELITE NAME STYLES */
+      /* ELITE UI STYLES */
       .name-owner {
         color: var(--owner) !important;
         text-shadow: 0 0 10px rgba(248, 113, 113, 0.4);
@@ -56,9 +56,11 @@
         0%,
         100% {
           opacity: 1;
+          filter: brightness(1);
         }
         50% {
-          opacity: 0.8;
+          opacity: 0.9;
+          filter: brightness(1.2);
         }
       }
 
@@ -139,7 +141,7 @@
         gap: 10px;
         margin-bottom: 10px;
         cursor: pointer;
-        max-width: 80%;
+        max-width: 75%;
       }
       .hx-pfp {
         width: 40px;
@@ -170,49 +172,11 @@
         display: flex;
         gap: 14px;
         background: var(--card);
-        padding-left: 10px;
       }
       .hx-util-btn {
         color: var(--muted);
         font-size: 15px;
         cursor: pointer;
-        transition: 0.2s;
-      }
-      .hx-util-btn:hover {
-        color: var(--primary);
-      }
-
-      .hx-action {
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-right: 20px;
-        font-size: 14px;
-        color: var(--muted);
-      }
-      .hx-action.liked {
-        color: var(--error) !important;
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin: 15px 0;
-      }
-      .stat-card {
-        background: rgba(255, 255, 255, 0.05);
-        padding: 12px;
-        border-radius: 12px;
-        text-align: center;
-        border: 1px solid var(--border);
-      }
-      .stat-num {
-        display: block;
-        font-size: 18px;
-        font-weight: bold;
-        color: var(--primary);
       }
 
       .hx-btn {
@@ -270,7 +234,7 @@
         border: 1px dashed var(--border);
         padding: 10px;
         border-radius: 10px;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         font-size: 14px;
         color: #94a3b8;
         white-space: pre-wrap;
@@ -289,6 +253,13 @@
         font-weight: bold;
         z-index: 2000;
         display: none;
+      }
+      .upload-status {
+        font-size: 11px;
+        color: var(--success);
+        display: block;
+        margin: 5px 0;
+        text-align: center;
       }
     </style>
   </head>
@@ -418,6 +389,7 @@
       >
         <i class="fas fa-camera"></i> Media
       </button>
+      <span id="post-up-status" class="upload-status"></span>
       <input type="hidden" id="imageUrlInput" />
       <button
         class="hx-btn"
@@ -484,6 +456,7 @@
         >
           Import PFP
         </button>
+        <span id="sig-up-status" class="upload-status"></span>
         <input type="hidden" id="sigPfp" />
         <button
           class="hx-btn"
@@ -510,14 +483,39 @@
           style="color: var(--muted); font-size: 13px; margin: 10px 0"
         ></p>
         <div id="my-stats" class="stats-grid"></div>
-        <div style="border-top: 1px solid var(--border); padding-top: 15px">
+        <div
+          style="
+            border-top: 1px solid var(--border);
+            padding-top: 15px;
+            margin-top: 10px;
+          "
+        >
           <input
             type="text"
             id="updateBio"
             class="hx-input"
             placeholder="Edit Bio..."
           />
-          <button class="hx-btn" onclick="updateProfileData()">
+          <input
+            type="file"
+            id="updatePfpFile"
+            accept="image/*"
+            style="display: none"
+            onchange="uploadToCatbox(this, 'updatePfpUrl', 'profile-up-status')"
+          />
+          <button
+            class="hx-btn outline"
+            onclick="document.getElementById('updatePfpFile').click()"
+          >
+            Update Picture
+          </button>
+          <span id="profile-up-status" class="upload-status"></span>
+          <input type="hidden" id="updatePfpUrl" />
+          <button
+            class="hx-btn"
+            style="margin-top: 10px"
+            onclick="updateProfileData()"
+          >
             Save Profile
           </button>
         </div>
@@ -586,9 +584,9 @@
         if (!username) return "";
         const role = (roleCache[username.toLowerCase()] || "User").trim();
         if (role === "Owner")
-          return `<span class="name-owner">@${username} <i class="fas fa-shield-alt" style="font-size:12px"></i></span>`;
+          return `<span class="name-owner">@${username} <i class="fas fa-shield-alt"></i></span>`;
         if (role === "Admin")
-          return `<span class="name-admin">@${username} <i class="fas fa-bolt" style="font-size:12px"></i></span>`;
+          return `<span class="name-admin">@${username} <i class="fas fa-bolt"></i></span>`;
         return `<span>@${username}</span>`;
       }
 
@@ -599,7 +597,7 @@
         return text
           .replace(
             urlPattern,
-            '<a href="$1" target="_blank" class="hx-link" style="color:var(--primary);">$1</a>'
+            '<a href="$1" target="_blank" style="color:var(--primary);">$1</a>'
           )
           .replace(/\*(.*?)\*/g, "<b>$1</b>")
           .replace(/_(.*?)_/g, "<i>$1</i>")
@@ -670,29 +668,43 @@
         localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
       }
 
-      async function viewProfile(u) {
-        if (u === currentUser) return openScreen("profile");
-        viewTarget = u;
-        openScreen("user-profile");
-        document.getElementById("view-name").innerHTML = getEliteName(u);
-        fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
-          .then((r) => r.json())
-          .then((res) => {
-            document.getElementById("view-pfp").src =
-              res.data.pic || `https://ui-avatars.com/api/?name=${u}`;
-            document.getElementById("view-bio").innerText =
-              res.data.bio || "No bio.";
-            roleCache[u.toLowerCase()] = (res.data.role || "User").trim();
-            localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
-            document.getElementById("view-name").innerHTML = getEliteName(u);
-          });
-        const mySocial = await fetchStats(currentUser, null);
-        document.getElementById("followBtn").innerText = (
-          mySocial.followingList || []
-        ).includes(viewTarget)
-          ? "Unfollow"
-          : "Follow";
-        await fetchStats(u, "user-profile-stats");
+      async function uploadToCatbox(fileInput, hiddenId, statusId) {
+        const file = fileInput.files[0];
+        if (!file) return;
+        document.getElementById(statusId).innerText = "Syncing...";
+        const fd = new FormData();
+        fd.append("reqtype", "fileupload");
+        fd.append("fileToUpload", file);
+        try {
+          const r = await fetch(
+            "https://corsproxy.io/?" +
+              encodeURIComponent("https://catbox.moe/user/api.php"),
+            { method: "POST", body: fd }
+          );
+          const url = await r.text();
+          document.getElementById(hiddenId).value = url.trim();
+          document.getElementById(statusId).innerText = "Linked! ✅";
+          if (hiddenId === "updatePfpUrl")
+            document.getElementById("pfpBig").src = url.trim();
+        } catch (e) {
+          document.getElementById(statusId).innerText = "Failed ❌";
+        }
+      }
+
+      async function updateProfileData() {
+        const bio = document.getElementById("updateBio").value.trim();
+        const pic = document.getElementById("updatePfpUrl").value.trim();
+        document.getElementById("bg-loader").style.display = "block";
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "update_profile",
+            uid: currentUser,
+            bio: bio,
+            pic: pic,
+          }),
+        });
+        location.reload();
       }
 
       function checkUserStatus() {
@@ -717,6 +729,62 @@
                 getEliteName(currentUser);
             });
         }
+      }
+
+      async function loadDMList() {
+        const res = await fetch(`${SCRIPT_URL}?action=get_users`);
+        const data = await res.json();
+        allUsersData = data.data;
+        filterUsers();
+      }
+
+      function filterUsers() {
+        const query = document.getElementById("userSearch").value.toLowerCase();
+        const container = document.getElementById("dm-list-container");
+        container.innerHTML = allUsersData
+          .filter(
+            (u) =>
+              u.username !== currentUser &&
+              u.username.toLowerCase().includes(query)
+          )
+          .map((u) => {
+            roleCache[u.username.toLowerCase()] = u.role;
+            return `<div class="hx-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="startChat('${
+              u.username
+            }')">
+            <img src="${
+              u.pic || "https://ui-avatars.com/api/?name=" + u.username
+            }" class="hx-pfp" style="width:35px; height:35px;">
+            <b>${getEliteName(u.username)}</b>
+        </div>`;
+          })
+          .join("");
+        localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
+      }
+
+      async function viewProfile(u) {
+        if (u === currentUser) return openScreen("profile");
+        viewTarget = u;
+        openScreen("user-profile");
+        document.getElementById("view-name").innerHTML = getEliteName(u);
+        fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
+          .then((r) => r.json())
+          .then((res) => {
+            document.getElementById("view-pfp").src =
+              res.data.pic || `https://ui-avatars.com/api/?name=${u}`;
+            document.getElementById("view-bio").innerText =
+              res.data.bio || "No bio.";
+            roleCache[u.toLowerCase()] = (res.data.role || "User").trim();
+            localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
+            document.getElementById("view-name").innerHTML = getEliteName(u);
+          });
+        const mySocial = await fetchStats(currentUser, null);
+        document.getElementById("followBtn").innerText = (
+          mySocial.followingList || []
+        ).includes(viewTarget)
+          ? "Unfollow"
+          : "Follow";
+        await fetchStats(u, "user-profile-stats");
       }
 
       async function deletePost(pid, author) {
@@ -750,13 +818,15 @@
       async function userAuth(mode) {
         let payload = {
           action: mode,
-          username: document.getElementById("logUser").value,
-          password: document.getElementById("logPass").value,
+          username: document.getElementById(
+            mode === "login" ? "logUser" : "sigUser"
+          ).value,
+          password: document.getElementById(
+            mode === "login" ? "logPass" : "sigPass"
+          ).value,
         };
         if (mode === "signup") {
-          payload.username = document.getElementById("sigUser").value;
           payload.email = document.getElementById("sigEmail").value;
-          payload.password = document.getElementById("sigPass").value;
           payload.pic = document.getElementById("sigPfp").value;
         }
         const r = await fetch(SCRIPT_URL, {
@@ -772,65 +842,6 @@
           );
           location.reload();
         } else alert(res.data);
-      }
-
-      async function loadDMList() {
-        const res = await fetch(`${SCRIPT_URL}?action=get_users`);
-        const data = await res.json();
-        allUsersData = data.data;
-        filterUsers();
-      }
-
-      function filterUsers() {
-        const query = document.getElementById("userSearch").value.toLowerCase();
-        const container = document.getElementById("dm-list-container");
-        container.innerHTML = allUsersData
-          .filter(
-            (u) =>
-              u.username !== currentUser &&
-              u.username.toLowerCase().includes(query)
-          )
-          .map((u) => {
-            if (u.role) roleCache[u.username.toLowerCase()] = u.role;
-            return `<div class="hx-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="startChat('${
-              u.username
-            }')">
-            <img src="${
-              u.pic || "https://ui-avatars.com/api/?name=" + u.username
-            }" class="hx-pfp" style="width:35px; height:35px;">
-            <b>${getEliteName(u.username)}</b>
-        </div>`;
-          })
-          .join("");
-        localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
-      }
-
-      async function startChat(t) {
-        viewTarget = t;
-        openScreen("chat-view");
-        document.getElementById("chat-target-name").innerHTML = getEliteName(t);
-        loadDMs();
-      }
-
-      async function uploadToCatbox(fileInput, hiddenId, statusId) {
-        const file = fileInput.files[0];
-        if (!file) return;
-        document.getElementById(statusId).innerText = "Syncing...";
-        const fd = new FormData();
-        fd.append("reqtype", "fileupload");
-        fd.append("fileToUpload", file);
-        try {
-          const r = await fetch(
-            "https://corsproxy.io/?" +
-              encodeURIComponent("https://catbox.moe/user/api.php"),
-            { method: "POST", body: fd }
-          );
-          const url = await r.text();
-          document.getElementById(hiddenId).value = url.trim();
-          document.getElementById(statusId).innerText = "Linked! ✅";
-        } catch (e) {
-          document.getElementById(statusId).innerText = "Failed ❌";
-        }
       }
 
       async function fetchStats(uid, elementId) {
@@ -866,6 +877,12 @@
         btn.disabled = false;
       }
 
+      async function startChat(t) {
+        viewTarget = t;
+        openScreen("chat-view");
+        document.getElementById("chat-target-name").innerHTML = getEliteName(t);
+        loadDMs();
+      }
       async function loadDMs() {
         const r = await fetch(
           `${SCRIPT_URL}?action=get_dms&uid=${currentUser}&target=${viewTarget}`
@@ -908,12 +925,12 @@
         fetch(`${SCRIPT_URL}?action=get_feed`)
           .then((r) => r.json())
           .then((res) => {
-            const post = res.data.find((x) => x.pid === pid);
+            const p = res.data.find((x) => x.pid === pid);
             const list = document.getElementById("full-comment-list");
-            list.innerHTML = post.recent_comments
+            list.innerHTML = p.recent_comments.length
               ? ""
               : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments.</p>";
-            post.recent_comments.forEach((c) => {
+            p.recent_comments.forEach((c) => {
               list.innerHTML += `<div class="comment-item"><b>${getEliteName(
                 c.user
               )}</b><p>${linkify(c.text)}</p></div>`;
@@ -954,18 +971,6 @@
         location.reload();
       }
 
-      function updateProfileData() {
-        const bio = document.getElementById("updateBio").value.trim();
-        fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "update_profile",
-            uid: currentUser,
-            bio: bio,
-          }),
-        }).then(() => location.reload());
-      }
-
       function openScreen(id) {
         document
           .querySelectorAll(".screen")
@@ -983,25 +988,9 @@
         if (id === "profile") checkUserStatus();
       }
 
-      async function doLike(pid, btn) {
-        if (!currentUser || likedPosts.includes(pid)) return;
-        likedPosts.push(pid);
-        localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
-        btn.classList.add("liked");
-        btn.querySelector(".l-count").innerText =
-          parseInt(btn.querySelector(".l-count").innerText) + 1;
-        fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "like", pid: pid, uid: currentUser }),
-        });
-      }
-
       function logout() {
         localStorage.clear();
         location.reload();
-      }
-      function handleFab() {
-        currentUser ? openScreen("compose") : openScreen("profile");
       }
       function toggleAuthView(v) {
         document.getElementById("login-view").style.display =
