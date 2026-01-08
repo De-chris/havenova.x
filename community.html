@@ -256,7 +256,9 @@
     </style>
   </head>
   <body>
-    <div id="bg-loader">SYNCING...</div>
+    <div id="bg-loader">
+      <i class="fas fa-satellite-dish fa-spin"></i> SYNCING...
+    </div>
 
     <header>
       <img src="logo1.png" class="logo" onclick="openScreen('home')" />
@@ -553,7 +555,7 @@
 
     <script>
       const SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbw_qwMbqo3XL2vKEdiwN1yAB_Juvf_sc8cuNr-nNSPWCtmgfkIlgvMQDfKF1tBWlivFTA/exec";
+        "https://script.google.com/macros/s/AKfycbwFLdZch3piPyZQI3wXx_egiv6J0gztXtYECfyoeuCQ0CKOnrwYU4e1b4DudzTsyUUasA/exec";
       let currentUser = localStorage.getItem("hx_comm_user");
       let likedPosts = JSON.parse(
         localStorage.getItem("hx_comm_liked") || "[]"
@@ -570,9 +572,8 @@
           .forEach((n) => n.classList.remove("active"));
         document.getElementById(id + "-screen").classList.add("active");
         document.getElementById("nav-" + id)?.classList.add("active");
-        document
-          .getElementById("mainFab")
-          .classList.toggle("visible", id === "home");
+        const fab = document.getElementById("mainFab");
+        fab.classList.toggle("visible", id === "home");
         if (id === "home") loadFeed();
         if (id === "dm") loadDMList();
         if (id === "profile") checkUserStatus();
@@ -663,8 +664,8 @@
         localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
         btn.classList.add("liked");
         btn.querySelector("i").className = "fas fa-heart";
-        btn.querySelector(".l-count").innerText =
-          parseInt(btn.querySelector(".l-count").innerText) + 1;
+        const count = btn.querySelector(".l-count");
+        count.innerText = parseInt(count.innerText) + 1;
         fetch(SCRIPT_URL, {
           method: "POST",
           body: JSON.stringify({ action: "like", pid: pid, uid: currentUser }),
@@ -689,9 +690,7 @@
           localStorage.getItem(`updates_${currentUser}`) || "[]"
         );
         const now = Date.now();
-        const last7Days = updates.filter(
-          (t) => now - t < 7 * 24 * 60 * 60 * 1000
-        );
+        const last7Days = updates.filter((t) => now - t < 7 * 86400000);
         if (last7Days.length >= 2) return alert("Limit: 2 updates per week.");
 
         const bio = document.getElementById("updateBio").value.trim();
@@ -713,6 +712,7 @@
             `updates_${currentUser}`,
             JSON.stringify(last7Days)
           );
+          alert("Updated!");
           location.reload();
         }
       }
@@ -767,9 +767,13 @@
         const res = await r.json();
         const fers = res.data.followers || 0;
         const fing = res.data.following || 0;
-        document.getElementById(elementId).innerHTML = `
+        const container = document.getElementById(elementId);
+        if (container) {
+          container.innerHTML = `
             <div class="stat-card"><span class="stat-num">${fers}</span>Followers</div>
             <div class="stat-card"><span class="stat-num">${fing}</span>Following</div>`;
+        }
+        return res.data;
       }
 
       async function viewProfile(u) {
@@ -777,13 +781,10 @@
         viewTarget = u;
         openScreen("user-profile");
         document.getElementById("view-name").innerText = "@" + u;
-
-        // Relationship Check
         const followBtn = document.getElementById("followBtn");
         followBtn.innerText = "...";
 
-        // Fetch user data & stats
-        fetchStats(u, "user-profile-stats");
+        // Fetch target bio/pfp
         fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
           .then((r) => r.json())
           .then((res) => {
@@ -793,15 +794,16 @@
               res.data.bio || "No bio.";
           });
 
-        // Smart check: Check MY following list to see if viewTarget is in it
-        const res = await fetch(
-          `${SCRIPT_URL}?action=get_social_stats&uid=${currentUser}`
-        );
-        const myData = await res.json();
-        // Since getSocialStats doesn't return the list of names, we rely on the toggle follow action
-        // logic from the server to keep things simple and smooth.
-        // We initialize the button as "Follow" and let the toggleFollow handle the rest.
-        followBtn.innerText = "Follow";
+        // Relationship Check: Load MY social list to see if I follow this person
+        const mySocial = await fetchStats(currentUser, null);
+        const followingList = mySocial.followingList || [];
+
+        followBtn.innerText = followingList.includes(viewTarget)
+          ? "Unfollow"
+          : "Follow";
+
+        // Update target's counts
+        await fetchStats(u, "user-profile-stats");
       }
 
       async function toggleFollow() {
@@ -817,7 +819,7 @@
         });
         const data = await res.json();
         btn.innerText = data.data === "Followed" ? "Unfollow" : "Follow";
-        fetchStats(viewTarget, "user-profile-stats");
+        await fetchStats(viewTarget, "user-profile-stats");
         btn.disabled = false;
       }
 
