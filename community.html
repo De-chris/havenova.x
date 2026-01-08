@@ -300,6 +300,10 @@
         margin: 5px 0;
         text-align: center;
       }
+      .comment-item {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 10px 0;
+      }
     </style>
   </head>
   <body>
@@ -723,6 +727,47 @@
         });
       }
 
+      function openComments(pid) {
+        currentActivePost = pid; // FIX: Update current active post ID
+        fetch(`${SCRIPT_URL}?action=get_feed`)
+          .then((r) => r.json())
+          .then((res) => {
+            const p = res.data.find((x) => x.pid === pid);
+            const list = document.getElementById("full-comment-list");
+            list.innerHTML = p.recent_comments
+              ? ""
+              : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments.</p>";
+            // Check if recent_comments exists to avoid errors
+            if (p.recent_comments) {
+              p.recent_comments.forEach((c) => {
+                list.innerHTML += `<div class="comment-item"><b>${getEliteName(
+                  c.user
+                )}</b><p>${linkify(c.text)}</p></div>`;
+              });
+            }
+            openScreen("comment-view");
+          });
+      }
+
+      async function sendComment() {
+        const input = document.getElementById("active-comment-input");
+        if (!input.value || !currentActivePost) return;
+        document.getElementById("bg-loader").style.display = "block";
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "comment",
+            pid: currentActivePost,
+            uid: currentUser,
+            content: input.value,
+          }),
+        });
+        input.value = "";
+        document.getElementById("comment-preview").innerHTML = "";
+        openScreen("home");
+        loadFeed();
+      }
+
       async function deletePost(pid, author) {
         if (!confirm("Delete broadcast forever?")) return;
         document.getElementById(`post-${pid}`).style.display = "none";
@@ -749,17 +794,7 @@
         });
       }
 
-      function buildStatHTML(data) {
-        return `
-        <div class="stat-card"><span class="stat-num">${
-          data.followers || 0
-        }</span><span class="stat-label">Followers</span></div>
-        <div class="stat-card"><span class="stat-num">${
-          data.following || 0
-        }</span><span class="stat-label">Following</span></div>
-    `;
-      }
-
+      // REST OF CORE UTILITIES (ViewProfile, FetchStats, Upload, Auth, Nav)
       async function viewProfile(u) {
         if (u === currentUser) return openScreen("profile");
         viewTarget = u;
@@ -815,9 +850,13 @@
         );
         const res = await r.json();
         if (elementId)
-          document.getElementById(elementId).innerHTML = buildStatHTML(
-            res.data
-          );
+          document.getElementById(
+            elementId
+          ).innerHTML = `<div class="stat-card"><span class="stat-num">${
+            res.data.followers || 0
+          }</span><span class="stat-label">Followers</span></div><div class="stat-card"><span class="stat-num">${
+            res.data.following || 0
+          }</span><span class="stat-label">Following</span></div>`;
         return res.data;
       }
 
@@ -935,41 +974,6 @@
         loadDMs();
       }
 
-      function openComments(pid) {
-        currentActivePost = pid;
-        fetch(`${SCRIPT_URL}?action=get_feed`)
-          .then((r) => r.json())
-          .then((res) => {
-            const p = res.data.find((x) => x.pid === pid);
-            const list = document.getElementById("full-comment-list");
-            list.innerHTML = p.recent_comments
-              ? ""
-              : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments.</p>";
-            p.recent_comments.forEach((c) => {
-              list.innerHTML += `<div class="comment-item"><b>${getEliteName(
-                c.user
-              )}</b><p>${linkify(c.text)}</p></div>`;
-            });
-            openScreen("comment-view");
-          });
-      }
-
-      async function sendComment() {
-        const input = document.getElementById("active-comment-input");
-        if (!input.value) return;
-        await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "comment",
-            pid: currentActivePost,
-            uid: currentUser,
-            content: input.value,
-          }),
-        });
-        input.value = "";
-        openScreen("home");
-      }
-
       async function submitBroadcast() {
         const t = document.getElementById("postText").value;
         const m = document.getElementById("imageUrlInput").value;
@@ -984,6 +988,23 @@
           }),
         });
         location.reload();
+      }
+
+      async function toggleFollow() {
+        const btn = document.getElementById("followBtn");
+        btn.disabled = true;
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "follow",
+            uid: currentUser,
+            target: viewTarget,
+          }),
+        });
+        btn.innerText =
+          (await res.json()).data === "Followed" ? "Unfollow" : "Follow";
+        await fetchStats(viewTarget, "user-profile-stats");
+        btn.disabled = false;
       }
 
       function openScreen(id) {
