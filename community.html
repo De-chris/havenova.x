@@ -191,11 +191,16 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
+        transition: 0.2s;
       }
       .hx-btn.outline {
         background: transparent;
         border: 1px solid var(--primary);
         color: var(--primary);
+      }
+      .hx-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
       .hx-input {
         width: 100%;
@@ -287,8 +292,8 @@
           padding-bottom: 12px;
         "
       >
-        <i class="fas fa-arrow-left" onclick="openScreen('dm')"></i>
-        <b id="chat-target-name">@User</b>
+        <i class="fas fa-arrow-left" onclick="openScreen('dm')"></i
+        ><b id="chat-target-name">@User</b>
       </div>
       <div id="chat-messages" style="height: 60vh; overflow-y: auto"></div>
       <div style="display: flex; gap: 10px; margin-top: 10px">
@@ -550,7 +555,7 @@
 
     <script>
       const SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycby1TWxXQOajGqndV-C3jXLZAmIokfl9oIgoD_Bo6bkmZ3ZQjdszgd4WrgzFlj_q2TZ3gQ/exec";
+        "https://script.google.com/macros/s/AKfycbw_qwMbqo3XL2vKEdiwN1yAB_Juvf_sc8cuNr-nNSPWCtmgfkIlgvMQDfKF1tBWlivFTA/exec";
       let currentUser = localStorage.getItem("hx_comm_user");
       let likedPosts = JSON.parse(
         localStorage.getItem("hx_comm_liked") || "[]"
@@ -649,7 +654,7 @@
         if (navigator.share) navigator.share({ title: "HX Post", url: url });
         else {
           navigator.clipboard.writeText(url);
-          alert("Copied!");
+          alert("Link copied!");
         }
       }
 
@@ -689,9 +694,9 @@
           (t) => now - t < 7 * 24 * 60 * 60 * 1000
         );
         if (last7Days.length >= 2) return alert("Limit: 2 updates per week.");
+
         const bio = document.getElementById("updateBio").value.trim();
         const pic = document.getElementById("updatePfpUrl").value.trim();
-        if (!bio && !pic) return;
         document.getElementById("bg-loader").style.display = "block";
         const res = await fetch(SCRIPT_URL, {
           method: "POST",
@@ -762,9 +767,9 @@
           `${SCRIPT_URL}?action=get_social_stats&uid=${uid}`
         );
         const res = await r.json();
-        document.getElementById(
-          elementId
-        ).innerHTML = `<div class="stat-card"><span class="stat-num">${res.data.followers}</span>Followers</div><div class="stat-card"><span class="stat-num">${res.data.following}</span>Following</div>`;
+        document.getElementById(elementId).innerHTML = `
+            <div class="stat-card"><span class="stat-num">${res.data.followers}</span>Followers</div>
+            <div class="stat-card"><span class="stat-num">${res.data.following}</span>Following</div>`;
       }
 
       function openComments(pid) {
@@ -910,8 +915,7 @@
         currentUser ? openScreen("compose") : openScreen("profile");
       }
       function wakeFab() {
-        const f = document.getElementById("mainFab");
-        f.classList.add("visible");
+        document.getElementById("mainFab").classList.add("visible");
       }
       function logout() {
         localStorage.removeItem("hx_comm_user");
