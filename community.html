@@ -147,6 +147,7 @@
         margin-right: 20px;
         font-size: 14px;
         color: var(--muted);
+        transition: 0.2s;
       }
       .hx-action.liked {
         color: var(--error) !important;
@@ -198,11 +199,6 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-      }
-      .hx-btn.outline {
-        background: transparent;
-        border: 1px solid var(--primary);
-        color: var(--primary);
       }
       .hx-input {
         width: 100%;
@@ -278,7 +274,6 @@
     <div id="home-screen" class="screen active">
       <div id="feed-container"></div>
     </div>
-
     <div id="dm-screen" class="screen">
       <h3>Messages</h3>
       <div id="dm-list-container"></div>
@@ -441,7 +436,7 @@
           class="hx-btn outline"
           onclick="document.getElementById('pfpFile').click()"
         >
-          <i class="fas fa-image"></i> Upload Profile Pic
+          <i class="fas fa-image"></i> Import Profile Pic
         </button>
         <span id="sig-up-status" class="upload-status"></span>
         <input type="hidden" id="sigPfp" />
@@ -460,17 +455,50 @@
         />
         <h2 id="nameDisplay">@User</h2>
         <div id="my-stats" class="stats-grid"></div>
+        <div
+          id="profile-updates"
+          style="
+            margin-top: 15px;
+            border-top: 1px solid var(--border);
+            padding-top: 15px;
+          "
+        >
+          <input
+            type="text"
+            id="updateBio"
+            class="hx-input"
+            placeholder="New Bio..."
+          />
+          <input
+            type="file"
+            id="updatePfpFile"
+            accept="image/*"
+            style="display: none"
+            onchange="uploadToCatbox(this, 'updatePfpUrl', 'profile-up-status')"
+          />
+          <button
+            class="hx-btn outline"
+            onclick="document.getElementById('updatePfpFile').click()"
+          >
+            Change Profile Picture
+          </button>
+          <span id="profile-up-status" class="upload-status"></span>
+          <input type="hidden" id="updatePfpUrl" />
+          <button
+            class="hx-btn"
+            id="saveProfileBtn"
+            onclick="updateProfileData()"
+          >
+            Save Changes
+          </button>
+        </div>
         <button
           class="hx-btn"
-          style="background: var(--error); color: white"
+          style="background: var(--error); color: white; margin-top: 20px"
           onclick="logout()"
         >
           Logout
         </button>
-        <div
-          id="my-posts-container"
-          style="margin-top: 20px; text-align: left"
-        ></div>
       </div>
     </div>
 
@@ -483,14 +511,7 @@
           id="view-pfp"
         />
         <h2 id="view-name">@User</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <span class="stat-num" id="stat-followers">0</span>Followers
-          </div>
-          <div class="stat-card">
-            <span class="stat-num" id="stat-following">0</span>Following
-          </div>
-        </div>
+        <div class="stats-grid" id="user-profile-stats"></div>
         <div style="display: flex; gap: 10px; margin-top: 15px">
           <button class="hx-btn" id="followBtn" onclick="toggleFollow()">
             Follow
@@ -500,7 +521,6 @@
           </button>
         </div>
       </div>
-      <div id="user-posts-container" style="margin-top: 20px"></div>
     </div>
 
     <nav class="nav-bar">
@@ -544,7 +564,7 @@
         const file = fileInput.files[0];
         if (!file) return;
         const statusEl = document.getElementById(statusId);
-        statusEl.innerText = "Uploading...";
+        statusEl.innerText = "Syncing image...";
         const formData = new FormData();
         formData.append("reqtype", "fileupload");
         formData.append("fileToUpload", file);
@@ -559,19 +579,19 @@
           );
           const url = await res.text();
           document.getElementById(hiddenId).value = url.trim();
-          statusEl.innerText = "Ready! ✅";
-          if (hiddenId === "sigPfp")
+          statusEl.innerText = "Linked! ✅";
+          if (hiddenId === "sigPfp" || hiddenId === "updatePfpUrl")
             document.getElementById("pfpBig").src = url.trim();
         } catch (e) {
-          statusEl.innerText = "Error ❌";
+          statusEl.innerText = "Failed ❌";
         }
       }
 
       async function loadFeed(force = false) {
-        const container = document.getElementById("feed-container");
         const r = await fetch(`${SCRIPT_URL}?action=get_feed`);
         const res = await r.json();
         cachedFeed = res.data;
+        const container = document.getElementById("feed-container");
         container.innerHTML = "";
         cachedFeed.forEach((p) => {
           const isOwner = p.author === currentUser;
@@ -581,6 +601,9 @@
           card.id = `post-${p.pid}`;
           card.innerHTML = `
             <div class="card-top-actions">
+                <i class="fas fa-share hx-util-btn" onclick="sharePost('${
+                  p.pid
+                }')"></i>
                 <i class="fas fa-paper-plane hx-util-btn" onclick="startChat('${
                   p.author
                 }')"></i>
@@ -601,17 +624,24 @@
             <div style="margin-top:15px; display:flex; gap:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
                 <span class="hx-action ${
                   isLiked ? "liked" : ""
-                }" onclick="doLike('${p.pid}', this)">
-                    <i class="${
-                      isLiked ? "fas" : "far"
-                    } fa-heart"></i> <span class="l-count">${p.likes}</span>
-                </span>
+                }" onclick="doLike('${p.pid}', this)"><i class="${
+            isLiked ? "fas" : "far"
+          } fa-heart"></i> <span class="l-count">${p.likes}</span></span>
                 <span class="hx-action" onclick="openComments('${
                   p.pid
                 }')"><i class="far fa-comment"></i> ${p.comment_count}</span>
             </div>`;
           container.appendChild(card);
         });
+      }
+
+      function sharePost(pid) {
+        const url = `${window.location.origin}${window.location.pathname}?post=${pid}`;
+        if (navigator.share) {
+          navigator.share({ title: "HX Post", url: url });
+        } else {
+          navigator.clipboard.writeText(url).then(() => alert("Link copied!"));
+        }
       }
 
       async function doLike(pid, btn) {
@@ -631,7 +661,7 @@
       async function deletePost(pid) {
         if (!confirm("Delete forever?")) return;
         document.getElementById(`post-${pid}`).style.opacity = "0.3";
-        const res = await fetch(SCRIPT_URL, {
+        await fetch(SCRIPT_URL, {
           method: "POST",
           body: JSON.stringify({
             action: "delete_post",
@@ -642,20 +672,47 @@
         loadFeed(true);
       }
 
-      async function submitBroadcast() {
-        const t = document.getElementById("postText").value;
-        const m = document.getElementById("imageUrlInput").value;
+      async function updateProfileData() {
+        const updates = JSON.parse(
+          localStorage.getItem(`updates_${currentUser}`) || "[]"
+        );
+        const now = Date.now();
+        const last7Days = updates.filter(
+          (t) => now - t < 7 * 24 * 60 * 60 * 1000
+        );
+        if (last7Days.length >= 2) {
+          const nextDate = new Date(
+            last7Days[0] + 7 * 24 * 60 * 60 * 1000
+          ).toLocaleDateString();
+          return alert(
+            `Update limit reached (2 per 7 days). Next update available: ${nextDate}`
+          );
+        }
+
+        const bio = document.getElementById("updateBio").value.trim();
+        const pic = document.getElementById("updatePfpUrl").value.trim();
+        if (!bio && !pic) return;
+
         document.getElementById("bg-loader").style.display = "block";
-        await fetch(SCRIPT_URL, {
+        const res = await fetch(SCRIPT_URL, {
           method: "POST",
           body: JSON.stringify({
-            action: "post",
+            action: "update_profile",
             uid: currentUser,
-            content: t,
-            media: m,
+            pic: pic,
+            bio: bio,
           }),
         });
-        location.reload();
+        const data = await res.json();
+        if (data.status === "Success") {
+          last7Days.push(now);
+          localStorage.setItem(
+            `updates_${currentUser}`,
+            JSON.stringify(last7Days)
+          );
+          alert("Profile Updated");
+          location.reload();
+        }
       }
 
       async function userAuth(mode) {
@@ -708,34 +765,16 @@
         ).innerHTML = `<div class="stat-card"><span class="stat-num">${res.data.followers}</span>Followers</div><div class="stat-card"><span class="stat-num">${res.data.following}</span>Following</div>`;
       }
 
-      function openComments(pid) {
-        const post = cachedFeed.find((x) => x.pid === pid);
-        const list = document.getElementById("full-comment-list");
-        list.innerHTML = post.recent_comments.length
-          ? ""
-          : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments yet.</p>";
-        post.recent_comments.forEach((c) => {
-          list.innerHTML += `<div class="comment-item"><b>@${c.user}</b><p>${c.text}</p></div>`;
-        });
-        document.getElementById("active-comment-btn").onclick = () =>
-          sendComment(pid);
-        openScreen("comment-view");
-      }
-
-      async function sendComment(pid) {
-        const input = document.getElementById("active-comment-input");
-        await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "comment",
-            pid: pid,
-            uid: currentUser,
-            content: input.value,
-          }),
-        });
-        input.value = "";
-        loadFeed(true);
-        openScreen("home");
+      async function viewProfile(u) {
+        if (u === currentUser) return openScreen("profile");
+        viewTarget = u;
+        openScreen("user-profile");
+        document.getElementById("view-name").innerText = "@" + u;
+        fetchStats(u, "user-profile-stats");
+        const r = await fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`);
+        const res = await r.json();
+        document.getElementById("view-pfp").src =
+          res.data.pic || `https://ui-avatars.com/api/?name=${u}`;
       }
 
       async function loadDMList() {
@@ -744,15 +783,14 @@
         document.getElementById("dm-list-container").innerHTML = data.data
           .filter((u) => u.username !== currentUser)
           .map(
-            (u) => `
-        <div class="hx-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="startChat('${
-          u.username
-        }')">
-            <img src="${
-              u.pic || "https://ui-avatars.com/api/?name=" + u.username
-            }" class="hx-pfp" style="width:35px; height:35px;">
-            <b>@${u.username}</b>
-        </div>`
+            (u) =>
+              `<div class="hx-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="startChat('${
+                u.username
+              }')"><img src="${
+                u.pic || "https://ui-avatars.com/api/?name=" + u.username
+              }" class="hx-pfp" style="width:35px; height:35px;"><b>@${
+                u.username
+              }</b></div>`
           )
           .join("");
       }
@@ -797,6 +835,22 @@
         loadDMs();
       }
 
+      async function submitBroadcast() {
+        const t = document.getElementById("postText").value;
+        const m = document.getElementById("imageUrlInput").value;
+        document.getElementById("bg-loader").style.display = "block";
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "post",
+            uid: currentUser,
+            content: t,
+            media: m,
+          }),
+        });
+        location.reload();
+      }
+
       function handleFab() {
         currentUser ? openScreen("compose") : openScreen("profile");
       }
@@ -813,12 +867,6 @@
           v === "login" ? "block" : "none";
         document.getElementById("signup-view").style.display =
           v === "signup" ? "block" : "none";
-      }
-      function viewProfile(u) {
-        viewTarget = u;
-        openScreen("user-profile");
-        document.getElementById("view-name").innerText = "@" + u;
-        fetchStats(u, "stat-followers");
       }
 
       if (currentUser) loadFeed();
