@@ -40,7 +40,7 @@
         scroll-behavior: smooth;
       }
 
-      /* ELITE UI STYLES */
+      /* ELITE NAME STYLES */
       .name-owner {
         color: var(--owner) !important;
         text-shadow: 0 0 10px rgba(248, 113, 113, 0.4);
@@ -55,12 +55,10 @@
       @keyframes ownerGlow {
         0%,
         100% {
-          opacity: 1;
           filter: brightness(1);
         }
         50% {
-          opacity: 0.9;
-          filter: brightness(1.2);
+          filter: brightness(1.3);
         }
       }
 
@@ -165,13 +163,40 @@
         object-fit: cover;
       }
 
+      /* RESTORED STATS STYLING */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin: 15px 0;
+      }
+      .stat-card {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 12px;
+        border-radius: 14px;
+        text-align: center;
+        border: 1px solid var(--border);
+      }
+      .stat-num {
+        display: block;
+        font-size: 20px;
+        font-weight: 900;
+        color: var(--primary);
+        margin-bottom: 2px;
+      }
+      .stat-label {
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
       .card-top-actions {
         position: absolute;
         top: 18px;
         right: 15px;
         display: flex;
         gap: 14px;
-        background: var(--card);
       }
       .hx-util-btn {
         color: var(--muted);
@@ -668,6 +693,78 @@
         localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
       }
 
+      function buildStatHTML(data) {
+        return `
+        <div class="stat-card"><span class="stat-num">${
+          data.followers || 0
+        }</span><span class="stat-label">Followers</span></div>
+        <div class="stat-card"><span class="stat-num">${
+          data.following || 0
+        }</span><span class="stat-label">Following</span></div>
+    `;
+      }
+
+      async function viewProfile(u) {
+        if (u === currentUser) return openScreen("profile");
+        viewTarget = u;
+        openScreen("user-profile");
+        document.getElementById("view-name").innerHTML = getEliteName(u);
+        fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
+          .then((r) => r.json())
+          .then((res) => {
+            document.getElementById("view-pfp").src =
+              res.data.pic || `https://ui-avatars.com/api/?name=${u}`;
+            document.getElementById("view-bio").innerText =
+              res.data.bio || "No bio.";
+            roleCache[u.toLowerCase()] = (res.data.role || "User").trim();
+            localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
+            document.getElementById("view-name").innerHTML = getEliteName(u);
+          });
+        const myStats = await fetchStats(currentUser, null);
+        document.getElementById("followBtn").innerText = (
+          myStats.followingList || []
+        ).includes(viewTarget)
+          ? "Unfollow"
+          : "Follow";
+        const targetStats = await fetchStats(u, "user-profile-stats");
+      }
+
+      function checkUserStatus() {
+        if (currentUser) {
+          document.getElementById("login-view").style.display = "none";
+          document.getElementById("profile-box").style.display = "block";
+          fetchStats(currentUser, "my-stats");
+          fetch(`${SCRIPT_URL}?action=get_user_data&uid=${currentUser}`)
+            .then((r) => r.json())
+            .then((res) => {
+              document.getElementById("pfpBig").src =
+                res.data.pic ||
+                `https://ui-avatars.com/api/?name=${currentUser}`;
+              document.getElementById("bioDisplay").innerText =
+                res.data.bio || "No bio.";
+              document.getElementById("updateBio").value = res.data.bio || "";
+              currentRole = (res.data.role || "User").trim();
+              roleCache[currentUser.toLowerCase()] = currentRole;
+              localStorage.setItem("hx_comm_role", currentRole);
+              localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
+              document.getElementById("nameDisplay").innerHTML =
+                getEliteName(currentUser);
+            });
+        }
+      }
+
+      async function fetchStats(uid, elementId) {
+        const r = await fetch(
+          `${SCRIPT_URL}?action=get_social_stats&uid=${uid}`
+        );
+        const res = await r.json();
+        if (elementId)
+          document.getElementById(elementId).innerHTML = buildStatHTML(
+            res.data
+          );
+        return res.data;
+      }
+
       async function uploadToCatbox(fileInput, hiddenId, statusId) {
         const file = fileInput.files[0];
         if (!file) return;
@@ -707,30 +804,6 @@
         location.reload();
       }
 
-      function checkUserStatus() {
-        if (currentUser) {
-          document.getElementById("login-view").style.display = "none";
-          document.getElementById("profile-box").style.display = "block";
-          fetchStats(currentUser, "my-stats");
-          fetch(`${SCRIPT_URL}?action=get_user_data&uid=${currentUser}`)
-            .then((r) => r.json())
-            .then((res) => {
-              document.getElementById("pfpBig").src =
-                res.data.pic ||
-                `https://ui-avatars.com/api/?name=${currentUser}`;
-              document.getElementById("bioDisplay").innerText =
-                res.data.bio || "No bio.";
-              document.getElementById("updateBio").value = res.data.bio || "";
-              currentRole = (res.data.role || "User").trim();
-              roleCache[currentUser.toLowerCase()] = currentRole;
-              localStorage.setItem("hx_comm_role", currentRole);
-              localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
-              document.getElementById("nameDisplay").innerHTML =
-                getEliteName(currentUser);
-            });
-        }
-      }
-
       async function loadDMList() {
         const res = await fetch(`${SCRIPT_URL}?action=get_users`);
         const data = await res.json();
@@ -748,7 +821,7 @@
               u.username.toLowerCase().includes(query)
           )
           .map((u) => {
-            roleCache[u.username.toLowerCase()] = u.role;
+            if (u.role) roleCache[u.username.toLowerCase()] = u.role;
             return `<div class="hx-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="startChat('${
               u.username
             }')">
@@ -760,121 +833,6 @@
           })
           .join("");
         localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
-      }
-
-      async function viewProfile(u) {
-        if (u === currentUser) return openScreen("profile");
-        viewTarget = u;
-        openScreen("user-profile");
-        document.getElementById("view-name").innerHTML = getEliteName(u);
-        fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
-          .then((r) => r.json())
-          .then((res) => {
-            document.getElementById("view-pfp").src =
-              res.data.pic || `https://ui-avatars.com/api/?name=${u}`;
-            document.getElementById("view-bio").innerText =
-              res.data.bio || "No bio.";
-            roleCache[u.toLowerCase()] = (res.data.role || "User").trim();
-            localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
-            document.getElementById("view-name").innerHTML = getEliteName(u);
-          });
-        const mySocial = await fetchStats(currentUser, null);
-        document.getElementById("followBtn").innerText = (
-          mySocial.followingList || []
-        ).includes(viewTarget)
-          ? "Unfollow"
-          : "Follow";
-        await fetchStats(u, "user-profile-stats");
-      }
-
-      async function deletePost(pid, author) {
-        if (!confirm("Delete forever?")) return;
-        document.getElementById(`post-${pid}`).style.display = "none";
-        if (
-          (currentRole === "Admin" || currentRole === "Owner") &&
-          author !== currentUser
-        ) {
-          await fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({
-              action: "dm",
-              uid: currentUser,
-              target: author,
-              message:
-                "*System Warning:* An admin has deleted your post. Please mind what you broadcast.",
-            }),
-          });
-        }
-        await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "delete_post",
-            pid: pid,
-            uid: currentUser,
-          }),
-        });
-      }
-
-      async function userAuth(mode) {
-        let payload = {
-          action: mode,
-          username: document.getElementById(
-            mode === "login" ? "logUser" : "sigUser"
-          ).value,
-          password: document.getElementById(
-            mode === "login" ? "logPass" : "sigPass"
-          ).value,
-        };
-        if (mode === "signup") {
-          payload.email = document.getElementById("sigEmail").value;
-          payload.pic = document.getElementById("sigPfp").value;
-        }
-        const r = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
-        const res = await r.json();
-        if (res.status === "Success") {
-          localStorage.setItem("hx_comm_user", res.data.username);
-          localStorage.setItem(
-            "hx_comm_role",
-            (res.data.role || "User").trim()
-          );
-          location.reload();
-        } else alert(res.data);
-      }
-
-      async function fetchStats(uid, elementId) {
-        const r = await fetch(
-          `${SCRIPT_URL}?action=get_social_stats&uid=${uid}`
-        );
-        const res = await r.json();
-        if (elementId)
-          document.getElementById(
-            elementId
-          ).innerHTML = `<div class="stat-card"><span class="stat-num">${
-            res.data.followers || 0
-          }</span>Followers</div><div class="stat-card"><span class="stat-num">${
-            res.data.following || 0
-          }</span>Following</div>`;
-        return res.data;
-      }
-
-      async function toggleFollow() {
-        const btn = document.getElementById("followBtn");
-        btn.disabled = true;
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "follow",
-            uid: currentUser,
-            target: viewTarget,
-          }),
-        });
-        btn.innerText =
-          (await res.json()).data === "Followed" ? "Unfollow" : "Follow";
-        await fetchStats(viewTarget, "user-profile-stats");
-        btn.disabled = false;
       }
 
       async function startChat(t) {
@@ -927,7 +885,7 @@
           .then((res) => {
             const p = res.data.find((x) => x.pid === pid);
             const list = document.getElementById("full-comment-list");
-            list.innerHTML = p.recent_comments.length
+            list.innerHTML = p.recent_comments
               ? ""
               : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments.</p>";
             p.recent_comments.forEach((c) => {
@@ -988,9 +946,42 @@
         if (id === "profile") checkUserStatus();
       }
 
+      async function doLike(pid, btn) {
+        if (!currentUser || likedPosts.includes(pid)) return;
+        likedPosts.push(pid);
+        localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
+        btn.classList.add("liked");
+        btn.querySelector(".l-count").innerText =
+          parseInt(btn.querySelector(".l-count").innerText) + 1;
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "like", pid: pid, uid: currentUser }),
+        });
+      }
+
+      async function toggleFollow() {
+        const btn = document.getElementById("followBtn");
+        btn.disabled = true;
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "follow",
+            uid: currentUser,
+            target: viewTarget,
+          }),
+        });
+        btn.innerText =
+          (await res.json()).data === "Followed" ? "Unfollow" : "Follow";
+        await fetchStats(viewTarget, "user-profile-stats");
+        btn.disabled = false;
+      }
+
       function logout() {
         localStorage.clear();
         location.reload();
+      }
+      function handleFab() {
+        currentUser ? openScreen("compose") : openScreen("profile");
       }
       function toggleAuthView(v) {
         document.getElementById("login-view").style.display =
