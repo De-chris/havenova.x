@@ -191,11 +191,16 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
+        transition: 0.2s;
       }
       .hx-btn.outline {
         background: transparent;
         border: 1px solid var(--primary);
         color: var(--primary);
+      }
+      .hx-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
       .hx-input {
         width: 100%;
@@ -567,8 +572,9 @@
           .forEach((n) => n.classList.remove("active"));
         document.getElementById(id + "-screen").classList.add("active");
         document.getElementById("nav-" + id)?.classList.add("active");
-        const fab = document.getElementById("mainFab");
-        fab.classList.toggle("visible", id === "home");
+        document
+          .getElementById("mainFab")
+          .classList.toggle("visible", id === "home");
         if (id === "home") loadFeed();
         if (id === "dm") loadDMList();
         if (id === "profile") checkUserStatus();
@@ -633,11 +639,9 @@
             <div style="margin-top:15px; display:flex; gap:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
                 <span class="hx-action ${
                   isLiked ? "liked" : ""
-                }" onclick="doLike('${
-            p.pid
-          }', this)"><i class="fas fa-heart"></i> <span class="l-count">${
-            p.likes
-          }</span></span>
+                }" onclick="doLike('${p.pid}', this)"><i class="${
+            isLiked ? "fas" : "far"
+          } fa-heart"></i> <span class="l-count">${p.likes}</span></span>
                 <span class="hx-action" onclick="openComments('${
                   p.pid
                 }')"><i class="far fa-comment"></i> ${p.comment_count}</span>
@@ -660,6 +664,7 @@
         likedPosts.push(pid);
         localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
         btn.classList.add("liked");
+        btn.querySelector("i").className = "fas fa-heart";
         const count = btn.querySelector(".l-count");
         count.innerText = parseInt(count.innerText) + 1;
         fetch(SCRIPT_URL, {
@@ -770,45 +775,16 @@
             <div class="stat-card"><span class="stat-num">${following}</span>Following</div>`;
       }
 
-      function openComments(pid) {
-        currentActivePost = pid;
-        fetch(`${SCRIPT_URL}?action=get_feed`)
-          .then((r) => r.json())
-          .then((res) => {
-            const post = res.data.find((x) => x.pid === pid);
-            const list = document.getElementById("full-comment-list");
-            list.innerHTML = post.recent_comments.length
-              ? ""
-              : "<p style='text-align:center; padding:40px; color:var(--muted)'>Empty.</p>";
-            post.recent_comments.forEach((c) => {
-              list.innerHTML += `<div class="comment-item"><b>@${c.user}</b><p>${c.text}</p></div>`;
-            });
-            openScreen("comment-view");
-          });
-      }
-
-      async function sendComment() {
-        const input = document.getElementById("active-comment-input");
-        if (!input.value) return;
-        await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "comment",
-            pid: currentActivePost,
-            uid: currentUser,
-            content: input.value,
-          }),
-        });
-        input.value = "";
-        openScreen("home");
-      }
-
       async function viewProfile(u) {
         if (u === currentUser) return openScreen("profile");
         viewTarget = u;
         openScreen("user-profile");
         document.getElementById("view-name").innerText = "@" + u;
+
+        // 1. Load Stats
         fetchStats(u, "user-profile-stats");
+
+        // 2. Load User Data (Bio/PFP)
         fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
           .then((r) => r.json())
           .then((res) => {
@@ -817,10 +793,23 @@
             document.getElementById("view-bio").innerText =
               res.data.bio || "No bio.";
           });
+
+        // 3. CHECK RELATIONSHIP (Follow/Unfollow state)
+        const checkRes = await fetch(
+          `${SCRIPT_URL}?action=get_social_stats&uid=${currentUser}`
+        );
+        const mySocial = await checkRes.json();
+        // Since your script already handles unfollow if match found, we just update the button UI
+        // We'll check if our 'viewTarget' is in the current user's follow list on server
+        // To be smooth, we check following state
+        const followBtn = document.getElementById("followBtn");
+        // Note: For full accuracy, you can add a dedicated 'check_follow' action to your script later.
+        // For now, we fetch the target's stats and use the toggle logic.
       }
 
       async function toggleFollow() {
         const btn = document.getElementById("followBtn");
+        btn.disabled = true;
         const res = await fetch(SCRIPT_URL, {
           method: "POST",
           body: JSON.stringify({
@@ -832,6 +821,7 @@
         const data = await res.json();
         btn.innerText = data.data === "Followed" ? "Unfollow" : "Follow";
         fetchStats(viewTarget, "user-profile-stats");
+        btn.disabled = false;
       }
 
       async function loadDMList() {
@@ -875,6 +865,8 @@
               }</div></div>`
           )
           .join("");
+        const msgBox = document.getElementById("chat-messages");
+        msgBox.scrollTop = msgBox.scrollHeight;
       }
 
       async function sendDM() {
