@@ -192,7 +192,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
         transition: 0.2s;
       }
       .hx-btn.outline {
@@ -259,20 +258,10 @@
         color: #e2e8f0;
         white-space: pre-wrap;
       }
-      .preview-label {
-        font-size: 10px;
-        color: var(--primary);
-        font-weight: bold;
-        text-transform: uppercase;
-        margin-bottom: 4px;
-        display: block;
-      }
     </style>
   </head>
   <body>
-    <div id="bg-loader">
-      <i class="fas fa-satellite-dish fa-spin"></i> SYNCING...
-    </div>
+    <div id="bg-loader">SYNCING...</div>
 
     <header>
       <img src="logo1.png" class="logo" onclick="openScreen('home')" />
@@ -290,8 +279,17 @@
     <div id="home-screen" class="screen active">
       <div id="feed-container"></div>
     </div>
+
     <div id="dm-screen" class="screen">
       <h3>Messages</h3>
+      <input
+        type="text"
+        id="userSearch"
+        class="hx-input"
+        placeholder="Search users..."
+        oninput="filterUsers()"
+        style="margin-top: 10px"
+      />
       <div id="dm-list-container"></div>
     </div>
 
@@ -348,7 +346,6 @@
           border-top: 1px solid var(--border);
         "
       >
-        <span class="preview-label">Comment Preview:</span>
         <div id="comment-preview" class="live-preview"></div>
         <div style="display: flex; gap: 8px; max-width: 600px; margin: 0 auto">
           <input
@@ -375,7 +372,6 @@
         placeholder="What's happening?"
         oninput="updatePreview('postText', 'post-preview')"
       ></textarea>
-      <span class="preview-label">Live Preview:</span>
       <div id="post-preview" class="live-preview"></div>
       <input
         type="file"
@@ -390,7 +386,6 @@
       >
         <i class="fas fa-camera"></i> Media
       </button>
-      <span id="post-up-status" class="upload-status"></span>
       <input type="hidden" id="imageUrlInput" />
       <button
         class="hx-btn"
@@ -418,15 +413,10 @@
         />
         <button class="hx-btn" onclick="userAuth('login')">Login</button>
         <p
-          style="
-            text-align: center;
-            margin-top: 15px;
-            cursor: pointer;
-            font-size: 14px;
-          "
+          style="text-align: center; margin-top: 15px; cursor: pointer"
           onclick="toggleAuthView('signup')"
         >
-          New? Create Account
+          Create Account
         </p>
       </div>
       <div id="signup-view" style="display: none">
@@ -462,7 +452,6 @@
         >
           Import PFP
         </button>
-        <span id="sig-up-status" class="upload-status"></span>
         <input type="hidden" id="sigPfp" />
         <button
           class="hx-btn"
@@ -489,40 +478,14 @@
           style="color: var(--muted); font-size: 13px; margin-bottom: 10px"
         ></p>
         <div id="my-stats" class="stats-grid"></div>
-        <div
-          style="
-            border-top: 1px solid var(--border);
-            padding-top: 15px;
-            margin-top: 10px;
-          "
-        >
+        <div style="border-top: 1px solid var(--border); padding-top: 15px">
           <input
             type="text"
             id="updateBio"
             class="hx-input"
             placeholder="Edit Bio..."
           />
-          <input
-            type="file"
-            id="updatePfpFile"
-            accept="image/*"
-            style="display: none"
-            onchange="uploadToCatbox(this, 'updatePfpUrl', 'profile-up-status')"
-          />
-          <button
-            class="hx-btn outline"
-            onclick="document.getElementById('updatePfpFile').click()"
-          >
-            Update Picture
-          </button>
-          <span id="profile-up-status" class="upload-status"></span>
-          <input type="hidden" id="updatePfpUrl" />
-          <button
-            class="hx-btn"
-            id="saveProfileBtn"
-            style="margin-top: 10px"
-            onclick="updateProfileData()"
-          >
+          <button class="hx-btn" onclick="updateProfileData()">
             Save Profile
           </button>
         </div>
@@ -578,17 +541,16 @@
         "https://script.google.com/macros/s/AKfycby_XMBGnauA-2fm7b8K96rLUJIpHgeV3VZ_I_mkynLo0vWnVUEdaz-nvwq72ZomydT7SA/exec";
       let currentUser = localStorage.getItem("hx_comm_user");
       let currentRole = localStorage.getItem("hx_comm_role") || "User";
-      let userRolesCache = JSON.parse(
-        localStorage.getItem("hx_roles_cache") || "{}"
-      );
       let likedPosts = JSON.parse(
         localStorage.getItem("hx_comm_liked") || "[]"
       );
       let viewTarget = "";
       let currentActivePost = "";
+      let roleCache = JSON.parse(localStorage.getItem("hx_roles") || "{}");
+      let allUsersData = [];
 
       function getRoleColor(username) {
-        const role = userRolesCache[username?.toLowerCase()] || "User";
+        const role = roleCache[username?.toLowerCase()] || "User";
         if (role === "Owner") return "var(--owner)";
         if (role === "Admin") return "var(--admin)";
         return "#fff";
@@ -616,10 +578,214 @@
       }
 
       function updatePreview(inputId, previewId) {
-        const val = document.getElementById(inputId).value;
-        document.getElementById(previewId).innerHTML = linkify(val) || "...";
+        document.getElementById(previewId).innerHTML =
+          linkify(document.getElementById(inputId).value) || "...";
       }
 
+      async function loadFeed(force = false) {
+        const r = await fetch(`${SCRIPT_URL}?action=get_feed`);
+        const res = await r.json();
+        const container = document.getElementById("feed-container");
+        container.innerHTML = "";
+        res.data.forEach((p) => {
+          roleCache[p.author.toLowerCase()] = p.role; // SYNC ROLE
+          const hasPower = currentRole === "Admin" || currentRole === "Owner";
+          const card = document.createElement("div");
+          card.className = "hx-card";
+          card.id = `post-${p.pid}`;
+          card.innerHTML = `
+            <div class="card-top-actions">
+                <i class="fas fa-share hx-util-btn" onclick="sharePost('${
+                  p.pid
+                }')"></i>
+                <i class="fas fa-paper-plane hx-util-btn" onclick="startChat('${
+                  p.author
+                }')"></i>
+                ${
+                  p.author === currentUser || hasPower
+                    ? `<i class="fas fa-trash hx-util-btn" style="color:var(--error)" onclick="deletePost('${p.pid}', '${p.author}')"></i>`
+                    : ""
+                }
+            </div>
+            <div class="hx-user-row" onclick="viewProfile('${p.author}')">
+                <img src="${
+                  p.pic || "https://ui-avatars.com/api/?name=" + p.author
+                }" class="hx-pfp">
+                <b style="color:${getRoleColor(p.author)}">@${p.author}</b>
+            </div>
+            <div style="white-space:pre-wrap;">${linkify(p.content)}</div>
+            ${p.media ? `<img src="${p.media}" class="hx-media">` : ""}
+            <div style="margin-top:15px; display:flex; gap:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
+                <span class="hx-action ${
+                  likedPosts.includes(p.pid) ? "liked" : ""
+                }" onclick="doLike('${
+            p.pid
+          }', this)"><i class="fas fa-heart"></i> <span class="l-count">${
+            p.likes
+          }</span></span>
+                <span class="hx-action" onclick="openComments('${
+                  p.pid
+                }')"><i class="far fa-comment"></i> ${p.comment_count}</span>
+            </div>`;
+          container.appendChild(card);
+        });
+        localStorage.setItem("hx_roles", JSON.stringify(roleCache));
+      }
+
+      async function deletePost(pid, author) {
+        if (!confirm("Delete broadcast?")) return;
+        document.getElementById(`post-${pid}`).style.display = "none";
+        if (
+          (currentRole === "Admin" || currentRole === "Owner") &&
+          author !== currentUser
+        ) {
+          await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+              action: "dm",
+              uid: currentUser,
+              target: author,
+              message:
+                "*System Warning:* An admin has deleted your post. Please mind what you broadcast.",
+            }),
+          });
+        }
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "delete_post",
+            pid: pid,
+            uid: currentUser,
+          }),
+        });
+      }
+
+      async function userAuth(mode) {
+        let payload = {
+          action: mode,
+          username: document.getElementById("logUser").value,
+          password: document.getElementById("logPass").value,
+        };
+        if (mode === "signup") {
+          payload.username = document.getElementById("sigUser").value;
+          payload.email = document.getElementById("sigEmail").value;
+          payload.password = document.getElementById("sigPass").value;
+          payload.pic = document.getElementById("sigPfp").value;
+        }
+        const r = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        const res = await r.json();
+        if (res.status === "Success") {
+          localStorage.setItem("hx_comm_user", res.data.username);
+          localStorage.setItem("hx_comm_role", res.data.role || "User");
+          location.reload();
+        } else alert(res.data);
+      }
+
+      function checkUserStatus() {
+        if (currentUser) {
+          document.getElementById("login-view").style.display = "none";
+          document.getElementById("profile-box").style.display = "block";
+          document.getElementById("nameDisplay").innerText = "@" + currentUser;
+          fetchStats(currentUser, "my-stats");
+          fetch(`${SCRIPT_URL}?action=get_user_data&uid=${currentUser}`)
+            .then((r) => r.json())
+            .then((res) => {
+              document.getElementById("pfpBig").src =
+                res.data.pic ||
+                `https://ui-avatars.com/api/?name=${currentUser}`;
+              document.getElementById("bioDisplay").innerText =
+                res.data.bio || "No bio.";
+              document.getElementById("updateBio").value = res.data.bio || "";
+              currentRole = res.data.role;
+              localStorage.setItem("hx_comm_role", res.data.role);
+              document.getElementById("nameDisplay").style.color =
+                getRoleColor(currentUser);
+            });
+        }
+      }
+
+      async function loadDMList() {
+        const res = await fetch(`${SCRIPT_URL}?action=get_users`);
+        const data = await res.json();
+        allUsersData = data.data;
+        filterUsers();
+      }
+
+      function filterUsers() {
+        const query = document.getElementById("userSearch").value.toLowerCase();
+        const container = document.getElementById("dm-list-container");
+        container.innerHTML = allUsersData
+          .filter(
+            (u) =>
+              u.username !== currentUser &&
+              u.username.toLowerCase().includes(query)
+          )
+          .map((u) => {
+            roleCache[u.username.toLowerCase()] = u.role;
+            return `<div class="hx-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="startChat('${
+              u.username
+            }')">
+            <img src="${
+              u.pic || "https://ui-avatars.com/api/?name=" + u.username
+            }" class="hx-pfp" style="width:35px; height:35px;">
+            <b style="color:${getRoleColor(u.username)}">@${
+              u.username
+            }</b></div>`;
+          })
+          .join("");
+        localStorage.setItem("hx_roles", JSON.stringify(roleCache));
+      }
+
+      async function viewProfile(u) {
+        if (u === currentUser) return openScreen("profile");
+        viewTarget = u;
+        openScreen("user-profile");
+        document.getElementById("view-name").innerText = "@" + u;
+        document.getElementById("view-name").style.color = getRoleColor(u);
+        fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
+          .then((r) => r.json())
+          .then((res) => {
+            document.getElementById("view-pfp").src =
+              res.data.pic || `https://ui-avatars.com/api/?name=${u}`;
+            document.getElementById("view-bio").innerText =
+              res.data.bio || "No bio.";
+            roleCache[u.toLowerCase()] = res.data.role;
+            localStorage.setItem("hx_roles", JSON.stringify(roleCache));
+            document.getElementById("view-name").style.color = getRoleColor(u);
+          });
+        const mySocial = await fetchStats(currentUser, null);
+        document.getElementById("followBtn").innerText = (
+          mySocial.followingList || []
+        ).includes(viewTarget)
+          ? "Unfollow"
+          : "Follow";
+        await fetchStats(u, "user-profile-stats");
+      }
+
+      // -- REMAINING HELPER FUNCTIONS --
+      async function uploadToCatbox(fileInput, hiddenId, statusId) {
+        const file = fileInput.files[0];
+        if (!file) return;
+        document.getElementById(statusId).innerText = "Syncing...";
+        const fd = new FormData();
+        fd.append("reqtype", "fileupload");
+        fd.append("fileToUpload", file);
+        try {
+          const res = await fetch(
+            "https://corsproxy.io/?" +
+              encodeURIComponent("https://catbox.moe/user/api.php"),
+            { method: "POST", body: fd }
+          );
+          const url = await res.text();
+          document.getElementById(hiddenId).value = url.trim();
+          document.getElementById(statusId).innerText = "Linked! ✅";
+        } catch (e) {
+          document.getElementById(statusId).innerText = "Failed ❌";
+        }
+      }
       function openScreen(id) {
         document
           .querySelectorAll(".screen")
@@ -636,259 +802,21 @@
         if (id === "dm") loadDMList();
         if (id === "profile") checkUserStatus();
       }
-
-      async function uploadToCatbox(fileInput, hiddenId, statusId) {
-        const file = fileInput.files[0];
-        if (!file) return;
-        document.getElementById(statusId).innerText = "Syncing...";
-        const formData = new FormData();
-        formData.append("reqtype", "fileupload");
-        formData.append("fileToUpload", file);
-        try {
-          const res = await fetch(
-            "https://corsproxy.io/?" +
-              encodeURIComponent("https://catbox.moe/user/api.php"),
-            { method: "POST", body: formData }
-          );
-          const url = await res.text();
-          document.getElementById(hiddenId).value = url.trim();
-          document.getElementById(statusId).innerText = "Linked! ✅";
-          if (hiddenId === "sigPfp" || hiddenId === "updatePfpUrl")
-            document.getElementById("pfpBig").src = url.trim();
-        } catch (e) {
-          document.getElementById(statusId).innerText = "Failed ❌";
-        }
-      }
-
-      async function loadFeed(force = false) {
-        const r = await fetch(`${SCRIPT_URL}?action=get_feed`);
-        const res = await r.json();
-        const container = document.getElementById("feed-container");
-        container.innerHTML = "";
-        res.data.forEach((p) => {
-          userRolesCache[p.author.toLowerCase()] = p.role;
-          const isOwner = p.author === currentUser;
-          const isAdminTier =
-            currentRole === "Admin" || currentRole === "Owner";
-          const isLiked = likedPosts.includes(p.pid);
-          const card = document.createElement("div");
-          card.className = "hx-card";
-          card.id = `post-${p.pid}`;
-          card.innerHTML = `
-            <div class="card-top-actions">
-                <i class="fas fa-share hx-util-btn" onclick="sharePost('${
-                  p.pid
-                }')"></i>
-                <i class="fas fa-paper-plane hx-util-btn" onclick="startChat('${
-                  p.author
-                }')"></i>
-                ${
-                  isOwner || isAdminTier
-                    ? `<i class="fas fa-trash hx-util-btn" style="color:var(--error)" onclick="deletePost('${p.pid}', '${p.author}')"></i>`
-                    : ""
-                }
-            </div>
-            <div class="hx-user-row" onclick="viewProfile('${p.author}')">
-                <img src="${
-                  p.pic || "https://ui-avatars.com/api/?name=" + p.author
-                }" class="hx-pfp">
-                <b style="color:${getRoleColor(p.author)}">@${p.author}</b>
-            </div>
-            <div style="white-space:pre-wrap;">${linkify(p.content)}</div>
-            ${p.media ? `<img src="${p.media}" class="hx-media">` : ""}
-            <div style="margin-top:15px; display:flex; gap:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
-                <span class="hx-action ${
-                  isLiked ? "liked" : ""
-                }" onclick="doLike('${
-            p.pid
-          }', this)"><i class="fas fa-heart"></i> <span class="l-count">${
-            p.likes
-          }</span></span>
-                <span class="hx-action" onclick="openComments('${
-                  p.pid
-                }')"><i class="far fa-comment"></i> ${p.comment_count}</span>
-            </div>`;
-          container.appendChild(card);
-        });
-        localStorage.setItem("hx_roles_cache", JSON.stringify(userRolesCache));
-      }
-
-      async function deletePost(pid, author) {
-        if (!confirm("Delete forever?")) return;
-        document.getElementById(`post-${pid}`).style.display = "none";
-
-        // Auto-Warning if Admin/Owner deletes someone else's post
-        if (
-          (currentRole === "Admin" || currentRole === "Owner") &&
-          author !== currentUser
-        ) {
-          await fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({
-              action: "dm",
-              uid: currentUser,
-              target: author,
-              message:
-                "*System Warning:* An admin has deleted your post. Please mind what you broadcast to the community.",
-            }),
-          });
-        }
-
-        fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "delete_post",
-            pid: pid,
-            uid: currentUser,
-          }),
-        });
-      }
-
-      function sharePost(pid) {
-        const url = `${window.location.origin}${window.location.pathname}?post=${pid}`;
-        if (navigator.share) navigator.share({ title: "HX Post", url: url });
-        else {
-          navigator.clipboard.writeText(url);
-          alert("Link copied!");
-        }
-      }
-
-      async function doLike(pid, btn) {
-        if (!currentUser || likedPosts.includes(pid)) return;
-        likedPosts.push(pid);
-        localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
-        btn.classList.add("liked");
-        btn.querySelector(".l-count").innerText =
-          parseInt(btn.querySelector(".l-count").innerText) + 1;
-        fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "like", pid: pid, uid: currentUser }),
-        });
-      }
-
-      async function updateProfileData() {
-        const updates = JSON.parse(
-          localStorage.getItem(`updates_${currentUser}`) || "[]"
-        );
-        const now = Date.now();
-        const last7Days = updates.filter((t) => now - t < 7 * 86400000);
-        if (last7Days.length >= 2)
-          return alert("Limit reached: 2 updates per week.");
-        const bio = document.getElementById("updateBio").value.trim();
-        const pic = document.getElementById("updatePfpUrl").value.trim();
-        document.getElementById("bg-loader").style.display = "block";
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "update_profile",
-            uid: currentUser,
-            pic: pic,
-            bio: bio,
-          }),
-        });
-        const data = await res.json();
-        if (data.status === "Success") {
-          last7Days.push(now);
-          localStorage.setItem(
-            `updates_${currentUser}`,
-            JSON.stringify(last7Days)
-          );
-          location.reload();
-        }
-      }
-
-      async function userAuth(mode) {
-        let payload = {
-          action: mode,
-          username: document.getElementById("logUser").value,
-          password: document.getElementById("logPass").value,
-        };
-        if (mode === "signup") {
-          payload.username = document.getElementById("sigUser").value;
-          payload.email = document.getElementById("sigEmail").value;
-          payload.password = document.getElementById("sigPass").value;
-          payload.pic = document.getElementById("sigPfp").value;
-        }
-        document.getElementById("bg-loader").style.display = "block";
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
-        const data = await res.json();
-        if (data.status === "Success") {
-          localStorage.setItem("hx_comm_user", data.data.username);
-          localStorage.setItem("hx_comm_role", data.data.role || "User");
-          location.reload();
-        } else alert(data.data);
-      }
-
-      function checkUserStatus() {
-        if (currentUser) {
-          document.getElementById("login-view").style.display = "none";
-          document.getElementById("profile-box").style.display = "block";
-          document.getElementById("nameDisplay").innerText = "@" + currentUser;
-          document.getElementById("nameDisplay").style.color =
-            getRoleColor(currentUser);
-          fetchStats(currentUser, "my-stats");
-          fetch(`${SCRIPT_URL}?action=get_user_data&uid=${currentUser}`)
-            .then((r) => r.json())
-            .then((res) => {
-              document.getElementById("pfpBig").src =
-                res.data.pic ||
-                `https://ui-avatars.com/api/?name=${currentUser}`;
-              document.getElementById("bioDisplay").innerText =
-                res.data.bio || "No bio yet.";
-              document.getElementById("updateBio").value = res.data.bio || "";
-              currentRole = res.data.role || "User";
-              localStorage.setItem("hx_comm_role", currentRole);
-            });
-        }
-      }
-
       async function fetchStats(uid, elementId) {
         const r = await fetch(
           `${SCRIPT_URL}?action=get_social_stats&uid=${uid}`
         );
         const res = await r.json();
-        const fers = res.data.followers || 0;
-        const fing = res.data.following || 0;
-        const container = document.getElementById(elementId);
-        if (container) {
-          container.innerHTML = `<div class="stat-card"><span class="stat-num">${fers}</span>Followers</div><div class="stat-card"><span class="stat-num">${fing}</span>Following</div>`;
-        }
+        if (elementId)
+          document.getElementById(
+            elementId
+          ).innerHTML = `<div class="stat-card"><span class="stat-num">${
+            res.data.followers || 0
+          }</span>Followers</div><div class="stat-card"><span class="stat-num">${
+            res.data.following || 0
+          }</span>Following</div>`;
         return res.data;
       }
-
-      async function viewProfile(u) {
-        if (u === currentUser) return openScreen("profile");
-        viewTarget = u;
-        openScreen("user-profile");
-        document.getElementById("view-name").innerText = "@" + u;
-        document.getElementById("view-name").style.color = getRoleColor(u);
-        const followBtn = document.getElementById("followBtn");
-        followBtn.innerText = "...";
-        fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
-          .then((r) => r.json())
-          .then((res) => {
-            document.getElementById("view-pfp").src =
-              res.data.pic || `https://ui-avatars.com/api/?name=${u}`;
-            document.getElementById("view-bio").innerText =
-              res.data.bio || "No bio.";
-            userRolesCache[u.toLowerCase()] = res.data.role;
-            localStorage.setItem(
-              "hx_roles_cache",
-              JSON.stringify(userRolesCache)
-            );
-          });
-        const mySocial = await fetchStats(currentUser, null);
-        followBtn.innerText = (mySocial.followingList || []).includes(
-          viewTarget
-        )
-          ? "Unfollow"
-          : "Follow";
-        await fetchStats(u, "user-profile-stats");
-      }
-
       async function toggleFollow() {
         const btn = document.getElementById("followBtn");
         btn.disabled = true;
@@ -905,28 +833,6 @@
         await fetchStats(viewTarget, "user-profile-stats");
         btn.disabled = false;
       }
-
-      async function loadDMList() {
-        const res = await fetch(`${SCRIPT_URL}?action=get_users`);
-        const data = await res.json();
-        document.getElementById("dm-list-container").innerHTML = data.data
-          .filter((u) => u.username !== currentUser)
-          .map((u) => {
-            userRolesCache[u.username.toLowerCase()] = u.role;
-            return `<div class="hx-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="startChat('${
-              u.username
-            }')">
-              <img src="${
-                u.pic || "https://ui-avatars.com/api/?name=" + u.username
-              }" class="hx-pfp" style="width:35px; height:35px;">
-              <b style="color:${getRoleColor(u.username)}">@${
-              u.username
-            }</b></div>`;
-          })
-          .join("");
-        localStorage.setItem("hx_roles_cache", JSON.stringify(userRolesCache));
-      }
-
       async function startChat(t) {
         viewTarget = t;
         openScreen("chat-view");
@@ -955,7 +861,6 @@
         document.getElementById("chat-messages").scrollTop =
           document.getElementById("chat-messages").scrollHeight;
       }
-
       async function sendDM() {
         const i = document.getElementById("msgInput");
         if (!i.value) return;
@@ -971,18 +876,17 @@
         i.value = "";
         loadDMs();
       }
-
       function openComments(pid) {
         currentActivePost = pid;
         fetch(`${SCRIPT_URL}?action=get_feed`)
           .then((r) => r.json())
           .then((res) => {
-            const post = res.data.find((x) => x.pid === pid);
+            const p = res.data.find((x) => x.pid === pid);
             const list = document.getElementById("full-comment-list");
-            list.innerHTML = post.recent_comments.length
+            list.innerHTML = p.recent_comments.length
               ? ""
               : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments.</p>";
-            post.recent_comments.forEach((c) => {
+            p.recent_comments.forEach((c) => {
               list.innerHTML += `<div class="comment-item"><b style="color:${getRoleColor(
                 c.user
               )}">@${c.user}</b><p>${linkify(c.text)}</p></div>`;
@@ -990,7 +894,6 @@
             openScreen("comment-view");
           });
       }
-
       async function sendComment() {
         const input = document.getElementById("active-comment-input");
         if (!input.value) return;
@@ -1004,10 +907,8 @@
           }),
         });
         input.value = "";
-        document.getElementById("comment-preview").innerHTML = "";
         openScreen("home");
       }
-
       async function submitBroadcast() {
         const t = document.getElementById("postText").value;
         const m = document.getElementById("imageUrlInput").value;
@@ -1023,13 +924,23 @@
         });
         location.reload();
       }
-
+      async function updateProfileData() {
+        const bio = document.getElementById("updateBio").value.trim();
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "update_profile",
+            uid: currentUser,
+            bio: bio,
+          }),
+        });
+        location.reload();
+      }
       function handleFab() {
         currentUser ? openScreen("compose") : openScreen("profile");
       }
       function logout() {
-        localStorage.removeItem("hx_comm_user");
-        localStorage.removeItem("hx_comm_role");
+        localStorage.clear();
         location.reload();
       }
       function toggleAuthView(v) {
@@ -1037,6 +948,14 @@
           v === "login" ? "block" : "none";
         document.getElementById("signup-view").style.display =
           v === "signup" ? "block" : "none";
+      }
+      function sharePost(pid) {
+        const url = `${window.location.origin}${window.location.pathname}?post=${pid}`;
+        if (navigator.share) navigator.share({ title: "HX Post", url: url });
+        else {
+          navigator.clipboard.writeText(url);
+          alert("Link copied!");
+        }
       }
 
       if (currentUser) loadFeed();
