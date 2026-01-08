@@ -22,8 +22,8 @@
         --primary: #38bdf8;
         --error: #ef4444;
         --success: #22c55e;
-        --admin: #3b82f6;
-        --owner: #ef4444;
+        --admin: #60a5fa;
+        --owner: #f87171;
       }
       * {
         box-sizing: border-box;
@@ -39,6 +39,31 @@
         overflow-x: hidden;
         scroll-behavior: smooth;
       }
+
+      /* ELITE NAME STYLES */
+      .name-owner {
+        color: var(--owner) !important;
+        text-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+        font-weight: 800 !important;
+        animation: ownerPulse 2s infinite;
+      }
+      .name-admin {
+        color: var(--admin) !important;
+        text-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+        font-weight: 700 !important;
+      }
+      @keyframes ownerPulse {
+        0% {
+          text-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+        }
+        50% {
+          text-shadow: 0 0 15px rgba(239, 68, 68, 0.9);
+        }
+        100% {
+          text-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+        }
+      }
+
       .screen {
         display: none !important;
         padding: 15px;
@@ -135,49 +160,6 @@
         max-height: 400px;
         object-fit: cover;
       }
-      .hx-action {
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-right: 20px;
-        font-size: 14px;
-        color: var(--muted);
-      }
-      .hx-action.liked {
-        color: var(--error) !important;
-      }
-      .card-top-actions {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        display: flex;
-        gap: 12px;
-      }
-      .hx-util-btn {
-        color: var(--muted);
-        font-size: 14px;
-        cursor: pointer;
-      }
-      .stats-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin: 15px 0;
-      }
-      .stat-card {
-        background: rgba(255, 255, 255, 0.05);
-        padding: 12px;
-        border-radius: 12px;
-        text-align: center;
-        border: 1px solid var(--border);
-      }
-      .stat-num {
-        display: block;
-        font-size: 18px;
-        font-weight: bold;
-        color: var(--primary);
-      }
       .hx-btn {
         background: var(--primary);
         color: #000;
@@ -228,13 +210,13 @@
         color: var(--primary);
       }
       .live-preview {
-        background: rgba(56, 189, 248, 0.05);
-        border: 1px dashed var(--primary);
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px dashed var(--border);
         padding: 10px;
         border-radius: 10px;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
         font-size: 14px;
-        color: #e2e8f0;
+        color: #94a3b8;
         white-space: pre-wrap;
         min-height: 40px;
       }
@@ -539,19 +521,18 @@
         localStorage.getItem("hx_comm_liked") || "[]"
       );
       let viewTarget = "";
-      let currentActivePost = "";
       let roleCache = JSON.parse(
         localStorage.getItem("hx_roles_cache") || "{}"
       );
       let allUsersData = [];
 
-      // Apply color based on the role found in our cache
-      function getRoleColor(username) {
-        if (!username) return "#fff";
-        const role = roleCache[username.toLowerCase()] || "User";
-        if (role === "Owner") return "var(--owner)";
-        if (role === "Admin") return "var(--admin)";
-        return "#fff";
+      function getEliteName(username) {
+        const role = (roleCache[username?.toLowerCase()] || "User").trim();
+        if (role === "Owner")
+          return `<span class="name-owner">@${username} <i class="fas fa-shield-alt"></i></span>`;
+        if (role === "Admin")
+          return `<span class="name-admin">@${username} <i class="fas fa-bolt"></i></span>`;
+        return `<span>@${username}</span>`;
       }
 
       function linkify(text) {
@@ -569,9 +550,9 @@
           .replace(
             /@(\w+)/g,
             (m, u) =>
-              `<span style="color:${getRoleColor(
+              `<span onclick="viewProfile('${u}')" style="cursor:pointer">${getEliteName(
                 u
-              )}; font-weight:bold; cursor:pointer;" onclick="viewProfile('${u}')">@${u}</span>`
+              )}</span>`
           );
       }
 
@@ -586,9 +567,7 @@
         const container = document.getElementById("feed-container");
         container.innerHTML = "";
         res.data.forEach((p) => {
-          // Force sync the role into cache
-          if (p.role) roleCache[p.author.toLowerCase()] = p.role;
-
+          roleCache[p.author.toLowerCase()] = p.role;
           const hasPower = currentRole === "Admin" || currentRole === "Owner";
           const card = document.createElement("div");
           card.className = "hx-card";
@@ -611,9 +590,11 @@
                 <img src="${
                   p.pic || "https://ui-avatars.com/api/?name=" + p.author
                 }" class="hx-pfp">
-                <b style="color:${getRoleColor(p.author)}">@${p.author}</b>
+                <b>${getEliteName(p.author)}</b>
             </div>
-            <div style="white-space:pre-wrap;">${linkify(p.content)}</div>
+            <div style="white-space:pre-wrap; margin-top:5px;">${linkify(
+              p.content
+            )}</div>
             ${p.media ? `<img src="${p.media}" class="hx-media">` : ""}
             <div style="margin-top:15px; display:flex; gap:25px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
                 <span class="hx-action ${
@@ -632,116 +613,8 @@
         localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
       }
 
-      async function viewProfile(u) {
-        if (u === currentUser) return openScreen("profile");
-        viewTarget = u;
-        openScreen("user-profile");
-        document.getElementById("view-name").innerText = "@" + u;
-
-        // First, set color from cache immediately
-        document.getElementById("view-name").style.color = getRoleColor(u);
-
-        fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
-          .then((r) => r.json())
-          .then((res) => {
-            document.getElementById("view-pfp").src =
-              res.data.pic || `https://ui-avatars.com/api/?name=${u}`;
-            document.getElementById("view-bio").innerText =
-              res.data.bio || "No bio.";
-
-            // Refresh role and color from database
-            if (res.data.role) {
-              roleCache[u.toLowerCase()] = res.data.role;
-              localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
-              document.getElementById("view-name").style.color =
-                getRoleColor(u);
-            }
-          });
-        const mySocial = await fetchStats(currentUser, null);
-        document.getElementById("followBtn").innerText = (
-          mySocial.followingList || []
-        ).includes(viewTarget)
-          ? "Unfollow"
-          : "Follow";
-        await fetchStats(u, "user-profile-stats");
-      }
-
-      function checkUserStatus() {
-        if (currentUser) {
-          document.getElementById("login-view").style.display = "none";
-          document.getElementById("profile-box").style.display = "block";
-          document.getElementById("nameDisplay").innerText = "@" + currentUser;
-          fetchStats(currentUser, "my-stats");
-          fetch(`${SCRIPT_URL}?action=get_user_data&uid=${currentUser}`)
-            .then((r) => r.json())
-            .then((res) => {
-              document.getElementById("pfpBig").src =
-                res.data.pic ||
-                `https://ui-avatars.com/api/?name=${currentUser}`;
-              document.getElementById("bioDisplay").innerText =
-                res.data.bio || "No bio.";
-              document.getElementById("updateBio").value = res.data.bio || "";
-
-              // Sync Current User Role
-              if (res.data.role) {
-                currentRole = res.data.role;
-                localStorage.setItem("hx_comm_role", currentRole);
-                roleCache[currentUser.toLowerCase()] = currentRole;
-                localStorage.setItem(
-                  "hx_roles_cache",
-                  JSON.stringify(roleCache)
-                );
-                document.getElementById("nameDisplay").style.color =
-                  getRoleColor(currentUser);
-              }
-            });
-        }
-      }
-
-      // --- ALL OTHER CORE LOGIC (DM, FOLLOW, ETC) MAINTAINED ---
-
-      async function loadDMList() {
-        const res = await fetch(`${SCRIPT_URL}?action=get_users`);
-        const data = await res.json();
-        allUsersData = data.data;
-        filterUsers();
-      }
-
-      function filterUsers() {
-        const query = document.getElementById("userSearch").value.toLowerCase();
-        const container = document.getElementById("dm-list-container");
-        container.innerHTML = allUsersData
-          .filter(
-            (u) =>
-              u.username !== currentUser &&
-              u.username.toLowerCase().includes(query)
-          )
-          .map((u) => {
-            if (u.role) roleCache[u.username.toLowerCase()] = u.role;
-            return `<div class="hx-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="startChat('${
-              u.username
-            }')">
-            <img src="${
-              u.pic || "https://ui-avatars.com/api/?name=" + u.username
-            }" class="hx-pfp" style="width:35px; height:35px;">
-            <b style="color:${getRoleColor(u.username)}">@${u.username}</b>
-        </div>`;
-          })
-          .join("");
-        localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
-      }
-
-      async function startChat(t) {
-        viewTarget = t;
-        openScreen("chat-view");
-        document.getElementById("chat-target-name").innerText = "@" + t;
-        document.getElementById("chat-target-name").style.color =
-          getRoleColor(t);
-        loadDMs();
-      }
-
       async function deletePost(pid, author) {
-        if (!confirm("Delete forever?")) return;
+        if (!confirm("Delete broadcast?")) return;
         document.getElementById(`post-${pid}`).style.display = "none";
         if (
           (currentRole === "Admin" || currentRole === "Owner") &&
@@ -787,11 +660,95 @@
         const res = await r.json();
         if (res.status === "Success") {
           localStorage.setItem("hx_comm_user", res.data.username);
-          localStorage.setItem("hx_comm_role", res.data.role || "User");
+          localStorage.setItem(
+            "hx_comm_role",
+            (res.data.role || "User").trim()
+          );
           location.reload();
         } else alert(res.data);
       }
 
+      function checkUserStatus() {
+        if (currentUser) {
+          document.getElementById("login-view").style.display = "none";
+          document.getElementById("profile-box").style.display = "block";
+          fetchStats(currentUser, "my-stats");
+          fetch(`${SCRIPT_URL}?action=get_user_data&uid=${currentUser}`)
+            .then((r) => r.json())
+            .then((res) => {
+              document.getElementById("pfpBig").src =
+                res.data.pic ||
+                `https://ui-avatars.com/api/?name=${currentUser}`;
+              document.getElementById("bioDisplay").innerText =
+                res.data.bio || "No bio.";
+              document.getElementById("updateBio").value = res.data.bio || "";
+              currentRole = (res.data.role || "User").trim();
+              roleCache[currentUser.toLowerCase()] = currentRole;
+              localStorage.setItem("hx_comm_role", currentRole);
+              localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
+              document.getElementById("nameDisplay").innerHTML =
+                getEliteName(currentUser);
+            });
+        }
+      }
+
+      async function loadDMList() {
+        const res = await fetch(`${SCRIPT_URL}?action=get_users`);
+        const data = await res.json();
+        allUsersData = data.data;
+        filterUsers();
+      }
+
+      function filterUsers() {
+        const query = document.getElementById("userSearch").value.toLowerCase();
+        const container = document.getElementById("dm-list-container");
+        container.innerHTML = allUsersData
+          .filter(
+            (u) =>
+              u.username !== currentUser &&
+              u.username.toLowerCase().includes(query)
+          )
+          .map((u) => {
+            roleCache[u.username.toLowerCase()] = u.role;
+            return `<div class="hx-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" onclick="startChat('${
+              u.username
+            }')">
+            <img src="${
+              u.pic || "https://ui-avatars.com/api/?name=" + u.username
+            }" class="hx-pfp" style="width:35px; height:35px;">
+            <b>${getEliteName(u.username)}</b>
+        </div>`;
+          })
+          .join("");
+        localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
+      }
+
+      async function viewProfile(u) {
+        if (u === currentUser) return openScreen("profile");
+        viewTarget = u;
+        openScreen("user-profile");
+        document.getElementById("view-name").innerHTML = getEliteName(u);
+        fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
+          .then((r) => r.json())
+          .then((res) => {
+            document.getElementById("view-pfp").src =
+              res.data.pic || `https://ui-avatars.com/api/?name=${u}`;
+            document.getElementById("view-bio").innerText =
+              res.data.bio || "No bio.";
+            roleCache[u.toLowerCase()] = (res.data.role || "User").trim();
+            localStorage.setItem("hx_roles_cache", JSON.stringify(roleCache));
+            document.getElementById("view-name").innerHTML = getEliteName(u);
+          });
+        const mySocial = await fetchStats(currentUser, null);
+        document.getElementById("followBtn").innerText = (
+          mySocial.followingList || []
+        ).includes(viewTarget)
+          ? "Unfollow"
+          : "Follow";
+        await fetchStats(u, "user-profile-stats");
+      }
+
+      // --- CORE UTILITIES ---
       async function uploadToCatbox(fileInput, hiddenId, statusId) {
         const file = fileInput.files[0];
         if (!file) return;
@@ -812,7 +769,6 @@
           document.getElementById(statusId).innerText = "Failed ❌";
         }
       }
-
       async function fetchStats(uid, elementId) {
         const r = await fetch(
           `${SCRIPT_URL}?action=get_social_stats&uid=${uid}`
@@ -828,7 +784,6 @@
           }</span>Following</div>`;
         return res.data;
       }
-
       async function toggleFollow() {
         const btn = document.getElementById("followBtn");
         btn.disabled = true;
@@ -845,7 +800,12 @@
         await fetchStats(viewTarget, "user-profile-stats");
         btn.disabled = false;
       }
-
+      async function startChat(t) {
+        viewTarget = t;
+        openScreen("chat-view");
+        document.getElementById("chat-target-name").innerHTML = getEliteName(t);
+        loadDMs();
+      }
       async function loadDMs() {
         const r = await fetch(
           `${SCRIPT_URL}?action=get_dms&uid=${currentUser}&target=${viewTarget}`
@@ -866,7 +826,6 @@
         document.getElementById("chat-messages").scrollTop =
           document.getElementById("chat-messages").scrollHeight;
       }
-
       async function sendDM() {
         const i = document.getElementById("msgInput");
         if (!i.value) return;
@@ -882,26 +841,24 @@
         i.value = "";
         loadDMs();
       }
-
       function openComments(pid) {
         currentActivePost = pid;
         fetch(`${SCRIPT_URL}?action=get_feed`)
           .then((r) => r.json())
           .then((res) => {
-            const post = res.data.find((x) => x.pid === pid);
+            const p = res.data.find((x) => x.pid === pid);
             const list = document.getElementById("full-comment-list");
-            list.innerHTML = post.recent_comments
+            list.innerHTML = p.recent_comments
               ? ""
               : "<p style='text-align:center; padding:40px; color:var(--muted)'>No comments.</p>";
-            post.recent_comments.forEach((c) => {
-              list.innerHTML += `<div class="comment-item"><b style="color:${getRoleColor(
+            p.recent_comments.forEach((c) => {
+              list.innerHTML += `<div class="comment-item"><b>${getEliteName(
                 c.user
-              )}">@${c.user}</b><p>${linkify(c.text)}</p></div>`;
+              )}</b><p>${linkify(c.text)}</p></div>`;
             });
             openScreen("comment-view");
           });
       }
-
       async function sendComment() {
         const input = document.getElementById("active-comment-input");
         if (!input.value) return;
@@ -917,7 +874,6 @@
         input.value = "";
         openScreen("home");
       }
-
       async function submitBroadcast() {
         const t = document.getElementById("postText").value;
         const m = document.getElementById("imageUrlInput").value;
@@ -933,7 +889,6 @@
         });
         location.reload();
       }
-
       function updateProfileData() {
         const bio = document.getElementById("updateBio").value.trim();
         fetch(SCRIPT_URL, {
@@ -945,7 +900,6 @@
           }),
         }).then(() => location.reload());
       }
-
       function openScreen(id) {
         document
           .querySelectorAll(".screen")
@@ -962,7 +916,6 @@
         if (id === "dm") loadDMList();
         if (id === "profile") checkUserStatus();
       }
-
       function logout() {
         localStorage.clear();
         location.reload();
