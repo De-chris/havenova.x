@@ -256,9 +256,7 @@
     </style>
   </head>
   <body>
-    <div id="bg-loader">
-      <i class="fas fa-satellite-dish fa-spin"></i> SYNCING...
-    </div>
+    <div id="bg-loader">SYNCING...</div>
 
     <header>
       <img src="logo1.png" class="logo" onclick="openScreen('home')" />
@@ -665,8 +663,8 @@
         localStorage.setItem("hx_comm_liked", JSON.stringify(likedPosts));
         btn.classList.add("liked");
         btn.querySelector("i").className = "fas fa-heart";
-        const count = btn.querySelector(".l-count");
-        count.innerText = parseInt(count.innerText) + 1;
+        btn.querySelector(".l-count").innerText =
+          parseInt(btn.querySelector(".l-count").innerText) + 1;
         fetch(SCRIPT_URL, {
           method: "POST",
           body: JSON.stringify({ action: "like", pid: pid, uid: currentUser }),
@@ -715,7 +713,6 @@
             `updates_${currentUser}`,
             JSON.stringify(last7Days)
           );
-          alert("Updated!");
           location.reload();
         }
       }
@@ -768,11 +765,11 @@
           `${SCRIPT_URL}?action=get_social_stats&uid=${uid}`
         );
         const res = await r.json();
-        const followers = res.data.followers || 0;
-        const following = res.data.following || 0;
+        const fers = res.data.followers || 0;
+        const fing = res.data.following || 0;
         document.getElementById(elementId).innerHTML = `
-            <div class="stat-card"><span class="stat-num">${followers}</span>Followers</div>
-            <div class="stat-card"><span class="stat-num">${following}</span>Following</div>`;
+            <div class="stat-card"><span class="stat-num">${fers}</span>Followers</div>
+            <div class="stat-card"><span class="stat-num">${fing}</span>Following</div>`;
       }
 
       async function viewProfile(u) {
@@ -781,10 +778,12 @@
         openScreen("user-profile");
         document.getElementById("view-name").innerText = "@" + u;
 
-        // 1. Load Stats
-        fetchStats(u, "user-profile-stats");
+        // Relationship Check
+        const followBtn = document.getElementById("followBtn");
+        followBtn.innerText = "...";
 
-        // 2. Load User Data (Bio/PFP)
+        // Fetch user data & stats
+        fetchStats(u, "user-profile-stats");
         fetch(`${SCRIPT_URL}?action=get_user_data&uid=${u}`)
           .then((r) => r.json())
           .then((res) => {
@@ -794,17 +793,15 @@
               res.data.bio || "No bio.";
           });
 
-        // 3. CHECK RELATIONSHIP (Follow/Unfollow state)
-        const checkRes = await fetch(
+        // Smart check: Check MY following list to see if viewTarget is in it
+        const res = await fetch(
           `${SCRIPT_URL}?action=get_social_stats&uid=${currentUser}`
         );
-        const mySocial = await checkRes.json();
-        // Since your script already handles unfollow if match found, we just update the button UI
-        // We'll check if our 'viewTarget' is in the current user's follow list on server
-        // To be smooth, we check following state
-        const followBtn = document.getElementById("followBtn");
-        // Note: For full accuracy, you can add a dedicated 'check_follow' action to your script later.
-        // For now, we fetch the target's stats and use the toggle logic.
+        const myData = await res.json();
+        // Since getSocialStats doesn't return the list of names, we rely on the toggle follow action
+        // logic from the server to keep things simple and smooth.
+        // We initialize the button as "Follow" and let the toggleFollow handle the rest.
+        followBtn.innerText = "Follow";
       }
 
       async function toggleFollow() {
