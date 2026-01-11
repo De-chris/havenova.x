@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HX - Notifications</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        :root { --bg: #020617; --surface: #0f172a; --card: #1e293b; --border: #334155; --text: #f8fafc; --muted: #94a3b8; --primary: #38bdf8; --error: #ef4444; --admin: #60a5fa; --owner: #f87171; }
+        * { box-sizing: border-box; font-family: "Inter", sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 80px; overflow-x: hidden; }
+        header { background: var(--surface); padding: 15px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; }
+        .screen { padding: 15px; max-width: 600px; margin: 0 auto; }
+        .notif-card { background: var(--card); padding: 15px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 10px; display: flex; align-items: center; gap: 12px; transition: 0.3s; }
+        .notif-card.unread { border-left: 4px solid var(--primary); background: rgba(56, 189, 248, 0.05); }
+        .notif-icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+        .icon-like { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .icon-comment { background: rgba(56, 189, 248, 0.2); color: var(--primary); }
+        .icon-follow { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .icon-dm { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 14px 0; z-index: 1000; }
+        .nav-item { color: var(--muted); font-size: 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header>
+        <i class="fas fa-arrow-left" onclick="location.href='messages.html'" style="cursor:pointer"></i>
+        <h3>Notifications</h3>
+        <i class="fas fa-check-double" style="color: var(--primary); cursor:pointer" onclick="markAllRead()"></i>
+    </header>
+
+    <div class="screen">
+        <div id="notif-container">Loading alerts...</div>
+    </div>
+
+    <nav class="nav-bar">
+        <div class="nav-item" onclick="location.href='community.html'"><i class="fas fa-home"></i></div>
+        <div class="nav-item" onclick="location.href='messages.html'"><i class="fas fa-comments"></i></div>
+        <div class="nav-item" onclick="location.href='profile.html'"><i class="fas fa-user-circle"></i></div>
+    </nav>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxgjbIKQJUn5Tdo3r5KbmNQPU-ntffm2hJrw2PrsiqCKf8wa8wzpH-0m_h9nLpcc-JWwg/exec";
+        const currentUser = localStorage.getItem("hx_comm_user");
+
+        function timeSince(dateString) {
+            // Fix for different date formats (Google Sheets vs Standard)
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return "Recently";
+            
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return "Just now";
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + "y";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + "mo";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + "d";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + "h";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + "m";
+            return Math.floor(seconds) + "s";
+        }
+
+        async function loadNotifications() {
+            const r = await fetch(`${SCRIPT_URL}?action=get_notifications&uid=${currentUser}`);
+            const res = await r.json();
+            const container = document.getElementById("notif-container");
+            
+            if (!res.data || res.data.length === 0) {
+                container.innerHTML = "<p style='text-align:center; margin-top:50px; color:var(--muted)'>No notifications yet.</p>";
+                return;
+            }
+
+            container.innerHTML = res.data.map(n => {
+                // n[2] is FROM user, n[3] is TYPE, n[4] is REF/TEXT, n[5] is ISREAD, n[6] is TIME
+                let icon = "fa-bell";
+                let iconClass = "icon-comment";
+                if(n.type === "like" || n[3] === "like") { icon = "fa-heart"; iconClass = "icon-like"; }
+                if(n.type === "follow" || n[3] === "follow") { icon = "fa-user-plus"; iconClass = "icon-follow"; }
+                if(n.type === "dm" || n[3] === "dm") { icon = "fa-envelope"; iconClass = "icon-dm"; }
+                
+                // Extract values whether they come as Object or Array
+                const fromUser = n.from || n[2];
+                const notifText = n.text || n[4];
+                const status = n.status || n[5];
+                const timestamp = n.time || n[6];
+
+                return `
+                <div class="notif-card ${status === 'unread' ? 'unread' : ''}">
+                    <div class="notif-icon ${iconClass}"><i class="fas ${icon}"></i></div>
+                    <div style="flex:1">
+                        <span style="font-size:14px;">
+                            <b style="color:var(--primary)">@${fromUser}</b> ${notifText}
+                        </span>
+                        <div style="font-size:11px; color:var(--muted); margin-top:4px;">${timeSince(timestamp)} ago</div>
+                    </div>
+                </div>`;
+            }).join("");
+        }
+
+        async function markAllRead() {
+            await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "read_notifications", uid: currentUser }) });
+            loadNotifications();
+        }
+
+        loadNotifications();
+    </script>
+</body>
+</html>
