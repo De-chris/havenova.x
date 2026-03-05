@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>HX Messages</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="assets/css/messages.css" />
+  </head>
+  <body>
+    <header>
+      <img src="logo1.png" class="logo" onclick="location.href='community.html'" />
+      <button class="notif-mini-btn" onclick="toggleNotifications()">
+        <i class="fas fa-bell"></i>
+        <span class="nav-dot" id="notif-dot" style="display:none"></span>
+      </button>
+    </header>
+
+    <div class="screen active">
+      <div id="list-wrap">
+        <h3>Messages</h3>
+        <p class="head-sub">Find users and open private chats.</p>
+        <input type="text" id="userSearch" class="hx-input" placeholder="Search users..." oninput="filterUsers()" />
+        <div id="dm-list-container"></div>
+      </div>
+
+      <div id="chat-wrap" style="display:none; margin-top: 12px;">
+        <div class="chat-top">
+          <i class="fas fa-arrow-left" onclick="closeChat()"></i>
+          <div class="chat-title-wrap">
+            <b id="chat-target-name">@User</b>
+            <div id="typing-indicator" class="typing-indicator" style="display:none">
+              typing<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>
+            </div>
+          </div>
+        </div>
+        <div id="chat-messages" class="chat-box"></div>
+        <div style="display:flex; gap:10px; margin-top: 10px;">
+          <input type="text" id="msgInput" class="hx-input" style="margin:0" placeholder="Message..." />
+          <button class="hx-btn" style="width:50px" onclick="sendDM()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
+
+      <div id="notif-panel" style="display:none; margin-top: 12px;">
+        <div class="notif-head">
+          <h3>Notifications</h3>
+          <button class="hx-btn outline" style="width:auto; padding:8px 10px" onclick="markNotificationsRead()">Mark Read</button>
+        </div>
+        <div id="notif-list-container"></div>
+      </div>
+    </div>
+
+    <nav class="nav-bar">
+      <div class="nav-item" onclick="location.href='community.html'"><i class="fas fa-home"></i></div>
+      <div class="nav-item active"><i class="fas fa-comments"></i></div>
+      <div class="nav-item" onclick="location.href='profile.html'"><i class="fas fa-user-circle"></i></div>
+    </nav>
+
+    <script src="assets/js/messages.js"></script>
+  </body>
+</html>

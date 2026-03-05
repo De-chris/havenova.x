@@ -220,6 +220,26 @@ let currentUser = localStorage.getItem("hx_user") || null;
 let loadedComments = [];
 let commentIndex = 0;
 
+function stableHash(input) {
+    const str = String(input || "");
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+    }
+    return Math.abs(hash).toString(36);
+}
+
+function makeStableId(item, idx) {
+    const explicit = item.private_id || item.id || item.template_id || item.sheet_id;
+    if (explicit) return String(explicit).trim();
+
+    const name = String(item.name || item.Name || "").trim().toLowerCase();
+    const dl = String(item.downloadurl || item["Download URL"] || "").trim().toLowerCase();
+    const seed = `${name}|${dl}|${idx}`;
+    return `hx_${stableHash(seed)}`;
+}
+
 window.onload = () => {
     updateUserBtn();
     // Cache loading for swift speed
@@ -237,11 +257,14 @@ async function fetchData(){
     try {
         const r = await fetch(api_url);
         const data = await r.json();
-        // Generate Unique Private IDs for each template
-        allItems = data.map((item, idx) => ({
+        const rows = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
+        allItems = rows.map((item, idx) => ({
             ...item,
-            private_id: `hx_${Math.random().toString(36).substr(2, 5)}_${idx}`,
-            slug: item.name.replace(/\s+/g,'_').toLowerCase()
+            private_id: makeStableId(item, idx),
+            slug: String(item.name || item.Name || "")
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "_")
+                .replace(/^_+|_+$/g, "")
         }));
         localStorage.setItem("hx_cache", JSON.stringify(allItems));
         render(allItems);
@@ -324,11 +347,12 @@ async function syncActivity(id) {
     try {
         const r = await fetch(`${activity_url}?action=getActivity&productId=${id}`);
         const data = await r.json();
+        if (data && data.status && data.status !== "Success") return;
         const span = document.getElementById(`cnt-${id}`);
-        if(span) span.innerText = data.likes;
+        if(span) span.innerText = data.likes || 0;
         if(currentItem && currentItem.private_id === id) {
-            document.getElementById("ovLikeCnt").innerText = data.likes;
-            loadedComments = data.comments.reverse();
+            document.getElementById("ovLikeCnt").innerText = data.likes || 0;
+            loadedComments = Array.isArray(data.comments) ? data.comments.slice().reverse() : [];
             commentIndex = 0;
             renderComments();
         }

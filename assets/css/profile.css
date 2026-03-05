@@ -1,0 +1,40 @@
+@import url("community.css");
+
+body {
+  padding-bottom: 86px;
+}
+
+.screen {
+  max-width: 980px;
+}
+
+#profile-box,
+#login-view,
+#signup-view {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+#profile-box {
+  text-align: left !important;
+}
+
+#profile-box .hx-pfp {
+  display: block;
+}
+
+#nameDisplay {
+  margin-top: 8px;
+}
+
+#bioDisplay {
+  margin-top: 8px;
+}
+
+@media (min-width: 860px) {
+  #profile-box {
+    padding: 22px;
+  }
+}

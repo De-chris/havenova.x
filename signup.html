@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>HX Sign Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="assets/css/profile.css" />
+  </head>
+  <body>
+    <header>
+      <img src="logo1.png" class="logo" onclick="location.href='index.html'" />
+      <i class="fas fa-sign-in-alt" style="color: var(--primary); cursor:pointer" onclick="location.href='login.html'"></i>
+    </header>
+
+    <div class="screen active">
+      <div id="signup-view">
+        <h3>Create Account</h3>
+        <input type="text" id="sigUser" class="hx-input" placeholder="Username" />
+        <input type="email" id="sigEmail" class="hx-input" placeholder="Email" />
+        <input type="password" id="sigPass" class="hx-input" placeholder="Password" />
+        <input type="file" id="pfpFile" accept="image/*" style="display:none" onchange="uploadToCatbox(this, 'sigPfp', 'sig-up-status')" />
+        <button class="hx-btn outline" onclick="document.getElementById('pfpFile').click()">Import PFP</button>
+        <span id="sig-up-status" class="upload-status"></span>
+        <input type="hidden" id="sigPfp" />
+        <button class="hx-btn" style="margin-top:10px" onclick="signupUser()">Sign Up</button>
+        <p style="text-align:center; margin-top: 15px;">
+          Already have account? <a href="login.html" style="color: var(--primary);">Login</a>
+        </p>
+      </div>
+    </div>
+
+    <script>
+      window.AUTH_MODE = "signup";
+    </script>
+    <script src="assets/js/auth.js"></script>
+  </body>
+</html>

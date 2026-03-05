@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/messages.html/:slug*",
+      "destination": "/messages.html"
+    }
+  ]
+}

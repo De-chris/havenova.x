@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>HX Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="assets/css/profile.css" />
+  </head>
+  <body>
+    <header>
+      <img src="logo1.png" class="logo" onclick="location.href='index.html'" />
+      <i class="fas fa-user-plus" style="color: var(--primary); cursor:pointer" onclick="location.href='signup.html'"></i>
+    </header>
+
+    <div class="screen active">
+      <div id="login-view">
+        <h3>Welcome Back</h3>
+        <input type="text" id="logUser" class="hx-input" placeholder="Username" />
+        <input type="password" id="logPass" class="hx-input" placeholder="Password" />
+        <button class="hx-btn" onclick="loginUser()">Login</button>
+        <p style="text-align:center; margin-top: 15px;">
+          New here? <a href="signup.html" style="color: var(--primary);">Create Account</a>
+        </p>
+      </div>
+    </div>
+
+    <script>
+      window.AUTH_MODE = "login";
+    </script>
+    <script src="assets/js/auth.js"></script>
+  </body>
+</html>

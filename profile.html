@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>HX Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="assets/css/profile.css" />
+  </head>
+  <body>
+    <header>
+      <img src="logo1.png" class="logo" onclick="location.href='community.html'" />
+      <i class="fas fa-home" style="color: var(--primary); cursor:pointer" onclick="location.href='community.html'"></i>
+    </header>
+
+    <div class="screen active">
+      <div id="profile-box" style="text-align:center">
+        <img class="hx-pfp" id="pfpBig" style="width:80px; height:80px; margin:0 auto 10px; border:2px solid var(--primary)" />
+        <h2 id="nameDisplay">@User</h2>
+        <p id="bioDisplay" style="color: var(--muted); font-size: 13px; margin: 10px 0"></p>
+        <div id="my-stats" class="stats-grid"></div>
+        <div style="border-top:1px solid var(--border); padding-top:15px; margin-top:10px">
+          <input type="text" id="updateBio" class="hx-input" placeholder="Edit Bio..." />
+          <input type="file" id="updatePfpFile" accept="image/*" style="display:none" onchange="uploadToCatbox(this, 'updatePfpUrl', 'profile-up-status')" />
+          <button class="hx-btn outline" onclick="document.getElementById('updatePfpFile').click()">Update Picture</button>
+          <span id="profile-up-status" class="upload-status"></span>
+          <input type="hidden" id="updatePfpUrl" />
+          <button class="hx-btn" style="margin-top:10px" onclick="updateProfileData()">Save Profile</button>
+        </div>
+        <button class="hx-btn" style="background: var(--error); color: white; margin-top:20px" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <nav class="nav-bar">
+      <div class="nav-item" onclick="location.href='community.html'"><i class="fas fa-home"></i></div>
+      <div class="nav-item" onclick="location.href='messages.html'"><i class="fas fa-comments"></i></div>
+      <div class="nav-item active"><i class="fas fa-user-circle"></i></div>
+    </nav>
+
+    <script src="assets/js/profile.js"></script>
+  </body>
+</html>
