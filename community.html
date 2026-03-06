@@ -2,32 +2,106 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#020617" />
+    <meta name="background-color" content="#020617" />
+    <meta name="description" content="HX Community - The Future of Social Networking" />
+    <meta name="keywords" content="social, community, AI, messaging, posts" />
+    <meta name="author" content="Havenova-x" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="HX Community" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/logo.png" />
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://ui-avatars.com" />
+    <link rel="preconnect" href="https://docs.google.com" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    
     <title>HX Community</title>
+<<<<<<< HEAD
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     />
     <link rel="stylesheet" href="assets/css/community.css" />
+=======
+    
+    <style>
+      /* Critical CSS for loading state */
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #020617;
+        color: #f8fafc;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+      
+      #root {
+        min-height: 100vh;
+      }
+      
+      /* Loading spinner */
+      .initial-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #020617;
+        z-index: 9999;
+      }
+      
+      .initial-loader.hidden {
+        display: none;
+      }
+      
+      .loader-ring {
+        width: 60px;
+        height: 60px;
+        border: 3px solid transparent;
+        border-top-color: #38bdf8;
+        border-right-color: #8b5cf6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      /* Safe area for notched devices */
+      @supports (padding-top: env(safe-area-inset-top)) {
+        .safe-area-top {
+          padding-top: env(safe-area-inset-top);
+        }
+        .safe-area-bottom {
+          padding-bottom: env(safe-area-inset-bottom);
+        }
+      }
+    </style>
+>>>>>>> f471b40e5117e4ccdc0c686e24247bfe1d65063b
   </head>
   <body>
-    <div id="bg-loader">SYNCING...</div>
-
-    <header>
-      <img src="logo1.png" class="logo" onclick="openScreen('home')" />
-      <i
-        class="fas fa-sync-alt"
-        style="color: var(--primary); cursor: pointer"
-        onclick="loadFeed(true)"
-      ></i>
-    </header>
-
-    <div class="fab" id="mainFab" onclick="handleFab()">
-      <i class="fas fa-plus"></i>
+    <!-- Initial Loader -->
+    <div id="initial-loader" class="initial-loader">
+      <div class="loader-ring"></div>
     </div>
+<<<<<<< HEAD
 
     <div id="home-screen" class="screen active">
       <div class="feed-layout">
@@ -392,6 +466,44 @@
     </nav>
 
     <script src="assets/js/community.js"></script>
+=======
+    
+    <div id="root"></div>
+    
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <script>
+      // Hide initial loader when app loads
+      window.addEventListener('load', () => {
+        const loader = document.getElementById('initial-loader');
+        if (loader) {
+          loader.classList.add('hidden');
+        }
+      });
+      
+      // Register Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered:', registration);
+            })
+            .catch((error) => {
+              console.log('SW registration failed:', error);
+            });
+        });
+      }
+      
+      // Handle PWA install prompt
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        // Store for later use
+        window.deferredPrompt = deferredPrompt;
+      });
+    </script>
+>>>>>>> f471b40e5117e4ccdc0c686e24247bfe1d65063b
   </body>
 </html>
 
