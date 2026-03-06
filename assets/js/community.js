@@ -202,23 +202,21 @@ const SCRIPT_URL =
       }
 
       async function uploadSingleToCatbox(file) {
-        // Using ImgBB API - get your free API key at https://api.imgbb.com/
-        const API_KEY = "YOUR_IMGBB_API_KEY"; // Replace with your ImgBB API key
-        if (!API_KEY || API_KEY === "YOUR_IMGBB_API_KEY") {
-          throw new Error("Please set your ImgBB API key in the code");
-        }
-
         const fd = new FormData();
-        fd.append("image", file);
-        const r = await fetch(`https://api.imgbb.com/1/upload?key=${API_KEY}`, {
+        fd.append("reqtype", "fileupload");
+        fd.append("fileToUpload", file);
+        const r = await fetch("https://catbox.moe/user/api.php", {
           method: "POST",
           body: fd
         });
-        const res = await r.json();
-        if (!r.ok || !res.success) {
-          throw new Error(res.error?.message || "Upload failed");
+        const url = await r.text();
+        if (!r.ok) {
+          throw new Error(`Upload failed (${r.status})`);
         }
-        return res.data.url;
+        if (!/^https?:\/\//i.test(url.trim())) {
+          throw new Error(`Upload failed: ${url || "no file"}`);
+        }
+        return url.trim();
       }
 
       async function uploadToCatbox(fileInput, hiddenId, statusId, allowMultiple) {
