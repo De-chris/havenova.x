@@ -19,12 +19,12 @@ const SCRIPT_URL =
       let viewerTouchStartX = 0;
 
       if (!currentUser) {
-        location.href = "login.html";
+        location.href = "login";
       }
 
       function ensureAuthOrRedirect() {
         if (!currentUser) {
-          location.href = "login.html";
+          location.href = "login";
           return false;
         }
         return true;
@@ -548,7 +548,7 @@ const SCRIPT_URL =
             }')">
             <img src="${
               u.pic || "https://ui-avatars.com/api/?name=" + u.username
-            }" class="hx-pfp" style="width:35px; height:35px;">
+            }" class="hx-pfp" style="width:35px; height:35px;" loading="lazy" decoding="async">
             <b>${getEliteName(u.username)}</b>
         </div>`;
           })

@@ -12,6 +12,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     />
     <link rel="stylesheet" href="assets/css/community.css" />
+    <link rel="preload" href="assets/js/community.js" as="script">
   </head>
   <body>
     <div id="bg-loader">SYNCING...</div>
@@ -382,16 +383,16 @@
     <nav class="nav-bar">
       <div class="nav-item active" id="nav-home" onclick="openScreen('home')">
         <i class="fas fa-home"></i>
-      </div>
-      <div class="nav-item" id="nav-dm" onclick="location.href='messages.html'">
+      </div>'">
         <i class="fas fa-comments"></i>
       </div>
+      <div class="nav-item" id="nav-profile" onclick="location.href='profile
       <div class="nav-item" id="nav-profile" onclick="location.href='profile.html'">
         <i class="fas fa-user-circle"></i>
       </div>
     </nav>
 
-    <script src="assets/js/community.js"></script>
+    <script src="assets/js/community.js" defer></script>
   </body>
 </html>
 
