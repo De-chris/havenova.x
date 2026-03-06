@@ -17,6 +17,7 @@ const SCRIPT_URL =
       let mediaCarouselState = {};
       let mediaViewerState = { images: [], index: 0, caption: "", author: "" };
       let viewerTouchStartX = 0;
+      let cropper = null;
 
       if (!currentUser) {
         location.href = "login";
@@ -201,35 +202,23 @@ const SCRIPT_URL =
       }
 
       async function uploadSingleToCatbox(file) {
-        const endpoints = [
-          "https://catbox.moe/user/api.php",
-          "https://corsproxy.io/?https%3A%2F%2Fcatbox.moe%2Fuser%2Fapi.php",
-          "https://cors.isomorphic-git.org/https://catbox.moe/user/api.php",
-        ];
-        let lastError = "Upload failed";
-
-        for (const endpoint of endpoints) {
-          try {
-            const fd = new FormData();
-            fd.append("reqtype", "fileupload");
-            fd.append("fileToUpload", file);
-            const r = await fetch(endpoint, { method: "POST", body: fd });
-            const raw = await r.text();
-            const url = String(raw || "").trim();
-            if (!r.ok) {
-              lastError = `Upload failed (${r.status})`;
-              continue;
-            }
-            if (!/^https?:\/\//i.test(url)) {
-              lastError = `Upload failed: ${url || "no file"}`;
-              continue;
-            }
-            return url;
-          } catch (e) {
-            lastError = "Upload failed: network/CORS";
-          }
+        // Using ImgBB API - get your free API key at https://api.imgbb.com/
+        const API_KEY = "YOUR_IMGBB_API_KEY"; // Replace with your ImgBB API key
+        if (!API_KEY || API_KEY === "YOUR_IMGBB_API_KEY") {
+          throw new Error("Please set your ImgBB API key in the code");
         }
-        throw new Error(lastError);
+
+        const fd = new FormData();
+        fd.append("image", file);
+        const r = await fetch(`https://api.imgbb.com/1/upload?key=${API_KEY}`, {
+          method: "POST",
+          body: fd
+        });
+        const res = await r.json();
+        if (!r.ok || !res.success) {
+          throw new Error(res.error?.message || "Upload failed");
+        }
+        return res.data.url;
       }
 
       async function uploadToCatbox(fileInput, hiddenId, statusId, allowMultiple) {
@@ -511,7 +500,9 @@ const SCRIPT_URL =
       async function updateProfileData() {
         const bio = document.getElementById("updateBio").value.trim();
         const pic = document.getElementById("updatePfpUrl").value.trim();
+        const status = document.getElementById("profile-up-status");
         document.getElementById("bg-loader").style.display = "block";
+        if (status) status.innerText = "Saving...";
         try {
           await apiPost({
             action: "update_profile",
@@ -521,9 +512,62 @@ const SCRIPT_URL =
           });
           document.getElementById("bioDisplay").innerText = bio || "No bio.";
           if (pic) document.getElementById("pfpBig").src = pic;
+          if (status) status.innerText = "Profile saved successfully!";
+          setTimeout(() => { if (status) status.innerText = ""; }, 3000);
+        } catch (e) {
+          if (status) status.innerText = "Failed to save profile.";
+          setTimeout(() => { if (status) status.innerText = ""; }, 3000);
         } finally {
           document.getElementById("bg-loader").style.display = "none";
         }
+      }
+
+      function openCropModal(file) {
+        const modal = document.getElementById("crop-modal");
+        const img = document.getElementById("crop-image");
+        if (!modal || !img) return;
+
+        const url = URL.createObjectURL(file);
+        img.src = url;
+        modal.style.display = "flex";
+
+        if (cropper) cropper.destroy();
+        cropper = new Cropper(img, {
+          aspectRatio: 1,
+          viewMode: 1,
+          responsive: true,
+          restore: false,
+          checkCrossOrigin: false,
+          checkOrientation: false,
+          modal: true,
+          guides: true,
+          center: true,
+          highlight: false,
+          background: false,
+          autoCropArea: 0.8,
+        });
+      }
+
+      function closeCropModal() {
+        const modal = document.getElementById("crop-modal");
+        if (modal) modal.style.display = "none";
+        if (cropper) {
+          cropper.destroy();
+          cropper = null;
+        }
+      }
+
+      async function cropAndUpload() {
+        if (!cropper) return;
+        const canvas = cropper.getCroppedCanvas({
+          width: 300,
+          height: 300,
+        });
+        canvas.toBlob(async (blob) => {
+          const file = new File([blob], "profile.jpg", { type: "image/jpeg" });
+          closeCropModal();
+          await uploadToCatbox({ files: [file] }, "updatePfpUrl", "profile-up-status", false);
+        }, "image/jpeg", 0.9);
       }
 
       async function loadDMList() {

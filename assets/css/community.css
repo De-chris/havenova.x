@@ -716,3 +716,35 @@ header {
     height: 30px;
   }
 }
+
+/* Crop Modal */
+.crop-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.crop-modal-content {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+}
+
+.crop-container {
+  margin: 20px 0;
+  max-height: 400px;
+  overflow: hidden;
+}
+
+.crop-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
