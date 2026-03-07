@@ -98,21 +98,42 @@ async function updateProfileData() {
 async function uploadToCatbox(fileInput, hiddenId, statusId) {
   const file = fileInput.files[0];
   if (!file) return;
-  document.getElementById(statusId).innerText = "Syncing...";
+  
+  const statusEl = document.getElementById(statusId);
+  statusEl.innerText = "Uploading...";
+  
   const fd = new FormData();
   fd.append("reqtype", "fileupload");
   fd.append("fileToUpload", file);
+  
   try {
-    const r = await fetch(
-      "https://corsproxy.io/?" + encodeURIComponent("https://catbox.moe/user/api.php"),
-      { method: "POST", body: fd }
-    );
-    const url = (await r.text()).trim();
+    const response = await fetch("https://catbox.moe/user/api.php", {
+      method: "POST",
+      body: fd,
+      credentials: "omit"
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const url = (await response.text()).trim();
+    
+    // Validate that we got a valid URL back
+    if (!url.startsWith("http")) {
+      throw new Error("Invalid response from Catbox");
+    }
+    
     document.getElementById(hiddenId).value = url;
-    document.getElementById(statusId).innerText = "Linked! OK";
-    if (hiddenId === "updatePfpUrl") document.getElementById("pfpBig").src = url;
+    statusEl.innerText = "✓ Uploaded";
+    
+    if (hiddenId === "updatePfpUrl") {
+      document.getElementById("pfpBig").src = url;
+    }
   } catch (e) {
-    document.getElementById(statusId).innerText = "Failed";
+    console.error("Upload error:", e);
+    statusEl.innerText = "✗ Failed - Try again";
+    setTimeout(() => { statusEl.innerText = ""; }, 3000);
   }
 }
 
