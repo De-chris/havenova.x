@@ -107,7 +107,7 @@ async function uploadToCatbox(fileInput, hiddenId, statusId) {
   fd.append("fileToUpload", file);
   
   try {
-    const response = await fetch("https://catbox.moe/user/api.php", {
+    const response = await fetch('/api/upload', {
       method: "POST",
       body: fd,
       credentials: "omit"

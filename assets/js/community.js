@@ -205,7 +205,7 @@ const SCRIPT_URL =
         const fd = new FormData();
         fd.append("reqtype", "fileupload");
         fd.append("fileToUpload", file);
-        const r = await fetch("https://catbox.moe/user/api.php", {
+        const r = await fetch('/api/upload', {
           method: "POST",
           body: fd
         });

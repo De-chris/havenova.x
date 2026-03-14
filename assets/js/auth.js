@@ -49,7 +49,7 @@ async function uploadToCatbox(fileInput, hiddenId, statusId) {
   fd.append("fileToUpload", file);
   try {
     const r = await fetch(
-      "https://corsproxy.io/?" + encodeURIComponent("https://catbox.moe/user/api.php"),
+      '/api/upload',
       { method: "POST", body: fd }
     );
     hidden.value = (await r.text()).trim();
