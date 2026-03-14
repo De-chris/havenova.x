@@ -1,34 +1,28 @@
-const https = require('https');
-
-module.exports = (req, res) => {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    res.status(405).end();
-    return;
+    return res.status(405).end();
   }
 
-  const options = {
-    hostname: 'catbox.moe',
-    path: '/user/api.php',
-    method: 'POST',
-    headers: {
-      'Content-Type': req.headers['content-type'],
-    },
-  };
+  try {
+    const body = await req.arrayBuffer();
 
-  const proxyReq = https.request(options, (proxyRes) => {
-    res.status(proxyRes.statusCode);
-    proxyRes.pipe(res);
-  });
+    const catboxRes = await fetch('https://catbox.moe/user/api.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': req.headers['content-type'],
+      },
+      body: Buffer.from(body),
+    });
 
-  proxyReq.on('error', (e) => {
-    console.error(e);
-    res.status(500).send('Error uploading');
-  });
+    const text = await catboxRes.text();
+    return res.status(catboxRes.status).send(text);
+  } catch (err) {
+    console.error('Catbox upload error:', err);
+    return res.status(500).send('Error uploading');
+  }
+}
 
-  req.pipe(proxyReq);
-};
-
-module.exports.config = {
+export const config = {
   api: {
     bodyParser: false,
   },
