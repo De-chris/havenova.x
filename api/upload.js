@@ -4,21 +4,33 @@ export default async function handler(req, res) {
   }
 
   try {
-    const body = await req.arrayBuffer();
+    // For multipart form data, we need to read the raw body
+    const chunks = [];
+    for await (const chunk of req) {
+      chunks.push(chunk);
+    }
+    const body = Buffer.concat(chunks);
 
     const catboxRes = await fetch('https://catbox.moe/user/api.php', {
       method: 'POST',
       headers: {
-        'Content-Type': req.headers['content-type'],
+        'Content-Type': req.headers['content-type'] || 'multipart/form-data',
       },
-      body: Buffer.from(body),
+      body: body,
     });
 
     const text = await catboxRes.text();
-    return res.status(catboxRes.status).send(text);
+
+    // Check if we got a valid URL back
+    if (catboxRes.ok && text.trim().startsWith('http')) {
+      return res.status(200).send(text.trim());
+    } else {
+      console.error('Catbox error:', text);
+      return res.status(500).send('Upload failed: ' + text);
+    }
   } catch (err) {
-    console.error('Catbox upload error:', err);
-    return res.status(500).send('Error uploading');
+    console.error('Upload error:', err);
+    return res.status(500).send('Error uploading: ' + err.message);
   }
 }
 
