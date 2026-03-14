@@ -91,8 +91,14 @@ async function loadProfile() {
 async function updateProfileData() {
   const bio = document.getElementById("updateBio").value.trim();
   const pic = document.getElementById("updatePfpUrl").value.trim();
-  await apiPost({ action: "update_profile", uid: currentUser, bio, pic });
-  await loadProfile();
+  try {
+    await apiPost({ action: "update_profile", uid: currentUser, bio, pic });
+    // Refresh the page after saving to ensure UI reflects the latest data.
+    location.reload();
+  } catch (e) {
+    console.error("Failed to save profile:", e);
+    alert("Unable to save profile. Please try again.");
+  }
 }
 
 async function uploadToCatbox(fileInput, hiddenId, statusId) {
